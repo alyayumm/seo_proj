@@ -24,6 +24,7 @@ import {
   SEO_AUDIT_CHECKLIST,
   type ClientAuditSource,
 } from './auditSources';
+import { CLIENT_QUICK_LINKS, type ClientQuickLinks } from './clientLinks';
 import {
   fetchLinkPurchases,
   LINK_SOURCE_SPREADSHEET_URL,
@@ -599,6 +600,11 @@ function App() {
     return map;
   }, []);
 
+  const clientLinksByProject = useMemo(
+    () => new Map(CLIENT_QUICK_LINKS.map((item) => [normalizeProjectName(item.projectName), item])),
+    [],
+  );
+
   const completion = useMemo(() => {
     const total = tasks.length || 1;
     const done = tasks.filter((task) => task.status === 'done').length;
@@ -822,6 +828,7 @@ function App() {
                       linkSummary={linkSummaries.get(normalizeProjectName(project.name))}
                       workPlans={workPlansByProject.get(normalizeProjectName(project.name)) ?? []}
                       auditSources={auditSourcesByProject.get(normalizeProjectName(project.name)) ?? []}
+                      clientLinks={clientLinksByProject.get(normalizeProjectName(project.name))}
                       linkLoadStatus={linkLoadStatus}
                       linkError={linkError}
                       linkUpdatedAt={linkUpdatedAt}
@@ -1039,6 +1046,7 @@ type ProjectGroupProps = {
   linkSummary?: LinkPurchaseSummary;
   workPlans: WorkPlanSource[];
   auditSources: ClientAuditSource[];
+  clientLinks?: ClientQuickLinks;
   linkLoadStatus: LinkLoadStatus;
   linkError: string;
   linkUpdatedAt: string;
@@ -1060,6 +1068,7 @@ function ProjectGroup({
   linkSummary,
   workPlans,
   auditSources,
+  clientLinks,
   linkLoadStatus,
   linkError,
   linkUpdatedAt,
@@ -1112,6 +1121,8 @@ function ProjectGroup({
         </div>
       </div>
 
+      {clientLinks && <ClientQuickLinksBar links={clientLinks} />}
+
       {activeTab === 'tasks' &&
         (tasks.length === 0 ? (
           <div className="empty-row">Пока нет задач по этому проекту.</div>
@@ -1149,6 +1160,24 @@ function ProjectGroup({
 
       {activeTab === 'audit' && <AuditPanel project={project} sources={auditSources} />}
     </article>
+  );
+}
+
+function ClientQuickLinksBar({ links }: { links: ClientQuickLinks }) {
+  return (
+    <div className="client-quick-links" aria-label={`Быстрые ссылки клиента ${links.clientName}`}>
+      <span>{links.clientName}</span>
+      <a href={links.siteUrl} target="_blank" rel="noreferrer" title={links.siteUrl}>
+        <ExternalLink size={14} />
+        Сайт
+      </a>
+      {links.reports.map((report) => (
+        <a href={report.url} target="_blank" rel="noreferrer" title={report.title} key={report.id}>
+          <FileText size={14} />
+          {report.label} · {report.reportDate}
+        </a>
+      ))}
+    </div>
   );
 }
 

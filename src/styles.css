@@ -524,6 +524,45 @@ p {
   font-style: normal;
 }
 
+.client-quick-links {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(107, 124, 160, 0.12);
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.client-quick-links > span {
+  color: #65718a;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.client-quick-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid rgba(107, 124, 160, 0.15);
+  border-radius: 999px;
+  color: #24304a;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.client-quick-links a:hover {
+  border-color: rgba(79, 101, 255, 0.34);
+  color: #294fc5;
+  background: rgba(255, 255, 255, 0.76);
+}
+
 .project-dot,
 .mini-dot {
   flex: 0 0 auto;
