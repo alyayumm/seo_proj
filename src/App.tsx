@@ -1011,8 +1011,26 @@ function WorkPlanPanel({ project, plans }: { project: Project; plans: WorkPlanSo
               <div className="work-plan-meta">
                 <span>{plan.clientName}</span>
                 <span>{plan.period}</span>
+                <span>{countWorkPlanItems(plan)} пунктов</span>
               </div>
               {plan.note && <small>{plan.note}</small>}
+              {plan.sections && plan.sections.length > 0 && (
+                <div className="work-plan-sections">
+                  {plan.sections.map((section, index) => (
+                    <details key={section.label} open={index === 0}>
+                      <summary>
+                        <span>{section.label}</span>
+                        <em>{section.items.length}</em>
+                      </summary>
+                      <ul>
+                        {section.items.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  ))}
+                </div>
+              )}
               <div className="link-actions">
                 <a href={plan.url} target="_blank" rel="noreferrer">
                   <ExternalLink size={15} />
@@ -1025,6 +1043,10 @@ function WorkPlanPanel({ project, plans }: { project: Project; plans: WorkPlanSo
       )}
     </div>
   );
+}
+
+function countWorkPlanItems(plan: WorkPlanSource) {
+  return plan.sections?.reduce((sum, section) => sum + section.items.length, 0) ?? 0;
 }
 
 type TaskRowProps = {
@@ -1597,7 +1619,9 @@ function WorkPlanSummary({ plans }: { plans: WorkPlanSource[] }) {
           <div className="work-plan-row" key={plan.id}>
             <div>
               <strong>{plan.projectName}</strong>
-              <p>{plan.title}</p>
+              <p>
+                {plan.title} · {countWorkPlanItems(plan)} пунктов
+              </p>
             </div>
             <span>{plan.clientName}</span>
             <span>{plan.period}</span>

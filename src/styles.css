@@ -829,6 +829,59 @@ p {
   font-weight: 900;
 }
 
+.work-plan-sections {
+  display: grid;
+  gap: 7px;
+}
+
+.work-plan-sections details {
+  overflow: hidden;
+  border: 1px solid rgba(107, 124, 160, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.work-plan-sections summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 10px;
+  color: #24304a;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  list-style: none;
+}
+
+.work-plan-sections summary::-webkit-details-marker {
+  display: none;
+}
+
+.work-plan-sections summary em {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  color: white;
+  background: #101524;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.work-plan-sections ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0 12px 12px 26px;
+  color: #405174;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.35;
+}
+
 .sync-state {
   display: flex;
   align-items: center;
