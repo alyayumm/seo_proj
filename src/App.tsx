@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CSSProperties, Dispatch, SetStateAction } from 'react';
 import {
   AlertTriangle,
@@ -7,18 +7,31 @@ import {
   ChevronDown,
   ChevronRight,
   Clock3,
+  ExternalLink,
+  FileSpreadsheet,
   LayoutList,
   Layers3,
   Plus,
+  RefreshCw,
   SlidersHorizontal,
   Target,
   Users,
 } from 'lucide-react';
+import {
+  fetchLinkPurchases,
+  LINK_SOURCE_SPREADSHEET_URL,
+  REQUIRED_LINK_PROJECTS,
+  summarizeLinkPurchases,
+  type LinkPurchase,
+  type LinkPurchaseSummary,
+} from './linkPurchases';
 
 type View = 'tasks' | 'admin' | 'dashboard';
 type Status = 'planned' | 'active' | 'done' | 'risk';
 type CalendarMode = 'plan' | 'fact';
 type AdminTab = 'projects' | 'people';
+type ProjectTab = 'tasks' | 'links';
+type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 type Project = {
   id: string;
@@ -69,6 +82,9 @@ const initialProjects: Project[] = [
   { id: 'project-lombard', name: 'Ломбард', color: '#4DB8FF' },
   { id: 'project-watch', name: 'Часы', color: '#8B5CF6' },
   { id: 'project-smart', name: 'Смартстрой', color: '#14B8A6' },
+  ...REQUIRED_LINK_PROJECTS.filter(
+    (project) => !['Ломбард', 'Часы', 'Смартстрой'].includes(project.name),
+  ),
 ];
 
 const initialPeople: Person[] = [
@@ -188,6 +204,10 @@ function formatDate(value: string) {
   }).format(new Date(`${value}T12:00:00`));
 }
 
+function normalizeProjectName(value: string) {
+  return value.trim().toLowerCase();
+}
+
 function getDays(count = 14) {
   return Array.from({ length: count }, (_, index) => addDaysIso(index));
 }
@@ -226,7 +246,12 @@ function App() {
   const [activeView, setActiveView] = useState<View>('tasks');
   const [calendarMode, setCalendarMode] = useState<CalendarMode>('plan');
   const [adminTab, setAdminTab] = useState<AdminTab>('projects');
+  const [projectTabs, setProjectTabs] = useState<Record<string, ProjectTab>>({});
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['task-1']));
+  const [linkRows, setLinkRows] = useState<LinkPurchase[]>([]);
+  const [linkLoadStatus, setLinkLoadStatus] = useState<LinkLoadStatus>('idle');
+  const [linkError, setLinkError] = useState('');
+  const [linkUpdatedAt, setLinkUpdatedAt] = useState('');
 
   const [taskDraft, setTaskDraft] = useState({
     title: '',
@@ -242,6 +267,35 @@ function App() {
   const peopleById = useMemo(() => new Map(people.map((person) => [person.id, person])), [people]);
   const days = useMemo(() => getDays(14), []);
 
+  useEffect(() => {
+    setProjects((current) => {
+      const names = new Set(current.map((project) => normalizeProjectName(project.name)));
+      const missingProjects = REQUIRED_LINK_PROJECTS.filter(
+        (project) => !names.has(normalizeProjectName(project.name)),
+      );
+      return missingProjects.length ? [...current, ...missingProjects] : current;
+    });
+  }, [setProjects]);
+
+  const loadLinkRows = useCallback(async () => {
+    setLinkLoadStatus('loading');
+    setLinkError('');
+
+    try {
+      const rows = await fetchLinkPurchases();
+      setLinkRows(rows);
+      setLinkUpdatedAt(new Date().toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }));
+      setLinkLoadStatus('ready');
+    } catch (error) {
+      setLinkError(error instanceof Error ? error.message : 'Не удалось загрузить Google Sheets');
+      setLinkLoadStatus('error');
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadLinkRows();
+  }, [loadLinkRows]);
+
   const groupedTasks = useMemo(
     () =>
       projects.map((project) => ({
@@ -250,6 +304,27 @@ function App() {
       })),
     [projects, tasks],
   );
+
+  const linkRowsByProject = useMemo(() => {
+    const map = new Map<string, LinkPurchase[]>();
+    linkRows.forEach((row) => {
+      const key = normalizeProjectName(row.projectName);
+      const current = map.get(key) ?? [];
+      current.push(row);
+      map.set(key, current);
+    });
+    return map;
+  }, [linkRows]);
+
+  const linkSummaries = useMemo(() => {
+    const map = new Map<string, LinkPurchaseSummary>();
+    linkRowsByProject.forEach((rows, projectName) => {
+      map.set(projectName, summarizeLinkPurchases(rows));
+    });
+    return map;
+  }, [linkRowsByProject]);
+
+  const linkTotalSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
 
   const completion = useMemo(() => {
     const total = tasks.length || 1;
@@ -437,6 +512,7 @@ function App() {
             <Metric compact label="выполнение" value={`${completion}%`} />
             <Metric compact label="в риске" value={`${overdueCount}`} tone={overdueCount ? 'danger' : 'success'} />
             <Metric compact label="наложения" value={`${collisions.length}`} />
+            <Metric compact label="ссылок" value={`${linkRows.length}`} />
           </div>
         </header>
 
@@ -467,8 +543,16 @@ function App() {
                       key={project.id}
                       project={project}
                       tasks={projectTasks}
+                      linkRows={linkRowsByProject.get(normalizeProjectName(project.name)) ?? []}
+                      linkSummary={linkSummaries.get(normalizeProjectName(project.name))}
+                      linkLoadStatus={linkLoadStatus}
+                      linkError={linkError}
+                      linkUpdatedAt={linkUpdatedAt}
+                      activeTab={projectTabs[project.id] ?? 'tasks'}
                       peopleById={peopleById}
                       expanded={expanded}
+                      onTabChange={(tab) => setProjectTabs((current) => ({ ...current, [project.id]: tab }))}
+                      onReloadLinks={loadLinkRows}
                       onToggleExpanded={toggleExpanded}
                       onToggleTimeline={toggleTimeline}
                       onStatusChange={setTaskStatus}
@@ -520,6 +604,13 @@ function App() {
             completion={completion}
             overdueCount={overdueCount}
             collisions={collisions}
+            linkRows={linkRows}
+            linkSummaries={linkSummaries}
+            linkTotalSummary={linkTotalSummary}
+            linkLoadStatus={linkLoadStatus}
+            linkError={linkError}
+            linkUpdatedAt={linkUpdatedAt}
+            onReloadLinks={loadLinkRows}
           />
         )}
       </main>
@@ -665,8 +756,16 @@ function TaskComposer({
 type ProjectGroupProps = {
   project: Project;
   tasks: Task[];
+  linkRows: LinkPurchase[];
+  linkSummary?: LinkPurchaseSummary;
+  linkLoadStatus: LinkLoadStatus;
+  linkError: string;
+  linkUpdatedAt: string;
+  activeTab: ProjectTab;
   peopleById: Map<string, Person>;
   expanded: Set<string>;
+  onTabChange: (tab: ProjectTab) => void;
+  onReloadLinks: () => void;
   onToggleExpanded: (taskId: string) => void;
   onToggleTimeline: (taskId: string, checked: boolean) => void;
   onStatusChange: (taskId: string, status: Status) => void;
@@ -676,8 +775,16 @@ type ProjectGroupProps = {
 function ProjectGroup({
   project,
   tasks,
+  linkRows,
+  linkSummary,
+  linkLoadStatus,
+  linkError,
+  linkUpdatedAt,
+  activeTab,
   peopleById,
   expanded,
+  onTabChange,
+  onReloadLinks,
   onToggleExpanded,
   onToggleTimeline,
   onStatusChange,
@@ -690,29 +797,165 @@ function ProjectGroup({
           <span className="project-dot" />
           <h3>{project.name}</h3>
         </div>
-        <span>{tasks.length}</span>
+        <div className="project-tabs" role="group" aria-label={`Разделы проекта ${project.name}`}>
+          <button
+            className={activeTab === 'tasks' ? 'is-active' : ''}
+            type="button"
+            onClick={() => onTabChange('tasks')}
+          >
+            Задачи <em>{tasks.length}</em>
+          </button>
+          <button
+            className={activeTab === 'links' ? 'is-active' : ''}
+            type="button"
+            onClick={() => onTabChange('links')}
+          >
+            Закуп ссылок <em>{linkRows.length}</em>
+          </button>
+        </div>
       </div>
 
-      {tasks.length === 0 ? (
-        <div className="empty-row">Пока нет задач по этому проекту.</div>
-      ) : (
-        <div className="task-list">
-          {tasks.map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              project={project}
-              peopleById={peopleById}
-              expanded={expanded.has(task.id)}
-              onToggleExpanded={onToggleExpanded}
-              onToggleTimeline={onToggleTimeline}
-              onStatusChange={onStatusChange}
-              onTimelineStatusChange={onTimelineStatusChange}
-            />
-          ))}
-        </div>
+      {activeTab === 'tasks' &&
+        (tasks.length === 0 ? (
+          <div className="empty-row">Пока нет задач по этому проекту.</div>
+        ) : (
+          <div className="task-list">
+            {tasks.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                project={project}
+                peopleById={peopleById}
+                expanded={expanded.has(task.id)}
+                onToggleExpanded={onToggleExpanded}
+                onToggleTimeline={onToggleTimeline}
+                onStatusChange={onStatusChange}
+                onTimelineStatusChange={onTimelineStatusChange}
+              />
+            ))}
+          </div>
+        ))}
+
+      {activeTab === 'links' && (
+        <LinkPurchasePanel
+          project={project}
+          rows={linkRows}
+          summary={linkSummary}
+          loadStatus={linkLoadStatus}
+          error={linkError}
+          updatedAt={linkUpdatedAt}
+          onReload={onReloadLinks}
+        />
       )}
     </article>
+  );
+}
+
+function LinkPurchasePanel({
+  project,
+  rows,
+  summary,
+  loadStatus,
+  error,
+  updatedAt,
+  onReload,
+}: {
+  project: Project;
+  rows: LinkPurchase[];
+  summary?: LinkPurchaseSummary;
+  loadStatus: LinkLoadStatus;
+  error: string;
+  updatedAt: string;
+  onReload: () => void;
+}) {
+  const visibleRows = rows.slice(0, 12);
+  const safeSummary = summary ?? summarizeLinkPurchases(rows);
+
+  return (
+    <div className="link-panel">
+      <div className="link-panel-head">
+        <div>
+          <strong>Закуп ссылок: {project.name}</strong>
+          <p>
+            Источник: вкладка `План` в Google Sheets
+            {updatedAt ? ` · обновлено ${updatedAt}` : ''}
+          </p>
+        </div>
+        <div className="link-actions">
+          <a href={LINK_SOURCE_SPREADSHEET_URL} target="_blank" rel="noreferrer">
+            <ExternalLink size={15} />
+            Таблица
+          </a>
+          <button type="button" onClick={onReload} disabled={loadStatus === 'loading'}>
+            <RefreshCw size={15} />
+            {loadStatus === 'loading' ? 'Обновляю' : 'Обновить'}
+          </button>
+        </div>
+      </div>
+
+      {loadStatus === 'error' && (
+        <div className="sync-state is-error">
+          <AlertTriangle size={16} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {loadStatus === 'loading' && rows.length === 0 && (
+        <div className="sync-state">
+          <RefreshCw size={16} />
+          <span>Тяну данные из Google Sheets...</span>
+        </div>
+      )}
+
+      {rows.length === 0 && loadStatus !== 'loading' ? (
+        <div className="empty-row">
+          В таблице пока нет строк, которые склеиваются с проектом {project.name}.
+        </div>
+      ) : (
+        <>
+          <div className="link-summary-grid">
+            <LinkStat label="строк" value={String(safeSummary.count)} />
+            <LinkStat label="план" value={formatMoney(safeSummary.planCost)} />
+            <LinkStat label="факт" value={formatMoney(safeSummary.factCost)} />
+            <LinkStat label="размещено" value={String(safeSummary.placed)} tone="success" />
+            <LinkStat label="купить" value={String(safeSummary.needToBuy)} tone="warning" />
+          </div>
+
+          <div className="link-table" role="table" aria-label={`Закуп ссылок ${project.name}`}>
+            <div className="link-table-row link-table-head" role="row">
+              <span>Месяц</span>
+              <span>Донор / URL</span>
+              <span>Статус</span>
+              <span>План</span>
+              <span>Факт</span>
+            </div>
+            {visibleRows.map((row) => (
+              <div className="link-table-row" role="row" key={row.id}>
+                <span>
+                  {row.month || '—'}
+                  {row.order ? <em>#{row.order}</em> : null}
+                </span>
+                <span className="link-donor">
+                  <strong>{row.donor || 'Без донора'}</strong>
+                  {row.url ? (
+                    <a href={row.url} target="_blank" rel="noreferrer">
+                      {row.url}
+                    </a>
+                  ) : (
+                    <small>URL пока не внесен</small>
+                  )}
+                </span>
+                <span>
+                  <StatusBadge status={row.status} urgency={row.urgency} />
+                </span>
+                <span>{formatMoney(row.planCost)}</span>
+                <span>{formatMoney(row.factCost)}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -1128,6 +1371,13 @@ type DashboardViewProps = {
   completion: number;
   overdueCount: number;
   collisions: Array<{ id: string; task: Task; owner?: Person; count: number }>;
+  linkRows: LinkPurchase[];
+  linkSummaries: Map<string, LinkPurchaseSummary>;
+  linkTotalSummary: LinkPurchaseSummary;
+  linkLoadStatus: LinkLoadStatus;
+  linkError: string;
+  linkUpdatedAt: string;
+  onReloadLinks: () => void;
 };
 
 function DashboardView({
@@ -1137,6 +1387,13 @@ function DashboardView({
   completion,
   overdueCount,
   collisions,
+  linkRows,
+  linkSummaries,
+  linkTotalSummary,
+  linkLoadStatus,
+  linkError,
+  linkUpdatedAt,
+  onReloadLinks,
 }: DashboardViewProps) {
   const totalTimeline = tasks.reduce((sum, task) => sum + task.timeline.length, 0);
 
@@ -1151,6 +1408,7 @@ function DashboardView({
           <Metric label="Выполнение" value={`${completion}%`} />
           <Metric label="Просрочено" value={String(overdueCount)} tone={overdueCount ? 'danger' : 'success'} />
           <Metric label="Подпункты" value={String(totalTimeline)} />
+          <Metric label="Ссылки" value={String(linkRows.length)} />
         </div>
       </div>
 
@@ -1236,7 +1494,122 @@ function DashboardView({
             ))}
         </div>
       </section>
+
+      <LinkReportSummary
+        projects={projects}
+        summaries={linkSummaries}
+        total={linkTotalSummary}
+        status={linkLoadStatus}
+        error={linkError}
+        updatedAt={linkUpdatedAt}
+        onReload={onReloadLinks}
+      />
     </section>
+  );
+}
+
+function LinkReportSummary({
+  projects,
+  summaries,
+  total,
+  status,
+  error,
+  updatedAt,
+  onReload,
+}: {
+  projects: Project[];
+  summaries: Map<string, LinkPurchaseSummary>;
+  total: LinkPurchaseSummary;
+  status: LinkLoadStatus;
+  error: string;
+  updatedAt: string;
+  onReload: () => void;
+}) {
+  const projectsWithLinks = projects
+    .map((project) => ({ project, summary: summaries.get(normalizeProjectName(project.name)) }))
+    .filter((item) => item.summary && item.summary.count > 0);
+
+  return (
+    <section className="panel link-report">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>Отчет по закупу ссылок</h2>
+          <p>
+            Склейка клиентов из Google Sheets в проекты
+            {updatedAt ? ` · обновлено ${updatedAt}` : ''}
+          </p>
+        </div>
+        <div className="link-actions">
+          <a href={LINK_SOURCE_SPREADSHEET_URL} target="_blank" rel="noreferrer">
+            <FileSpreadsheet size={15} />
+            Источник
+          </a>
+          <button type="button" onClick={onReload} disabled={status === 'loading'}>
+            <RefreshCw size={15} />
+            {status === 'loading' ? 'Обновляю' : 'Обновить'}
+          </button>
+        </div>
+      </div>
+
+      {status === 'error' && (
+        <div className="sync-state is-error">
+          <AlertTriangle size={16} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <div className="link-summary-grid report-grid">
+        <LinkStat label="всего строк" value={String(total.count)} />
+        <LinkStat label="план" value={formatMoney(total.planCost)} />
+        <LinkStat label="факт" value={formatMoney(total.factCost)} />
+        <LinkStat label="размещено" value={String(total.placed)} tone="success" />
+        <LinkStat label="купить" value={String(total.needToBuy)} tone="warning" />
+      </div>
+
+      <div className="report-table">
+        {projectsWithLinks.map(({ project, summary }) => (
+          <div key={project.id} className="report-row">
+            <div>
+              <span className="mini-dot" style={{ background: project.color }} />
+              <strong>{project.name}</strong>
+            </div>
+            <span>{summary?.count ?? 0} строк</span>
+            <span>{formatMoney(summary?.factCost ?? 0)}</span>
+            <span>{summary?.placed ?? 0} размещено</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function StatusBadge({ status, urgency }: { status: string; urgency: string }) {
+  const normalized = `${status} ${urgency}`.toLowerCase();
+  const tone = normalized.includes('размещ') || normalized.includes('куплено')
+    ? 'success'
+    : normalized.includes('нужно')
+      ? 'warning'
+      : normalized.includes('закупил')
+        ? 'info'
+        : '';
+
+  return <span className={`status-badge ${tone}`}>{status || urgency || 'Без статуса'}</span>;
+}
+
+function LinkStat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: 'success' | 'warning' | 'danger';
+}) {
+  return (
+    <div className={`link-stat ${tone ?? ''}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
 
@@ -1257,6 +1630,14 @@ function Metric({
       <strong>{value}</strong>
     </div>
   );
+}
+
+function formatMoney(value: number) {
+  return new Intl.NumberFormat('ru-RU', {
+    maximumFractionDigits: 0,
+    style: 'currency',
+    currency: 'RUB',
+  }).format(value);
 }
 
 export default App;
