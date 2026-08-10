@@ -19,6 +19,12 @@ import {
   Users,
 } from 'lucide-react';
 import {
+  CLIENT_AUDIT_SPREADSHEET_URL,
+  CLIENT_AUDIT_SOURCES,
+  SEO_AUDIT_CHECKLIST,
+  type ClientAuditSource,
+} from './auditSources';
+import {
   fetchLinkPurchases,
   LINK_SOURCE_SPREADSHEET_URL,
   REQUIRED_LINK_PROJECTS,
@@ -32,7 +38,7 @@ type View = 'tasks' | 'admin' | 'dashboard';
 type Status = 'planned' | 'active' | 'done' | 'risk';
 type CalendarMode = 'plan' | 'fact';
 type AdminTab = 'projects' | 'people';
-type ProjectTab = 'tasks' | 'links' | 'plans';
+type ProjectTab = 'tasks' | 'links' | 'plans' | 'audit';
 type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 type Project = {
@@ -96,6 +102,9 @@ const requiredPeople: Person[] = [
   { id: 'person-alena', name: 'Алена', role: 'РОМ' },
   { id: 'person-nikolay', name: 'Николай', role: 'Сео-специалист' },
   { id: 'person-anton', name: 'Антон', role: 'учредитель' },
+  { id: 'person-outsource', name: 'Аутсорс', role: 'подрядчик' },
+  { id: 'person-marketing', name: 'Маркетинг', role: 'команда' },
+  { id: 'person-kirill', name: 'Кирилл', role: 'ответственный' },
 ];
 
 const initialPeople: Person[] = requiredPeople;
@@ -106,88 +115,244 @@ const legacyPersonIdMap: Record<string, string> = {
   'person-sergey': 'person-kristina',
 };
 
-const initialTasks: Task[] = [
+const taskSeedVersion = 'actual-client-tasks-2026-08-v1';
+const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
+
+const requiredTaskSeeds: Task[] = [
   {
-    id: 'task-1',
-    projectId: 'project-ash',
-    title: 'Собрать SEO-структуру посадочных страниц',
-    description: 'Кластеризация, страницы, приоритеты и первые дедлайны.',
+    id: 'current-promteh-site-transfer',
+    projectId: 'project-promteh',
+    title: 'Перенос сайта',
+    description: 'Актуальная задача по Промтех / Макулатура.',
     status: 'active',
-    ownerIds: ['person-alina', 'person-nikolay'],
-    createdAt: addDaysIso(-3),
-    deadline: addDaysIso(2),
-    timelineEnabled: true,
-    timeline: [
-      {
-        id: 'timeline-1',
-        title: 'Кластеры и карта страниц',
-        ownerId: 'person-alina',
-        status: 'done',
-        dueDate: addDaysIso(-1),
-        completedAt: addDaysIso(-1),
-      },
-      {
-        id: 'timeline-2',
-        title: 'Черновики мета и H1',
-        ownerId: 'person-nikolay',
-        status: 'active',
-        dueDate: addDaysIso(2),
-      },
-    ],
-  },
-  {
-    id: 'task-2',
-    projectId: 'project-lombard',
-    title: 'Проверить задачи по карточкам филиалов',
-    description: 'Сверить статусы, владельцев и конфликтующие даты.',
-    status: 'planned',
-    ownerIds: ['person-kristina'],
-    createdAt: addDaysIso(-1),
-    deadline: addDaysIso(4),
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '',
     timelineEnabled: false,
     timeline: [],
   },
   {
-    id: 'task-3',
-    projectId: 'project-watch',
-    title: 'Подготовить контент-план на неделю',
-    description: 'План и факт должны попадать в календарь проекта.',
-    status: 'risk',
-    ownerIds: ['person-nikolay', 'person-aleksey'],
-    createdAt: addDaysIso(-5),
-    deadline: addDaysIso(2),
+    id: 'current-smartstroy-sya-projects',
+    projectId: 'project-smart',
+    title: 'Расширение СЯ по проектам',
+    description: 'Актуальная задача по СмартСтрой.',
+    status: 'active',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-smartstroy-eeat-pages',
+    projectId: 'project-smart',
+    title: 'ТЗ на ЕЕАТ страницы',
+    description: 'Актуальная задача по СмартСтрой.',
+    status: 'active',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-aquaguard-service-content-plan',
+    projectId: 'project-aquaguard',
+    title: 'Контент план по разделу услуг',
+    description: 'Актуальная задача по Аквагард.',
+    status: 'active',
+    ownerIds: ['person-outsource'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-aquaguard-catalog-products',
+    projectId: 'project-aquaguard',
+    title: 'Правки по каталогу и товарам',
+    description: 'Актуальная задача по Аквагард.',
+    status: 'active',
+    ownerIds: ['person-outsource'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-aquaguard-feeds-yandex-support',
+    projectId: 'project-aquaguard',
+    title: 'Вопрос с фидами пробуем решить через саппорт Яндекса',
+    description: 'Актуальная задача по Аквагард.',
+    status: 'active',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-aquaguard-eeat-pages',
+    projectId: 'project-aquaguard',
+    title: 'ТЗ на создание ЕЕАТ страниц',
+    description: 'Актуальная задача по Аквагард.',
+    status: 'active',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-balt-gallery',
+    projectId: 'project-balt-pallet',
+    title: 'Реализация галереи фото товара',
+    description: 'Актуальная задача по Балт-паллет.',
+    status: 'active',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-balt-images',
+    projectId: 'project-balt-pallet',
+    title: 'Актуализация изображений',
+    description: 'Актуальная задача по Балт-паллет.',
+    status: 'active',
+    ownerIds: ['person-marketing', 'person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '',
     timelineEnabled: true,
     timeline: [
       {
-        id: 'timeline-3',
-        title: 'Матрица тем',
-        ownerId: 'person-nikolay',
-        status: 'risk',
-        dueDate: addDaysIso(1),
+        id: 'timeline-balt-images-marketing',
+        title: 'Подготовка и подбор изображений',
+        ownerId: 'person-marketing',
+        status: 'active',
+        dueDate: '',
       },
       {
-        id: 'timeline-4',
-        title: 'Публикация и проверка',
+        id: 'timeline-balt-images-aleksey',
+        title: 'Внедрение изображений на сайте',
         ownerId: 'person-aleksey',
-        status: 'planned',
-        dueDate: addDaysIso(2),
+        status: 'active',
+        dueDate: '',
       },
     ],
   },
   {
-    id: 'task-4',
+    id: 'current-balt-content-feeds',
+    projectId: 'project-balt-pallet',
+    title: 'Контент план по товарам и фиды',
+    description: 'Актуальная задача по Балт-паллет.',
+    status: 'active',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-balt-domain',
+    projectId: 'project-balt-pallet',
+    title: 'Покупка домена',
+    description: 'Актуальная задача по Балт-паллет.',
+    status: 'planned',
+    ownerIds: ['person-kirill'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-watch-tag-pages-feeds-schema',
+    projectId: 'project-watch',
+    title: 'ТЗ на теговые ЧПУ страницы, фиды и разметку',
+    description: 'Актуальная задача по Часы / WatchStore.',
+    status: 'active',
+    ownerIds: ['person-outsource'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-rectop-layout-templates',
+    projectId: 'project-rectop',
+    title: 'Правки по верстке шаблонов основных страниц сайта',
+    description: 'Актуальная задача по Ректоп.',
+    status: 'active',
+    ownerIds: ['person-outsource'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'report-watchstore-2026-08',
+    projectId: 'project-watch',
+    title: 'Отчет за август: WatchStore',
+    description: 'Отчетная дата на август.',
+    status: 'planned',
+    ownerIds: ['person-kristina'],
+    createdAt: '2026-08-10',
+    deadline: '2026-08-22',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'report-aquaguard-2026-08',
+    projectId: 'project-aquaguard',
+    title: 'Отчет за август: Аквагард',
+    description: 'Отчетная дата на август.',
+    status: 'planned',
+    ownerIds: ['person-kristina'],
+    createdAt: '2026-08-10',
+    deadline: '2026-08-16',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'report-promteh-2026-08',
+    projectId: 'project-promteh',
+    title: 'Отчет за август: Макулатура',
+    description: 'Отчетная дата на август.',
+    status: 'planned',
+    ownerIds: ['person-kristina'],
+    createdAt: '2026-08-10',
+    deadline: '2026-08-16',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'report-smartstroy-2026-08',
     projectId: 'project-smart',
-    title: 'Сверить фактическое выполнение за спринт',
-    description: 'Отметить готовые задачи и проверить наложения.',
-    status: 'done',
-    ownerIds: ['person-alena'],
-    createdAt: addDaysIso(-8),
-    deadline: addDaysIso(-1),
-    completedAt: todayIso(),
+    title: 'Отчет за август: СмартСтрой',
+    description: 'Отчетная дата на август.',
+    status: 'planned',
+    ownerIds: ['person-kristina'],
+    createdAt: '2026-08-10',
+    deadline: '2026-08-16',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'report-balt-pallet-2026-08',
+    projectId: 'project-balt-pallet',
+    title: 'Отчет за август: Паллет',
+    description: 'Отчетная дата на август.',
+    status: 'planned',
+    ownerIds: ['person-kristina'],
+    createdAt: '2026-08-10',
+    deadline: '2026-08-16',
     timelineEnabled: false,
     timeline: [],
   },
 ];
+
+const initialTasks: Task[] = requiredTaskSeeds;
 
 const navItems = [
   { id: 'tasks' as const, label: 'Список задач', icon: LayoutList },
@@ -210,6 +375,7 @@ function uid(prefix: string) {
 }
 
 function formatDate(value: string) {
+  if (!value) return 'без даты';
   return new Intl.DateTimeFormat('ru-RU', {
     day: '2-digit',
     month: 'short',
@@ -329,6 +495,7 @@ function App() {
         }));
         const taskChanged =
           ownerIds.some((ownerId, index) => ownerId !== task.ownerIds[index]) ||
+          new Set(ownerIds).size !== ownerIds.length ||
           timeline.some((item, index) => item.ownerId !== task.timeline[index]?.ownerId);
 
         if (!taskChanged) return task;
@@ -338,6 +505,27 @@ function App() {
 
       return changed ? next : current;
     });
+  }, [setTasks]);
+
+  useEffect(() => {
+    if (localStorage.getItem('task-seo-task-seed-version') === taskSeedVersion) return;
+
+    setTasks((current) => {
+      const withoutDemo = current.filter((task) => !legacyDemoTaskIds.has(task.id));
+      const next = [...withoutDemo];
+      const taskIds = new Set(next.map((task) => task.id));
+
+      requiredTaskSeeds.forEach((task) => {
+        if (!taskIds.has(task.id)) {
+          next.push(task);
+          taskIds.add(task.id);
+        }
+      });
+
+      return next.length !== current.length ? next : current;
+    });
+
+    localStorage.setItem('task-seo-task-seed-version', taskSeedVersion);
   }, [setTasks]);
 
   const loadLinkRows = useCallback(async () => {
@@ -400,6 +588,17 @@ function App() {
     return map;
   }, []);
 
+  const auditSourcesByProject = useMemo(() => {
+    const map = new Map<string, ClientAuditSource[]>();
+    CLIENT_AUDIT_SOURCES.forEach((source) => {
+      const key = normalizeProjectName(source.projectName);
+      const current = map.get(key) ?? [];
+      current.push(source);
+      map.set(key, current);
+    });
+    return map;
+  }, []);
+
   const completion = useMemo(() => {
     const total = tasks.length || 1;
     const done = tasks.filter((task) => task.status === 'done').length;
@@ -407,7 +606,7 @@ function App() {
   }, [tasks]);
 
   const collisions = useMemo(() => {
-    const activeTasks = tasks.filter((task) => task.status !== 'done');
+    const activeTasks = tasks.filter((task) => task.status !== 'done' && task.deadline);
     return activeTasks.flatMap((task) =>
       task.ownerIds.flatMap((ownerId) => {
         const overlaps = activeTasks.filter(
@@ -435,7 +634,7 @@ function App() {
   }, [peopleById, tasks]);
 
   const overdueCount = useMemo(
-    () => tasks.filter((task) => task.status !== 'done' && task.deadline < todayIso()).length,
+    () => tasks.filter((task) => task.status !== 'done' && task.deadline && task.deadline < todayIso()).length,
     [tasks],
   );
 
@@ -588,6 +787,7 @@ function App() {
             <Metric compact label="наложения" value={`${collisions.length}`} />
             <Metric compact label="ссылок" value={`${linkRows.length}`} />
             <Metric compact label="планов" value={`${WORK_PLAN_SOURCES.length}`} />
+            <Metric compact label="аудитов" value={`${CLIENT_AUDIT_SOURCES.length}`} />
           </div>
         </header>
 
@@ -621,6 +821,7 @@ function App() {
                       linkRows={linkRowsByProject.get(normalizeProjectName(project.name)) ?? []}
                       linkSummary={linkSummaries.get(normalizeProjectName(project.name))}
                       workPlans={workPlansByProject.get(normalizeProjectName(project.name)) ?? []}
+                      auditSources={auditSourcesByProject.get(normalizeProjectName(project.name)) ?? []}
                       linkLoadStatus={linkLoadStatus}
                       linkError={linkError}
                       linkUpdatedAt={linkUpdatedAt}
@@ -684,6 +885,7 @@ function App() {
             linkSummaries={linkSummaries}
             linkTotalSummary={linkTotalSummary}
             workPlans={WORK_PLAN_SOURCES}
+            auditSources={CLIENT_AUDIT_SOURCES}
             linkLoadStatus={linkLoadStatus}
             linkError={linkError}
             linkUpdatedAt={linkUpdatedAt}
@@ -836,6 +1038,7 @@ type ProjectGroupProps = {
   linkRows: LinkPurchase[];
   linkSummary?: LinkPurchaseSummary;
   workPlans: WorkPlanSource[];
+  auditSources: ClientAuditSource[];
   linkLoadStatus: LinkLoadStatus;
   linkError: string;
   linkUpdatedAt: string;
@@ -856,6 +1059,7 @@ function ProjectGroup({
   linkRows,
   linkSummary,
   workPlans,
+  auditSources,
   linkLoadStatus,
   linkError,
   linkUpdatedAt,
@@ -898,6 +1102,13 @@ function ProjectGroup({
           >
             План работ <em>{workPlans.length}</em>
           </button>
+          <button
+            className={activeTab === 'audit' ? 'is-active' : ''}
+            type="button"
+            onClick={() => onTabChange('audit')}
+          >
+            Аудит <em>{auditSources.length + 1}</em>
+          </button>
         </div>
       </div>
 
@@ -935,6 +1146,8 @@ function ProjectGroup({
       )}
 
       {activeTab === 'plans' && <WorkPlanPanel project={project} plans={workPlans} />}
+
+      {activeTab === 'audit' && <AuditPanel project={project} sources={auditSources} />}
     </article>
   );
 }
@@ -1110,6 +1323,75 @@ function countWorkPlanItems(plan: WorkPlanSource) {
   return plan.sections?.reduce((sum, section) => sum + section.items.length, 0) ?? 0;
 }
 
+function AuditPanel({ project, sources }: { project: Project; sources: ClientAuditSource[] }) {
+  const intake = sources[0];
+
+  return (
+    <div className="audit-panel">
+      <div className="link-panel-head">
+        <div>
+          <strong>Изначальный аудит: {project.name}</strong>
+          <p>Сначала аккаунт собирает вводные по клиенту, затем SEO-специалист проходит стартовый чек-лист.</p>
+        </div>
+      </div>
+
+      <div className="audit-flow">
+        <article className="audit-card">
+          <div className="audit-step">
+            <span>1</span>
+            Сбор инфо с клиента
+          </div>
+          <h4>{intake ? intake.clientName : 'Вкладка клиента не добавлена'}</h4>
+          <p>
+            Ответственный этапа: <strong>Кристина</strong>, аккаунт менеджер. Данные передаются SEO-специалисту
+            после заполнения.
+          </p>
+          {intake ? (
+            <>
+              <div className="audit-fields">
+                {intake.fields.map((field) => (
+                  <span key={field}>{field}</span>
+                ))}
+              </div>
+              <div className="link-actions">
+                <a href={intake.url} target="_blank" rel="noreferrer">
+                  <FileSpreadsheet size={15} />
+                  Анкета
+                </a>
+              </div>
+            </>
+          ) : (
+            <div className="empty-row">В общей таблице пока нет вкладки для этого проекта.</div>
+          )}
+        </article>
+
+        <article className="audit-card">
+          <div className="audit-step">
+            <span>2</span>
+            SEO-аудит нового клиента
+          </div>
+          <h4>{SEO_AUDIT_CHECKLIST.title}</h4>
+          <p>
+            Ответственный этапа: <strong>Николай</strong>, SEO-специалист. В шаблоне {SEO_AUDIT_CHECKLIST.totalChecks}{' '}
+            проверок от доступов до итогового плана работ.
+          </p>
+          <div className="audit-fields audit-fields-wide">
+            {SEO_AUDIT_CHECKLIST.sections.map((section) => (
+              <span key={section}>{section}</span>
+            ))}
+          </div>
+          <div className="link-actions">
+            <a href={SEO_AUDIT_CHECKLIST.url} target="_blank" rel="noreferrer">
+              <FileSpreadsheet size={15} />
+              Чек-лист
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  );
+}
+
 type TaskRowProps = {
   task: Task;
   project: Project;
@@ -1132,7 +1414,7 @@ function TaskRow({
   onTimelineStatusChange,
 }: TaskRowProps) {
   const owners = task.ownerIds.map((id) => peopleById.get(id)).filter(Boolean) as Person[];
-  const isOverdue = task.status !== 'done' && task.deadline < todayIso();
+  const isOverdue = task.status !== 'done' && Boolean(task.deadline) && task.deadline < todayIso();
 
   return (
     <div className={`task-row ${task.status}`}>
@@ -1526,6 +1808,7 @@ type DashboardViewProps = {
   linkSummaries: Map<string, LinkPurchaseSummary>;
   linkTotalSummary: LinkPurchaseSummary;
   workPlans: WorkPlanSource[];
+  auditSources: ClientAuditSource[];
   linkLoadStatus: LinkLoadStatus;
   linkError: string;
   linkUpdatedAt: string;
@@ -1543,6 +1826,7 @@ function DashboardView({
   linkSummaries,
   linkTotalSummary,
   workPlans,
+  auditSources,
   linkLoadStatus,
   linkError,
   linkUpdatedAt,
@@ -1563,6 +1847,7 @@ function DashboardView({
           <Metric label="Подпункты" value={String(totalTimeline)} />
           <Metric label="Ссылки" value={String(linkRows.length)} />
           <Metric label="Планы" value={String(workPlans.length)} />
+          <Metric label="Аудиты" value={String(auditSources.length)} />
         </div>
       </div>
 
@@ -1631,7 +1916,7 @@ function DashboardView({
         </div>
         <div className="deadline-grid">
           {tasks
-            .filter((task) => task.status !== 'done')
+            .filter((task) => task.status !== 'done' && task.deadline)
             .sort((a, b) => a.deadline.localeCompare(b.deadline))
             .slice(0, 8)
             .map((task) => (
@@ -1660,6 +1945,57 @@ function DashboardView({
       />
 
       <WorkPlanSummary plans={workPlans} />
+
+      <AuditSummary sources={auditSources} />
+    </section>
+  );
+}
+
+function AuditSummary({ sources }: { sources: ClientAuditSource[] }) {
+  return (
+    <section className="panel audit-report">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>Изначальный аудит</h2>
+          <p>Аккаунт собирает вводные по клиенту, SEO-специалист закрывает стартовый чек-лист.</p>
+        </div>
+        <CheckCircle2 size={20} />
+      </div>
+
+      <div className="audit-summary-grid">
+        <div className="audit-summary-card">
+          <span>этап 1</span>
+          <strong>Сбор инфо с клиента</strong>
+          <p>Кристина · аккаунт менеджер · {sources.length} клиентских вкладок</p>
+          <a href={CLIENT_AUDIT_SPREADSHEET_URL} target="_blank" rel="noreferrer">
+            Открыть таблицу
+          </a>
+        </div>
+        <div className="audit-summary-card">
+          <span>этап 2</span>
+          <strong>SEO-чек-лист</strong>
+          <p>Николай · SEO-специалист · {SEO_AUDIT_CHECKLIST.totalChecks} проверок</p>
+          <a href={SEO_AUDIT_CHECKLIST.url} target="_blank" rel="noreferrer">
+            Открыть чек-лист
+          </a>
+        </div>
+      </div>
+
+      <div className="work-plan-list">
+        {sources.map((source) => (
+          <div className="work-plan-row" key={source.id}>
+            <div>
+              <strong>{source.projectName}</strong>
+              <p>{source.sheetName}</p>
+            </div>
+            <span>{source.clientName}</span>
+            <span>вводные</span>
+            <a href={source.url} target="_blank" rel="noreferrer">
+              Анкета
+            </a>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

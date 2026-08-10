@@ -18,16 +18,17 @@ Product dashboard inspired by the provided soft glass finance reference: pale co
 
 ## Typography
 
-Use a single modern sans stack for product clarity: Inter-like system UI, Manrope-like fallback, `Segoe UI`, Arial, sans-serif. Headings are compact and confident. Labels, table cells, and buttons use deliberate fixed sizes.
+Use Manrope for readable interface text and Bebas Neue for restrained display accents: app title, mark, and numeric metrics. Labels, table cells, and buttons stay in Manrope with deliberate fixed sizes.
 
 ## Components
 
 - App shell with right sidebar.
 - Frosted panels for task list, analytics, admin forms, and calendar.
 - Project sections with stable rows and expandable chronology.
-- Project-level tabs for task rows, link-purchase reports, and client work plans.
+- Project-level tabs for task rows, link-purchase reports, client work plans, and initial audit sources.
 - Source-backed report blocks with compact stats plus a scannable row table.
 - Work-plan source cards with clear periods, client names, monthly expandable items, and open-source actions.
+- Initial audit cards split the workflow into account intake and SEO checklist review.
 - Segmented controls for plan/fact and admin tabs.
 - Inline creation forms instead of modal-first flows.
 - Small colored dots and badges for status.
