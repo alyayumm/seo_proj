@@ -535,6 +535,7 @@ function App() {
   const [calendarMode, setCalendarMode] = useState<CalendarMode>('plan');
   const [adminTab, setAdminTab] = useState<AdminTab>('projects');
   const [projectTabs, setProjectTabs] = useState<Record<string, ProjectTab>>({});
+  const [collapsedProjects, setCollapsedProjects] = useStoredState<string[]>('task-seo-collapsed-projects', []);
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['task-1']));
   const [linkRows, setLinkRows] = useState<LinkPurchase[]>([]);
   const [linkLoadStatus, setLinkLoadStatus] = useState<LinkLoadStatus>('idle');
@@ -768,6 +769,8 @@ function App() {
     [],
   );
 
+  const collapsedProjectIds = useMemo(() => new Set(collapsedProjects), [collapsedProjects]);
+
   const completion = useMemo(() => {
     const total = tasks.length || 1;
     const done = tasks.filter((task) => task.status === 'done').length;
@@ -852,6 +855,12 @@ function App() {
       else next.add(taskId);
       return next;
     });
+  };
+
+  const toggleProjectCollapsed = (projectId: string) => {
+    setCollapsedProjects((current) =>
+      current.includes(projectId) ? current.filter((id) => id !== projectId) : [...current, projectId],
+    );
   };
 
   const setTimelineStatus = (taskId: string, itemId: string, status: Status) => {
@@ -1003,11 +1012,13 @@ function App() {
                       contentError={contentError}
                       contentUpdatedAt={contentUpdatedAt}
                       activeTab={projectTabs[project.id] ?? 'tasks'}
+                      collapsed={collapsedProjectIds.has(project.id)}
                       peopleById={peopleById}
                       expanded={expanded}
                       onTabChange={(tab) => setProjectTabs((current) => ({ ...current, [project.id]: tab }))}
                       onReloadLinks={loadLinkRows}
                       onReloadContent={loadContentTopics}
+                      onToggleCollapsed={() => toggleProjectCollapsed(project.id)}
                       onToggleExpanded={toggleExpanded}
                       onToggleTimeline={toggleTimeline}
                       onStatusChange={setTaskStatus}
@@ -1228,11 +1239,13 @@ type ProjectGroupProps = {
   contentError: string;
   contentUpdatedAt: string;
   activeTab: ProjectTab;
+  collapsed: boolean;
   peopleById: Map<string, Person>;
   expanded: Set<string>;
   onTabChange: (tab: ProjectTab) => void;
   onReloadLinks: () => void;
   onReloadContent: () => void;
+  onToggleCollapsed: () => void;
   onToggleExpanded: (taskId: string) => void;
   onToggleTimeline: (taskId: string, checked: boolean) => void;
   onStatusChange: (taskId: string, status: Status) => void;
@@ -1257,113 +1270,148 @@ function ProjectGroup({
   contentError,
   contentUpdatedAt,
   activeTab,
+  collapsed,
   peopleById,
   expanded,
   onTabChange,
   onReloadLinks,
   onReloadContent,
+  onToggleCollapsed,
   onToggleExpanded,
   onToggleTimeline,
   onStatusChange,
   onTimelineStatusChange,
 }: ProjectGroupProps) {
+  const panelId = `project-panel-${project.id}`;
+  const projectSummary = [
+    `${tasks.length} задач`,
+    `${linkRows.length} ссылок`,
+    `${workPlans.length} планов`,
+    `${contentTopics.length} тем`,
+    `${auditSources.length + 1} аудитов`,
+  ].join(' · ');
+
   return (
-    <article className="project-group" style={{ '--project-color': project.color } as CSSProperties}>
+    <article
+      className={`project-group ${collapsed ? 'is-collapsed' : ''}`}
+      style={{ '--project-color': project.color } as CSSProperties}
+    >
       <div className="project-heading">
-        <div>
+        <div className="project-title-block">
           <span className="project-dot" />
           <h3>{project.name}</h3>
         </div>
-        <div className="project-tabs" role="group" aria-label={`Разделы проекта ${project.name}`}>
+        <div className="project-heading-actions">
           <button
-            className={activeTab === 'tasks' ? 'is-active' : ''}
+            className="project-collapse-button"
             type="button"
-            onClick={() => onTabChange('tasks')}
+            aria-expanded={!collapsed}
+            aria-controls={panelId}
+            onClick={onToggleCollapsed}
           >
-            Задачи <em>{tasks.length}</em>
+            {collapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+            <span>{collapsed ? 'Развернуть' : 'Свернуть'}</span>
           </button>
-          <button
-            className={activeTab === 'links' ? 'is-active' : ''}
-            type="button"
-            onClick={() => onTabChange('links')}
-          >
-            Закуп ссылок <em>{linkRows.length}</em>
-          </button>
-          <button
-            className={activeTab === 'plans' ? 'is-active' : ''}
-            type="button"
-            onClick={() => onTabChange('plans')}
-          >
-            План работ <em>{workPlans.length}</em>
-          </button>
-          <button
-            className={activeTab === 'content' ? 'is-active' : ''}
-            type="button"
-            onClick={() => onTabChange('content')}
-          >
-            Контент <em>{contentTopics.length}</em>
-          </button>
-          <button
-            className={activeTab === 'audit' ? 'is-active' : ''}
-            type="button"
-            onClick={() => onTabChange('audit')}
-          >
-            Аудит <em>{auditSources.length + 1}</em>
-          </button>
+          <div className="project-tabs" role="group" aria-label={`Разделы проекта ${project.name}`}>
+            <button
+              className={activeTab === 'tasks' ? 'is-active' : ''}
+              type="button"
+              onClick={() => onTabChange('tasks')}
+            >
+              Задачи <em>{tasks.length}</em>
+            </button>
+            <button
+              className={activeTab === 'links' ? 'is-active' : ''}
+              type="button"
+              onClick={() => onTabChange('links')}
+            >
+              Закуп ссылок <em>{linkRows.length}</em>
+            </button>
+            <button
+              className={activeTab === 'plans' ? 'is-active' : ''}
+              type="button"
+              onClick={() => onTabChange('plans')}
+            >
+              План работ <em>{workPlans.length}</em>
+            </button>
+            <button
+              className={activeTab === 'content' ? 'is-active' : ''}
+              type="button"
+              onClick={() => onTabChange('content')}
+            >
+              Контент <em>{contentTopics.length}</em>
+            </button>
+            <button
+              className={activeTab === 'audit' ? 'is-active' : ''}
+              type="button"
+              onClick={() => onTabChange('audit')}
+            >
+              Аудит <em>{auditSources.length + 1}</em>
+            </button>
+          </div>
         </div>
       </div>
 
-      {clientLinks && <ClientQuickLinksBar links={clientLinks} />}
+      {collapsed ? (
+        <div className="project-collapsed-summary" id={panelId}>
+          <span>Свернуто</span>
+          <strong>{projectSummary}</strong>
+        </div>
+      ) : (
+        <div className="project-body" id={panelId}>
+          {clientLinks && <ClientQuickLinksBar links={clientLinks} />}
 
-      {activeTab === 'tasks' &&
-        (tasks.length === 0 ? (
-          <div className="empty-row">Пока нет задач по этому проекту.</div>
-        ) : (
-          <div className="task-list">
-            {tasks.map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                project={project}
-                peopleById={peopleById}
-                expanded={expanded.has(task.id)}
-                onToggleExpanded={onToggleExpanded}
-                onToggleTimeline={onToggleTimeline}
-                onStatusChange={onStatusChange}
-                onTimelineStatusChange={onTimelineStatusChange}
-              />
+          {activeTab === 'tasks' &&
+            (tasks.length === 0 ? (
+              <div className="empty-row">Пока нет задач по этому проекту.</div>
+            ) : (
+              <div className="task-list">
+                {tasks.map((task) => (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    project={project}
+                    peopleById={peopleById}
+                    expanded={expanded.has(task.id)}
+                    onToggleExpanded={onToggleExpanded}
+                    onToggleTimeline={onToggleTimeline}
+                    onStatusChange={onStatusChange}
+                    onTimelineStatusChange={onTimelineStatusChange}
+                  />
+                ))}
+              </div>
             ))}
-          </div>
-        ))}
 
-      {activeTab === 'links' && (
-        <LinkPurchasePanel
-          project={project}
-          rows={linkRows}
-          summary={linkSummary}
-          loadStatus={linkLoadStatus}
-          error={linkError}
-          updatedAt={linkUpdatedAt}
-          onReload={onReloadLinks}
-        />
+          {activeTab === 'links' && (
+            <LinkPurchasePanel
+              project={project}
+              rows={linkRows}
+              summary={linkSummary}
+              loadStatus={linkLoadStatus}
+              error={linkError}
+              updatedAt={linkUpdatedAt}
+              onReload={onReloadLinks}
+            />
+          )}
+
+          {activeTab === 'plans' && <WorkPlanPanel project={project} plans={workPlans} />}
+
+          {activeTab === 'content' && (
+            <ContentPlanPanel
+              project={project}
+              source={contentSource}
+              topics={contentTopics}
+              summary={contentSummary}
+              loadStatus={contentLoadStatus}
+              error={contentError}
+              updatedAt={contentUpdatedAt}
+              onReload={onReloadContent}
+            />
+          )}
+
+          {activeTab === 'audit' && <AuditPanel project={project} sources={auditSources} />}
+        </div>
       )}
-
-      {activeTab === 'plans' && <WorkPlanPanel project={project} plans={workPlans} />}
-
-      {activeTab === 'content' && (
-        <ContentPlanPanel
-          project={project}
-          source={contentSource}
-          topics={contentTopics}
-          summary={contentSummary}
-          loadStatus={contentLoadStatus}
-          error={contentError}
-          updatedAt={contentUpdatedAt}
-          onReload={onReloadContent}
-        />
-      )}
-
-      {activeTab === 'audit' && <AuditPanel project={project} sources={auditSources} />}
     </article>
   );
 }
