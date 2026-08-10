@@ -21,6 +21,12 @@ export const CLIENT_QUICK_LINKS: ClientQuickLinks[] = [
     reports: [],
   },
   {
+    projectName: 'Свич',
+    clientName: 'Свитч',
+    siteUrl: 'https://switch-eng.ru',
+    reports: [],
+  },
+  {
     projectName: 'Аквагард',
     clientName: 'Аквагард',
     siteUrl: 'https://аквагард.рф',
