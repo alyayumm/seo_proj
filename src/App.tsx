@@ -26,6 +26,14 @@ import {
 } from './auditSources';
 import { CLIENT_QUICK_LINKS, type ClientQuickLinks } from './clientLinks';
 import {
+  CONTENT_PLAN_SOURCES,
+  fetchContentPlanTopics,
+  summarizeContentPlanTopics,
+  type ContentPlanSource,
+  type ContentPlanSummary,
+  type ContentPlanTopic,
+} from './contentPlans';
+import {
   fetchLinkPurchases,
   LINK_SOURCE_SPREADSHEET_URL,
   REQUIRED_LINK_PROJECTS,
@@ -39,7 +47,7 @@ type View = 'tasks' | 'admin' | 'dashboard';
 type Status = 'planned' | 'active' | 'done' | 'risk';
 type CalendarMode = 'plan' | 'fact';
 type AdminTab = 'projects' | 'people';
-type ProjectTab = 'tasks' | 'links' | 'plans' | 'audit';
+type ProjectTab = 'tasks' | 'links' | 'plans' | 'content' | 'audit';
 type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 type Project = {
@@ -106,6 +114,7 @@ const requiredPeople: Person[] = [
   { id: 'person-outsource', name: 'Аутсорс', role: 'подрядчик' },
   { id: 'person-marketing', name: 'Маркетинг', role: 'команда' },
   { id: 'person-kirill', name: 'Кирилл', role: 'ответственный' },
+  { id: 'person-vlad-it', name: 'Влад', role: 'IT' },
 ];
 
 const initialPeople: Person[] = requiredPeople;
@@ -116,10 +125,110 @@ const legacyPersonIdMap: Record<string, string> = {
   'person-sergey': 'person-kristina',
 };
 
-const taskSeedVersion = 'actual-client-tasks-2026-08-v1';
+const legacyProjectIdMap: Record<string, string> = {
+  'project-ash-spb': 'project-ash',
+  'project-ash-msk': 'project-ash',
+};
+
+const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
+
+const taskSeedVersion = 'actual-client-tasks-2026-08-v2';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
+  {
+    id: 'current-ash-avtopravo-redesign',
+    projectId: 'project-ash',
+    title: 'Редизайн сайта Автоправо',
+    description: 'Изменили ТЗ и брендбук, ориентир - сайты Симакина. Дедлайн по окну 20-23.08.',
+    status: 'active',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '2026-08-23',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-ash-template-sites',
+    projectId: 'project-ash',
+    title: 'Создание сайтов по шаблону',
+    description: 'Следующий шаг после редизайна и согласования шаблонной логики по автошколам.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-ash-parameters-matrix-rollout',
+    projectId: 'project-ash',
+    title: 'Матрица параметров: передача в IT и решение по раскатке',
+    description:
+      'Матрица реализована. Нужно созвониться 11.08, передать матрицу в IT и решить, раскатывать сразу на Автосити/Автоправо или тестировать на околонулевом сайте из-за риска просадки трафика при смене URL.',
+    status: 'active',
+    ownerIds: ['person-vlad-it', 'person-aleksey'],
+    createdAt: '2026-08-10',
+    deadline: '2026-08-11',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-ash-matrix-call',
+        title: 'Созвон Влад и Леша по матрице параметров',
+        ownerId: 'person-vlad-it',
+        status: 'planned',
+        dueDate: '2026-08-11',
+      },
+      {
+        id: 'timeline-ash-matrix-it-transfer',
+        title: 'Передать IT матрицу на реализацию',
+        ownerId: 'person-aleksey',
+        status: 'planned',
+        dueDate: '2026-08-11',
+      },
+      {
+        id: 'timeline-ash-matrix-rollout-decision',
+        title: 'Решить: сразу Автосити/Автоправо или тест на околонулевом сайте',
+        ownerId: 'person-aleksey',
+        status: 'planned',
+        dueDate: '2026-08-11',
+      },
+    ],
+  },
+  {
+    id: 'current-proskills-rustore-reviews',
+    projectId: 'project-proskills',
+    title: 'RuStore: положительные отзывы и ответы на негативные',
+    description: 'Собираем отзывы с ОП и ждем доступ к кабинету, чтобы ответить на имеющиеся негативные отзывы.',
+    status: 'active',
+    ownerIds: ['person-kristina'],
+    createdAt: '2026-08-10',
+    deadline: '2026-08-14',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-proskills-rustore-positive-reviews',
+        title: 'Собрать положительные отзывы с ОП',
+        ownerId: 'person-kristina',
+        status: 'active',
+        dueDate: '2026-08-14',
+      },
+      {
+        id: 'timeline-proskills-rustore-access',
+        title: 'Получить доступ к кабинету RuStore',
+        ownerId: 'person-kristina',
+        status: 'planned',
+        dueDate: '2026-08-14',
+      },
+      {
+        id: 'timeline-proskills-rustore-negative-replies',
+        title: 'Ответить на имеющиеся негативные отзывы',
+        ownerId: 'person-kristina',
+        status: 'planned',
+        dueDate: '2026-08-14',
+      },
+    ],
+  },
   {
     id: 'current-promteh-site-transfer',
     projectId: 'project-promteh',
@@ -431,6 +540,10 @@ function App() {
   const [linkLoadStatus, setLinkLoadStatus] = useState<LinkLoadStatus>('idle');
   const [linkError, setLinkError] = useState('');
   const [linkUpdatedAt, setLinkUpdatedAt] = useState('');
+  const [contentTopics, setContentTopics] = useState<ContentPlanTopic[]>([]);
+  const [contentLoadStatus, setContentLoadStatus] = useState<LinkLoadStatus>('idle');
+  const [contentError, setContentError] = useState('');
+  const [contentUpdatedAt, setContentUpdatedAt] = useState('');
 
   const [taskDraft, setTaskDraft] = useState({
     title: '',
@@ -448,11 +561,13 @@ function App() {
 
   useEffect(() => {
     setProjects((current) => {
-      const names = new Set(current.map((project) => normalizeProjectName(project.name)));
+      const withoutLegacy = current.filter((project) => !legacyProjectNamesToRemove.has(normalizeProjectName(project.name)));
+      const names = new Set(withoutLegacy.map((project) => normalizeProjectName(project.name)));
       const missingProjects = REQUIRED_LINK_PROJECTS.filter(
         (project) => !names.has(normalizeProjectName(project.name)),
       );
-      return missingProjects.length ? [...current, ...missingProjects] : current;
+      const changed = withoutLegacy.length !== current.length || missingProjects.length > 0;
+      return changed ? [...withoutLegacy, ...missingProjects] : current;
     });
   }, [setProjects]);
 
@@ -494,14 +609,16 @@ function App() {
           ...item,
           ownerId: migrateOwnerId(item.ownerId),
         }));
+        const projectId = legacyProjectIdMap[task.projectId] ?? task.projectId;
         const taskChanged =
+          projectId !== task.projectId ||
           ownerIds.some((ownerId, index) => ownerId !== task.ownerIds[index]) ||
           new Set(ownerIds).size !== ownerIds.length ||
           timeline.some((item, index) => item.ownerId !== task.timeline[index]?.ownerId);
 
         if (!taskChanged) return task;
         changed = true;
-        return { ...task, ownerIds: Array.from(new Set(ownerIds)), timeline };
+        return { ...task, projectId, ownerIds: Array.from(new Set(ownerIds)), timeline };
       });
 
       return changed ? next : current;
@@ -544,9 +661,28 @@ function App() {
     }
   }, []);
 
+  const loadContentTopics = useCallback(async () => {
+    setContentLoadStatus('loading');
+    setContentError('');
+
+    try {
+      const rows = await fetchContentPlanTopics();
+      setContentTopics(rows);
+      setContentUpdatedAt(new Date().toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }));
+      setContentLoadStatus('ready');
+    } catch (error) {
+      setContentError(error instanceof Error ? error.message : 'Не удалось загрузить контент-план');
+      setContentLoadStatus('error');
+    }
+  }, []);
+
   useEffect(() => {
     void loadLinkRows();
   }, [loadLinkRows]);
+
+  useEffect(() => {
+    void loadContentTopics();
+  }, [loadContentTopics]);
 
   const groupedTasks = useMemo(
     () =>
@@ -577,6 +713,33 @@ function App() {
   }, [linkRowsByProject]);
 
   const linkTotalSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
+
+  const contentTopicsByProject = useMemo(() => {
+    const map = new Map<string, ContentPlanTopic[]>();
+    contentTopics.forEach((topic) => {
+      const key = normalizeProjectName(topic.projectName);
+      const current = map.get(key) ?? [];
+      current.push(topic);
+      map.set(key, current);
+    });
+    return map;
+  }, [contentTopics]);
+
+  const contentSummaries = useMemo(() => {
+    const map = new Map<string, ContentPlanSummary>();
+    contentTopicsByProject.forEach((rows, projectName) => {
+      map.set(projectName, summarizeContentPlanTopics(rows));
+    });
+    return map;
+  }, [contentTopicsByProject]);
+
+  const contentSourcesByProject = useMemo(() => {
+    const map = new Map<string, ContentPlanSource>();
+    CONTENT_PLAN_SOURCES.forEach((source) => {
+      map.set(normalizeProjectName(source.projectName), source);
+    });
+    return map;
+  }, []);
 
   const workPlansByProject = useMemo(() => {
     const map = new Map<string, WorkPlanSource[]>();
@@ -792,6 +955,7 @@ function App() {
             <Metric compact label="в риске" value={`${overdueCount}`} tone={overdueCount ? 'danger' : 'success'} />
             <Metric compact label="наложения" value={`${collisions.length}`} />
             <Metric compact label="ссылок" value={`${linkRows.length}`} />
+            <Metric compact label="контент" value={`${contentTopics.length}`} />
             <Metric compact label="планов" value={`${WORK_PLAN_SOURCES.length}`} />
             <Metric compact label="аудитов" value={`${CLIENT_AUDIT_SOURCES.length}`} />
           </div>
@@ -826,17 +990,24 @@ function App() {
                       tasks={projectTasks}
                       linkRows={linkRowsByProject.get(normalizeProjectName(project.name)) ?? []}
                       linkSummary={linkSummaries.get(normalizeProjectName(project.name))}
+                      contentTopics={contentTopicsByProject.get(normalizeProjectName(project.name)) ?? []}
+                      contentSummary={contentSummaries.get(normalizeProjectName(project.name))}
+                      contentSource={contentSourcesByProject.get(normalizeProjectName(project.name))}
                       workPlans={workPlansByProject.get(normalizeProjectName(project.name)) ?? []}
                       auditSources={auditSourcesByProject.get(normalizeProjectName(project.name)) ?? []}
                       clientLinks={clientLinksByProject.get(normalizeProjectName(project.name))}
                       linkLoadStatus={linkLoadStatus}
                       linkError={linkError}
                       linkUpdatedAt={linkUpdatedAt}
+                      contentLoadStatus={contentLoadStatus}
+                      contentError={contentError}
+                      contentUpdatedAt={contentUpdatedAt}
                       activeTab={projectTabs[project.id] ?? 'tasks'}
                       peopleById={peopleById}
                       expanded={expanded}
                       onTabChange={(tab) => setProjectTabs((current) => ({ ...current, [project.id]: tab }))}
                       onReloadLinks={loadLinkRows}
+                      onReloadContent={loadContentTopics}
                       onToggleExpanded={toggleExpanded}
                       onToggleTimeline={toggleTimeline}
                       onStatusChange={setTaskStatus}
@@ -1044,17 +1215,24 @@ type ProjectGroupProps = {
   tasks: Task[];
   linkRows: LinkPurchase[];
   linkSummary?: LinkPurchaseSummary;
+  contentTopics: ContentPlanTopic[];
+  contentSummary?: ContentPlanSummary;
+  contentSource?: ContentPlanSource;
   workPlans: WorkPlanSource[];
   auditSources: ClientAuditSource[];
   clientLinks?: ClientQuickLinks;
   linkLoadStatus: LinkLoadStatus;
   linkError: string;
   linkUpdatedAt: string;
+  contentLoadStatus: LinkLoadStatus;
+  contentError: string;
+  contentUpdatedAt: string;
   activeTab: ProjectTab;
   peopleById: Map<string, Person>;
   expanded: Set<string>;
   onTabChange: (tab: ProjectTab) => void;
   onReloadLinks: () => void;
+  onReloadContent: () => void;
   onToggleExpanded: (taskId: string) => void;
   onToggleTimeline: (taskId: string, checked: boolean) => void;
   onStatusChange: (taskId: string, status: Status) => void;
@@ -1066,17 +1244,24 @@ function ProjectGroup({
   tasks,
   linkRows,
   linkSummary,
+  contentTopics,
+  contentSummary,
+  contentSource,
   workPlans,
   auditSources,
   clientLinks,
   linkLoadStatus,
   linkError,
   linkUpdatedAt,
+  contentLoadStatus,
+  contentError,
+  contentUpdatedAt,
   activeTab,
   peopleById,
   expanded,
   onTabChange,
   onReloadLinks,
+  onReloadContent,
   onToggleExpanded,
   onToggleTimeline,
   onStatusChange,
@@ -1110,6 +1295,13 @@ function ProjectGroup({
             onClick={() => onTabChange('plans')}
           >
             План работ <em>{workPlans.length}</em>
+          </button>
+          <button
+            className={activeTab === 'content' ? 'is-active' : ''}
+            type="button"
+            onClick={() => onTabChange('content')}
+          >
+            Контент <em>{contentTopics.length}</em>
           </button>
           <button
             className={activeTab === 'audit' ? 'is-active' : ''}
@@ -1157,6 +1349,19 @@ function ProjectGroup({
       )}
 
       {activeTab === 'plans' && <WorkPlanPanel project={project} plans={workPlans} />}
+
+      {activeTab === 'content' && (
+        <ContentPlanPanel
+          project={project}
+          source={contentSource}
+          topics={contentTopics}
+          summary={contentSummary}
+          loadStatus={contentLoadStatus}
+          error={contentError}
+          updatedAt={contentUpdatedAt}
+          onReload={onReloadContent}
+        />
+      )}
 
       {activeTab === 'audit' && <AuditPanel project={project} sources={auditSources} />}
     </article>
@@ -1348,8 +1553,142 @@ function WorkPlanPanel({ project, plans }: { project: Project; plans: WorkPlanSo
   );
 }
 
+function ContentPlanPanel({
+  project,
+  source,
+  topics,
+  summary,
+  loadStatus,
+  error,
+  updatedAt,
+  onReload,
+}: {
+  project: Project;
+  source?: ContentPlanSource;
+  topics: ContentPlanTopic[];
+  summary?: ContentPlanSummary;
+  loadStatus: LinkLoadStatus;
+  error: string;
+  updatedAt: string;
+  onReload: () => void;
+}) {
+  const groupedTopics = useMemo(() => groupContentTopicsByMonth(topics), [topics]);
+  const openMonth = summary?.nextTopic?.month ?? groupedTopics[0]?.month;
+  const statusText =
+    loadStatus === 'loading'
+      ? 'Загружаю темы из Google Sheets...'
+      : loadStatus === 'error'
+        ? error
+        : updatedAt
+          ? `Обновлено ${updatedAt}`
+          : 'Контент-план будет загружен автоматически.';
+
+  return (
+    <div className="content-plan-panel">
+      <div className="link-panel-head">
+        <div>
+          <strong>Контент-план: {project.name}</strong>
+          <p>Ежедневные темы по клиенту, автоматически собранные из Google Sheets.</p>
+        </div>
+        <div className="link-actions">
+          <button type="button" onClick={onReload} disabled={loadStatus === 'loading'}>
+            <RefreshCw size={15} />
+            Обновить
+          </button>
+          {source && (
+            <a href={source.spreadsheetUrl} target="_blank" rel="noreferrer">
+              <FileSpreadsheet size={15} />
+              Таблица
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div className={`sync-state ${loadStatus === 'error' ? 'is-error' : ''}`}>
+        {loadStatus === 'loading' ? <RefreshCw size={15} className="spin" /> : <FileSpreadsheet size={15} />}
+        <span>{statusText}</span>
+      </div>
+
+      {!source ? (
+        <div className="empty-row">Для этого проекта пока не добавлен контент-план.</div>
+      ) : (
+        <>
+          <div className="content-plan-stats">
+            <div>
+              <span>Темы</span>
+              <strong>{summary?.count ?? topics.length}</strong>
+            </div>
+            <div>
+              <span>Период</span>
+              <strong>{source.period}</strong>
+            </div>
+            <div>
+              <span>Месяцы</span>
+              <strong>{summary?.months.join(', ') || 'пока нет данных'}</strong>
+            </div>
+            <div>
+              <span>Высокий приоритет</span>
+              <strong>{summary?.highPriority ?? 0}</strong>
+            </div>
+          </div>
+
+          <article className="content-plan-feature">
+            <span>{source.clientName}</span>
+            <h4>{summary?.nextTopic?.topic ?? source.title}</h4>
+            <p>
+              {summary?.nextTopic
+                ? `${summary.nextTopic.date} · ${summary.nextTopic.service} · ${summary.nextTopic.format}`
+                : source.note}
+            </p>
+          </article>
+
+          {groupedTopics.length === 0 ? (
+            <div className="empty-row">Темы еще загружаются или таблица пока не вернула строки.</div>
+          ) : (
+            <div className="content-months">
+              {groupedTopics.map((group) => (
+                <details key={group.month} open={group.month === openMonth}>
+                  <summary>
+                    <span>{group.month}</span>
+                    <em>{group.items.length}</em>
+                  </summary>
+                  <div className="content-topic-list">
+                    {group.items.map((topic) => (
+                      <article className="content-topic-row" key={topic.id}>
+                        <time dateTime={topic.isoDate}>{topic.date}</time>
+                        <div>
+                          <strong>{topic.topic}</strong>
+                          <p>
+                            {topic.block} · {topic.intent} · {topic.service}
+                          </p>
+                        </div>
+                        <span>{topic.priority}</span>
+                      </article>
+                    ))}
+                  </div>
+                </details>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function countWorkPlanItems(plan: WorkPlanSource) {
   return plan.sections?.reduce((sum, section) => sum + section.items.length, 0) ?? 0;
+}
+
+function groupContentTopicsByMonth(topics: ContentPlanTopic[]) {
+  const map = new Map<string, ContentPlanTopic[]>();
+  topics.forEach((topic) => {
+    const key = topic.month || 'Без месяца';
+    const current = map.get(key) ?? [];
+    current.push(topic);
+    map.set(key, current);
+  });
+  return Array.from(map.entries()).map(([month, items]) => ({ month, items }));
 }
 
 function AuditPanel({ project, sources }: { project: Project; sources: ClientAuditSource[] }) {
