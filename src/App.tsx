@@ -89,12 +89,22 @@ const initialProjects: Project[] = [
   ),
 ];
 
-const initialPeople: Person[] = [
-  { id: 'person-alina', name: 'Алина', role: 'управление' },
-  { id: 'person-vlad', name: 'Влад', role: 'разработка' },
-  { id: 'person-maria', name: 'Мария', role: 'контент' },
-  { id: 'person-sergey', name: 'Сергей', role: 'аналитика' },
+const requiredPeople: Person[] = [
+  { id: 'person-alina', name: 'Алина', role: 'ДОМ' },
+  { id: 'person-kristina', name: 'Кристина', role: 'Аккаунт менеджер' },
+  { id: 'person-aleksey', name: 'Алексей', role: 'РОС' },
+  { id: 'person-alena', name: 'Алена', role: 'РОМ' },
+  { id: 'person-nikolay', name: 'Николай', role: 'Сео-специалист' },
+  { id: 'person-anton', name: 'Антон', role: 'учредитель' },
 ];
+
+const initialPeople: Person[] = requiredPeople;
+
+const legacyPersonIdMap: Record<string, string> = {
+  'person-vlad': 'person-aleksey',
+  'person-maria': 'person-nikolay',
+  'person-sergey': 'person-kristina',
+};
 
 const initialTasks: Task[] = [
   {
@@ -103,7 +113,7 @@ const initialTasks: Task[] = [
     title: 'Собрать SEO-структуру посадочных страниц',
     description: 'Кластеризация, страницы, приоритеты и первые дедлайны.',
     status: 'active',
-    ownerIds: ['person-alina', 'person-maria'],
+    ownerIds: ['person-alina', 'person-nikolay'],
     createdAt: addDaysIso(-3),
     deadline: addDaysIso(2),
     timelineEnabled: true,
@@ -119,7 +129,7 @@ const initialTasks: Task[] = [
       {
         id: 'timeline-2',
         title: 'Черновики мета и H1',
-        ownerId: 'person-maria',
+        ownerId: 'person-nikolay',
         status: 'active',
         dueDate: addDaysIso(2),
       },
@@ -131,7 +141,7 @@ const initialTasks: Task[] = [
     title: 'Проверить задачи по карточкам филиалов',
     description: 'Сверить статусы, владельцев и конфликтующие даты.',
     status: 'planned',
-    ownerIds: ['person-sergey'],
+    ownerIds: ['person-kristina'],
     createdAt: addDaysIso(-1),
     deadline: addDaysIso(4),
     timelineEnabled: false,
@@ -143,7 +153,7 @@ const initialTasks: Task[] = [
     title: 'Подготовить контент-план на неделю',
     description: 'План и факт должны попадать в календарь проекта.',
     status: 'risk',
-    ownerIds: ['person-maria', 'person-vlad'],
+    ownerIds: ['person-nikolay', 'person-aleksey'],
     createdAt: addDaysIso(-5),
     deadline: addDaysIso(2),
     timelineEnabled: true,
@@ -151,14 +161,14 @@ const initialTasks: Task[] = [
       {
         id: 'timeline-3',
         title: 'Матрица тем',
-        ownerId: 'person-maria',
+        ownerId: 'person-nikolay',
         status: 'risk',
         dueDate: addDaysIso(1),
       },
       {
         id: 'timeline-4',
         title: 'Публикация и проверка',
-        ownerId: 'person-vlad',
+        ownerId: 'person-aleksey',
         status: 'planned',
         dueDate: addDaysIso(2),
       },
@@ -170,7 +180,7 @@ const initialTasks: Task[] = [
     title: 'Сверить фактическое выполнение за спринт',
     description: 'Отметить готовые задачи и проверить наложения.',
     status: 'done',
-    ownerIds: ['person-sergey'],
+    ownerIds: ['person-alena'],
     createdAt: addDaysIso(-8),
     deadline: addDaysIso(-1),
     completedAt: todayIso(),
@@ -278,6 +288,57 @@ function App() {
       return missingProjects.length ? [...current, ...missingProjects] : current;
     });
   }, [setProjects]);
+
+  useEffect(() => {
+    setPeople((current) => {
+      const legacyIds = new Set(Object.keys(legacyPersonIdMap));
+      const withoutLegacy = current.filter((person) => !legacyIds.has(person.id));
+      let changed = withoutLegacy.length !== current.length;
+
+      const next = withoutLegacy.map((person) => {
+        const required = requiredPeople.find(
+          (item) => normalizeProjectName(item.name) === normalizeProjectName(person.name),
+        );
+        if (!required || person.role === required.role) return person;
+        changed = true;
+        return { ...person, role: required.role };
+      });
+
+      const names = new Set(next.map((person) => normalizeProjectName(person.name)));
+      requiredPeople.forEach((person) => {
+        if (!names.has(normalizeProjectName(person.name))) {
+          next.push(person);
+          changed = true;
+        }
+      });
+
+      return changed ? next : current;
+    });
+  }, [setPeople]);
+
+  useEffect(() => {
+    setTasks((current) => {
+      let changed = false;
+      const migrateOwnerId = (ownerId: string) => legacyPersonIdMap[ownerId] ?? ownerId;
+
+      const next = current.map((task) => {
+        const ownerIds = task.ownerIds.map(migrateOwnerId);
+        const timeline = task.timeline.map((item) => ({
+          ...item,
+          ownerId: migrateOwnerId(item.ownerId),
+        }));
+        const taskChanged =
+          ownerIds.some((ownerId, index) => ownerId !== task.ownerIds[index]) ||
+          timeline.some((item, index) => item.ownerId !== task.timeline[index]?.ownerId);
+
+        if (!taskChanged) return task;
+        changed = true;
+        return { ...task, ownerIds: Array.from(new Set(ownerIds)), timeline };
+      });
+
+      return changed ? next : current;
+    });
+  }, [setTasks]);
 
   const loadLinkRows = useCallback(async () => {
     setLinkLoadStatus('loading');
