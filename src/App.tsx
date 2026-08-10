@@ -9,6 +9,7 @@ import {
   Clock3,
   ExternalLink,
   FileSpreadsheet,
+  FileText,
   LayoutList,
   Layers3,
   Plus,
@@ -25,12 +26,13 @@ import {
   type LinkPurchase,
   type LinkPurchaseSummary,
 } from './linkPurchases';
+import { WORK_PLAN_SOURCES, type WorkPlanSource } from './workPlans';
 
 type View = 'tasks' | 'admin' | 'dashboard';
 type Status = 'planned' | 'active' | 'done' | 'risk';
 type CalendarMode = 'plan' | 'fact';
 type AdminTab = 'projects' | 'people';
-type ProjectTab = 'tasks' | 'links';
+type ProjectTab = 'tasks' | 'links' | 'plans';
 type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 type Project = {
@@ -326,6 +328,17 @@ function App() {
 
   const linkTotalSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
 
+  const workPlansByProject = useMemo(() => {
+    const map = new Map<string, WorkPlanSource[]>();
+    WORK_PLAN_SOURCES.forEach((source) => {
+      const key = normalizeProjectName(source.projectName);
+      const current = map.get(key) ?? [];
+      current.push(source);
+      map.set(key, current);
+    });
+    return map;
+  }, []);
+
   const completion = useMemo(() => {
     const total = tasks.length || 1;
     const done = tasks.filter((task) => task.status === 'done').length;
@@ -513,6 +526,7 @@ function App() {
             <Metric compact label="в риске" value={`${overdueCount}`} tone={overdueCount ? 'danger' : 'success'} />
             <Metric compact label="наложения" value={`${collisions.length}`} />
             <Metric compact label="ссылок" value={`${linkRows.length}`} />
+            <Metric compact label="планов" value={`${WORK_PLAN_SOURCES.length}`} />
           </div>
         </header>
 
@@ -545,6 +559,7 @@ function App() {
                       tasks={projectTasks}
                       linkRows={linkRowsByProject.get(normalizeProjectName(project.name)) ?? []}
                       linkSummary={linkSummaries.get(normalizeProjectName(project.name))}
+                      workPlans={workPlansByProject.get(normalizeProjectName(project.name)) ?? []}
                       linkLoadStatus={linkLoadStatus}
                       linkError={linkError}
                       linkUpdatedAt={linkUpdatedAt}
@@ -607,6 +622,7 @@ function App() {
             linkRows={linkRows}
             linkSummaries={linkSummaries}
             linkTotalSummary={linkTotalSummary}
+            workPlans={WORK_PLAN_SOURCES}
             linkLoadStatus={linkLoadStatus}
             linkError={linkError}
             linkUpdatedAt={linkUpdatedAt}
@@ -758,6 +774,7 @@ type ProjectGroupProps = {
   tasks: Task[];
   linkRows: LinkPurchase[];
   linkSummary?: LinkPurchaseSummary;
+  workPlans: WorkPlanSource[];
   linkLoadStatus: LinkLoadStatus;
   linkError: string;
   linkUpdatedAt: string;
@@ -777,6 +794,7 @@ function ProjectGroup({
   tasks,
   linkRows,
   linkSummary,
+  workPlans,
   linkLoadStatus,
   linkError,
   linkUpdatedAt,
@@ -811,6 +829,13 @@ function ProjectGroup({
             onClick={() => onTabChange('links')}
           >
             Закуп ссылок <em>{linkRows.length}</em>
+          </button>
+          <button
+            className={activeTab === 'plans' ? 'is-active' : ''}
+            type="button"
+            onClick={() => onTabChange('plans')}
+          >
+            План работ <em>{workPlans.length}</em>
           </button>
         </div>
       </div>
@@ -847,6 +872,8 @@ function ProjectGroup({
           onReload={onReloadLinks}
         />
       )}
+
+      {activeTab === 'plans' && <WorkPlanPanel project={project} plans={workPlans} />}
     </article>
   );
 }
@@ -954,6 +981,47 @@ function LinkPurchasePanel({
             ))}
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+function WorkPlanPanel({ project, plans }: { project: Project; plans: WorkPlanSource[] }) {
+  return (
+    <div className="work-plan-panel">
+      <div className="link-panel-head">
+        <div>
+          <strong>План работ: {project.name}</strong>
+          <p>Планы по клиентам, Google Docs и контент-таблицы, привязанные к проекту.</p>
+        </div>
+      </div>
+
+      {plans.length === 0 ? (
+        <div className="empty-row">Для этого проекта пока не добавлены источники планов работ.</div>
+      ) : (
+        <div className="work-plan-grid">
+          {plans.map((plan) => (
+            <article className="work-plan-card" key={plan.id}>
+              <div className="work-plan-kind">
+                {plan.kind === 'doc' ? <FileText size={15} /> : <FileSpreadsheet size={15} />}
+                <span>{plan.kind === 'doc' ? 'Google Docs' : 'Google Sheets'}</span>
+              </div>
+              <h4>{plan.title}</h4>
+              <p>{plan.documentTitle}</p>
+              <div className="work-plan-meta">
+                <span>{plan.clientName}</span>
+                <span>{plan.period}</span>
+              </div>
+              {plan.note && <small>{plan.note}</small>}
+              <div className="link-actions">
+                <a href={plan.url} target="_blank" rel="noreferrer">
+                  <ExternalLink size={15} />
+                  Открыть
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -1374,6 +1442,7 @@ type DashboardViewProps = {
   linkRows: LinkPurchase[];
   linkSummaries: Map<string, LinkPurchaseSummary>;
   linkTotalSummary: LinkPurchaseSummary;
+  workPlans: WorkPlanSource[];
   linkLoadStatus: LinkLoadStatus;
   linkError: string;
   linkUpdatedAt: string;
@@ -1390,6 +1459,7 @@ function DashboardView({
   linkRows,
   linkSummaries,
   linkTotalSummary,
+  workPlans,
   linkLoadStatus,
   linkError,
   linkUpdatedAt,
@@ -1409,6 +1479,7 @@ function DashboardView({
           <Metric label="Просрочено" value={String(overdueCount)} tone={overdueCount ? 'danger' : 'success'} />
           <Metric label="Подпункты" value={String(totalTimeline)} />
           <Metric label="Ссылки" value={String(linkRows.length)} />
+          <Metric label="Планы" value={String(workPlans.length)} />
         </div>
       </div>
 
@@ -1504,6 +1575,38 @@ function DashboardView({
         updatedAt={linkUpdatedAt}
         onReload={onReloadLinks}
       />
+
+      <WorkPlanSummary plans={workPlans} />
+    </section>
+  );
+}
+
+function WorkPlanSummary({ plans }: { plans: WorkPlanSource[] }) {
+  return (
+    <section className="panel work-plan-report">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>Планы работ по клиентам</h2>
+          <p>Источники SEO-планов и контент-плана, разложенные по проектам.</p>
+        </div>
+        <FileText size={20} />
+      </div>
+
+      <div className="work-plan-list">
+        {plans.map((plan) => (
+          <div className="work-plan-row" key={plan.id}>
+            <div>
+              <strong>{plan.projectName}</strong>
+              <p>{plan.title}</p>
+            </div>
+            <span>{plan.clientName}</span>
+            <span>{plan.period}</span>
+            <a href={plan.url} target="_blank" rel="noreferrer">
+              {plan.kind === 'doc' ? 'Документ' : 'Таблица'}
+            </a>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

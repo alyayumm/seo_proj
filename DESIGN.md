@@ -25,8 +25,9 @@ Use a single modern sans stack for product clarity: Inter-like system UI, Manrop
 - App shell with right sidebar.
 - Frosted panels for task list, analytics, admin forms, and calendar.
 - Project sections with stable rows and expandable chronology.
-- Project-level tabs for task rows and link-purchase reports.
+- Project-level tabs for task rows, link-purchase reports, and client work plans.
 - Source-backed report blocks with compact stats plus a scannable row table.
+- Work-plan source cards with clear periods, client names, and open-source actions.
 - Segmented controls for plan/fact and admin tabs.
 - Inline creation forms instead of modal-first flows.
 - Small colored dots and badges for status.
