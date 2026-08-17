@@ -114,6 +114,7 @@ const requiredPeople: Person[] = [
   { id: 'person-outsource', name: 'Аутсорс', role: 'подрядчик' },
   { id: 'person-marketing', name: 'Маркетинг', role: 'команда' },
   { id: 'person-kirill', name: 'Кирилл', role: 'ответственный' },
+  { id: 'person-olga', name: 'Ольга', role: 'каталог и карточки' },
   { id: 'person-vlad-it', name: 'Влад', role: 'IT' },
 ];
 
@@ -132,7 +133,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'actual-client-tasks-2026-08-v2';
+const taskSeedVersion = 'actual-client-tasks-2026-08-17-v1';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -164,34 +165,37 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-ash-parameters-matrix-rollout',
     projectId: 'project-ash',
     title: 'Матрица параметров: передача в IT и решение по раскатке',
-    description:
-      'Матрица реализована. Нужно созвониться 11.08, передать матрицу в IT и решить, раскатывать сразу на Автосити/Автоправо или тестировать на околонулевом сайте из-за риска просадки трафика при смене URL.',
-    status: 'active',
+    description: 'На 17.08: SEO-логика отдана разработчикам. Матрица параметров и логика переданы в IT.',
+    status: 'done',
     ownerIds: ['person-vlad-it', 'person-aleksey'],
     createdAt: '2026-08-10',
     deadline: '2026-08-11',
+    completedAt: '2026-08-17',
     timelineEnabled: true,
     timeline: [
       {
         id: 'timeline-ash-matrix-call',
         title: 'Созвон Влад и Леша по матрице параметров',
         ownerId: 'person-vlad-it',
-        status: 'planned',
+        status: 'done',
         dueDate: '2026-08-11',
+        completedAt: '2026-08-17',
       },
       {
         id: 'timeline-ash-matrix-it-transfer',
-        title: 'Передать IT матрицу на реализацию',
+        title: 'Передать IT матрицу и SEO-логику на реализацию',
         ownerId: 'person-aleksey',
-        status: 'planned',
+        status: 'done',
         dueDate: '2026-08-11',
+        completedAt: '2026-08-17',
       },
       {
         id: 'timeline-ash-matrix-rollout-decision',
         title: 'Решить: сразу Автосити/Автоправо или тест на околонулевом сайте',
         ownerId: 'person-aleksey',
-        status: 'planned',
+        status: 'done',
         dueDate: '2026-08-11',
+        completedAt: '2026-08-17',
       },
     ],
   },
@@ -233,31 +237,58 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-promteh-site-transfer',
     projectId: 'project-promteh',
     title: 'Перенос сайта',
-    description: 'Актуальная задача по Промтех / Макулатура.',
-    status: 'active',
+    description: 'На 17.08: сайт перенесен, раздел пластика на проде, публикация статей настроена.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-10',
     deadline: '',
-    timelineEnabled: false,
-    timeline: [],
+    completedAt: '2026-08-17',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-promteh-site-transfer',
+        title: 'Перенести сайт',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '',
+        completedAt: '2026-08-17',
+      },
+      {
+        id: 'timeline-promteh-plastic-prod',
+        title: 'Вывести раздел пластика на прод',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '',
+        completedAt: '2026-08-17',
+      },
+      {
+        id: 'timeline-promteh-articles-publishing',
+        title: 'Настроить публикацию статей',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '',
+        completedAt: '2026-08-17',
+      },
+    ],
   },
   {
     id: 'current-smartstroy-sya-projects',
     projectId: 'project-smart',
     title: 'Расширение СЯ по проектам',
-    description: 'Актуальная задача по СмартСтрой.',
-    status: 'active',
+    description: 'На 17.08: этап передан дальше в работу над новыми страницами по проектам.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-10',
     deadline: '',
+    completedAt: '2026-08-17',
     timelineEnabled: false,
     timeline: [],
   },
   {
     id: 'current-smartstroy-eeat-pages',
     projectId: 'project-smart',
-    title: 'ТЗ на ЕЕАТ страницы',
-    description: 'Актуальная задача по СмартСтрой.',
+    title: 'Новые страницы по проектам',
+    description: 'На 17.08: в работе новые страницы по проектам.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-10',
@@ -269,21 +300,22 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-aquaguard-service-content-plan',
     projectId: 'project-aquaguard',
     title: 'Контент план по разделу услуг',
-    description: 'Актуальная задача по Аквагард.',
-    status: 'active',
+    description: 'На 17.08: листы по проекту готовы, следующий контроль - публикация и индексация.',
+    status: 'done',
     ownerIds: ['person-outsource'],
     createdAt: '2026-08-10',
     deadline: '',
+    completedAt: '2026-08-17',
     timelineEnabled: false,
     timeline: [],
   },
   {
     id: 'current-aquaguard-catalog-products',
     projectId: 'project-aquaguard',
-    title: 'Правки по каталогу и товарам',
-    description: 'Актуальная задача по Аквагард.',
+    title: 'Финальные правки по каталогу и карточкам',
+    description: 'На 17.08: у Ольги в работе финальные правки по каталогу и карточкам.',
     status: 'active',
-    ownerIds: ['person-outsource'],
+    ownerIds: ['person-olga'],
     createdAt: '2026-08-10',
     deadline: '',
     timelineEnabled: false,
@@ -292,14 +324,38 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'current-aquaguard-feeds-yandex-support',
     projectId: 'project-aquaguard',
-    title: 'Вопрос с фидами пробуем решить через саппорт Яндекса',
-    description: 'Актуальная задача по Аквагард.',
+    title: 'Листы, фиды и индексация товаров',
+    description: 'На 17.08: листы и фиды готовы, товары на индексации.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-10',
     deadline: '',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-aquaguard-sheets-ready',
+        title: 'Подготовить листы',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '',
+        completedAt: '2026-08-17',
+      },
+      {
+        id: 'timeline-aquaguard-feeds-ready',
+        title: 'Подготовить фиды',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '',
+        completedAt: '2026-08-17',
+      },
+      {
+        id: 'timeline-aquaguard-products-indexing',
+        title: 'Дождаться индексации товаров',
+        ownerId: 'person-aleksey',
+        status: 'active',
+        dueDate: '',
+      },
+    ],
   },
   {
     id: 'current-aquaguard-eeat-pages',
@@ -317,11 +373,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-balt-gallery',
     projectId: 'project-balt-pallet',
     title: 'Реализация галереи фото товара',
-    description: 'Актуальная задача по Балт-паллет.',
-    status: 'active',
+    description: 'На 17.08: галерея к товарам добавлена.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-10',
     deadline: '',
+    completedAt: '2026-08-17',
     timelineEnabled: false,
     timeline: [],
   },
@@ -329,28 +386,44 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-balt-images',
     projectId: 'project-balt-pallet',
     title: 'Актуализация изображений',
-    description: 'Актуальная задача по Балт-паллет.',
-    status: 'active',
+    description: 'На 17.08: изображения заменены.',
+    status: 'done',
     ownerIds: ['person-marketing', 'person-aleksey'],
     createdAt: '2026-08-10',
     deadline: '',
+    completedAt: '2026-08-17',
     timelineEnabled: true,
     timeline: [
       {
         id: 'timeline-balt-images-marketing',
         title: 'Подготовка и подбор изображений',
         ownerId: 'person-marketing',
-        status: 'active',
+        status: 'done',
         dueDate: '',
+        completedAt: '2026-08-17',
       },
       {
         id: 'timeline-balt-images-aleksey',
         title: 'Внедрение изображений на сайте',
         ownerId: 'person-aleksey',
-        status: 'active',
+        status: 'done',
         dueDate: '',
+        completedAt: '2026-08-17',
       },
     ],
+  },
+  {
+    id: 'current-balt-spam-protection',
+    projectId: 'project-balt-pallet',
+    title: 'Исправление защиты от спама',
+    description: 'На 17.08: защита от спама исправлена.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-17',
+    deadline: '',
+    completedAt: '2026-08-17',
+    timelineEnabled: false,
+    timeline: [],
   },
   {
     id: 'current-balt-content-feeds',
@@ -391,14 +464,37 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'current-rectop-layout-templates',
     projectId: 'project-rectop',
-    title: 'Правки по верстке шаблонов основных страниц сайта',
-    description: 'Актуальная задача по Ректоп.',
+    title: 'WP-верстка и импорт контента',
+    description: 'На 17.08: сайт сверстан на WP, ждем правки импорта контента и финальную готовность.',
     status: 'active',
     ownerIds: ['person-outsource'],
     createdAt: '2026-08-10',
     deadline: '',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-rectop-wp-layout',
+        title: 'Сверстать сайт на WP',
+        ownerId: 'person-outsource',
+        status: 'done',
+        dueDate: '',
+        completedAt: '2026-08-17',
+      },
+      {
+        id: 'timeline-rectop-content-import-fixes',
+        title: 'Дождаться правок импорта контента',
+        ownerId: 'person-outsource',
+        status: 'active',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-rectop-final-ready',
+        title: 'Финальная готовность после импорта',
+        ownerId: 'person-outsource',
+        status: 'planned',
+        dueDate: '',
+      },
+    ],
   },
   {
     id: 'report-watchstore-2026-08',
@@ -461,6 +557,8 @@ const requiredTaskSeeds: Task[] = [
     timeline: [],
   },
 ];
+
+const requiredTaskSeedById = new Map(requiredTaskSeeds.map((task) => [task.id, task]));
 
 const initialTasks: Task[] = requiredTaskSeeds;
 
@@ -631,17 +729,24 @@ function App() {
 
     setTasks((current) => {
       const withoutDemo = current.filter((task) => !legacyDemoTaskIds.has(task.id));
-      const next = [...withoutDemo];
+      let changed = withoutDemo.length !== current.length;
+      const next = withoutDemo.map((task) => {
+        const required = requiredTaskSeedById.get(task.id);
+        if (!required) return task;
+        changed = true;
+        return required;
+      });
       const taskIds = new Set(next.map((task) => task.id));
 
       requiredTaskSeeds.forEach((task) => {
         if (!taskIds.has(task.id)) {
           next.push(task);
           taskIds.add(task.id);
+          changed = true;
         }
       });
 
-      return next.length !== current.length ? next : current;
+      return changed ? next : current;
     });
 
     localStorage.setItem('task-seo-task-seed-version', taskSeedVersion);
