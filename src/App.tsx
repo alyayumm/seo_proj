@@ -133,7 +133,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'report-deadlines-25th-2026-08-v1';
+const taskSeedVersion = 'promteh-forecast-2026-08-20-v1';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -268,6 +268,41 @@ const requiredTaskSeeds: Task[] = [
         status: 'done',
         dueDate: '',
         completedAt: '2026-08-17',
+      },
+    ],
+  },
+  {
+    id: 'current-promteh-forecast-ahrefs',
+    projectId: 'project-promteh',
+    title: 'Прогноз по Промтеху',
+    description: 'Нужно сделать прогноз к 20.08. Ahrefs оплачен 17.08 для подготовки прогноза.',
+    status: 'active',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-17',
+    deadline: '2026-08-20',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-promteh-ahrefs-paid',
+        title: 'Оплатить Ahrefs для прогноза',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-17',
+        completedAt: '2026-08-17',
+      },
+      {
+        id: 'timeline-promteh-ahrefs-data',
+        title: 'Собрать данные в Ahrefs',
+        ownerId: 'person-aleksey',
+        status: 'active',
+        dueDate: '2026-08-20',
+      },
+      {
+        id: 'timeline-promteh-forecast-ready',
+        title: 'Подготовить прогноз по Промтеху',
+        ownerId: 'person-aleksey',
+        status: 'planned',
+        dueDate: '2026-08-20',
       },
     ],
   },
