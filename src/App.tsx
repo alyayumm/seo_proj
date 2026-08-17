@@ -76,6 +76,8 @@ type Task = {
   projectId: string;
   title: string;
   description: string;
+  sourceLabel?: string;
+  sourceUrl?: string;
   status: Status;
   ownerIds: string[];
   createdAt: string;
@@ -133,7 +135,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'promteh-forecast-2026-08-20-v1';
+const taskSeedVersion = 'balt-pallet-semantics-2026-08-17-v1';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -468,6 +470,21 @@ const requiredTaskSeeds: Task[] = [
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-balt-semantics-source',
+    projectId: 'project-balt-pallet',
+    title: 'Семантика Балт Паллет',
+    description: 'Источник семантики: файл balt-pallet.ru - ся, вкладка balt-pallet_stranicy_zaprosy.',
+    sourceLabel: 'Семантика',
+    sourceUrl:
+      'https://docs.google.com/spreadsheets/d/14iLj1IePYPPhC_GKvcQgaJXV8wTCX0OqxliMBCfJHyQ/edit?gid=1142275802#gid=1142275802',
+    status: 'active',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-17',
     deadline: '',
     timelineEnabled: false,
     timeline: [],
@@ -2004,6 +2021,18 @@ function TaskRow({
                 {person.name}
               </span>
             ))}
+            {task.sourceUrl && (
+              <a
+                className="task-source-link"
+                href={task.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                title={task.sourceUrl}
+              >
+                <FileSpreadsheet size={13} />
+                {task.sourceLabel ?? 'Источник'}
+              </a>
+            )}
           </div>
         </div>
 

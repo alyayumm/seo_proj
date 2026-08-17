@@ -743,6 +743,36 @@ p {
   font-size: 10px;
 }
 
+.task-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  border: 1px solid rgba(79, 101, 255, 0.22);
+  border-radius: 999px;
+  color: #294fc5;
+  background: rgba(255, 255, 255, 0.68);
+  padding: 0 9px;
+  font-size: 11px;
+  font-weight: 900;
+  text-decoration: none;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.task-source-link:hover {
+  border-color: rgba(79, 101, 255, 0.42);
+  color: #101524;
+  background: white;
+}
+
+.task-source-link:focus-visible {
+  outline: 2px solid rgba(79, 101, 255, 0.42);
+  outline-offset: 2px;
+}
+
 .risk-note {
   display: inline-flex;
   align-items: center;
