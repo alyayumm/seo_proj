@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
   Clock3,
+  CreditCard,
   ExternalLink,
   FileSpreadsheet,
   FileText,
@@ -54,13 +55,16 @@ import {
 import { PROMOTION_RESULT_SOURCES, type PromotionResultSource } from './promotionResults';
 import { WORK_PLAN_SOURCES, type WorkPlanSource } from './workPlans';
 
-type View = 'tasks' | 'admin' | 'dashboard' | 'seo' | 'external';
+type View = 'tasks' | 'admin' | 'dashboard' | 'seo' | 'payments' | 'external';
 type Status = 'planned' | 'active' | 'done' | 'risk';
 type CalendarMode = 'plan' | 'fact';
 type ThemeMode = 'dark' | 'light';
-type AdminTab = 'projects' | 'people';
+type AdminTab = 'projects' | 'people' | 'tasks' | 'sources' | 'payments';
 type ProjectTab = 'tasks' | 'links' | 'plans' | 'content' | 'results' | 'audit';
+type SeoProjectTab = 'analytics' | 'links' | 'content' | 'plans' | 'audit' | 'reports' | 'payments';
 type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
+type PaymentStatus = 'planned' | 'issued' | 'paid' | 'overdue';
+type PaymentKind = 'service' | 'outsource';
 
 type Project = {
   id: string;
@@ -99,6 +103,48 @@ type Task = {
   timeline: TimelineItem[];
 };
 
+type PaymentRow = {
+  id: string;
+  projectId: string;
+  periodLabel: string;
+  dueDate: string;
+  status: PaymentStatus;
+  kind: PaymentKind;
+  clientAmount: number;
+  outsourceAmount: number;
+  linkBudgetLimit: number;
+  note: string;
+};
+
+type PaymentDraft = {
+  projectId: string;
+  periodLabel: string;
+  dueDate: string;
+  kind: PaymentKind;
+  clientAmount: string;
+};
+
+type ManagedResourceTab = 'site' | 'report' | 'links' | 'plans' | 'content' | 'results' | 'audit';
+
+type ManagedResource = {
+  id: string;
+  projectId: string;
+  tab: ManagedResourceTab;
+  title: string;
+  url: string;
+  dateLabel: string;
+  note: string;
+};
+
+type ManagedResourceDraft = {
+  projectId: string;
+  tab: ManagedResourceTab;
+  title: string;
+  url: string;
+  dateLabel: string;
+  note: string;
+};
+
 const statusLabels: Record<Status, string> = {
   planned: 'План',
   active: 'В работе',
@@ -107,6 +153,30 @@ const statusLabels: Record<Status, string> = {
 };
 
 const statusOrder: Status[] = ['planned', 'active', 'risk', 'done'];
+
+const paymentStatusLabels: Record<PaymentStatus, string> = {
+  planned: 'План',
+  issued: 'Счет выставлен',
+  paid: 'Оплачено',
+  overdue: 'Просрочено',
+};
+
+const paymentStatusOrder: PaymentStatus[] = ['planned', 'issued', 'paid', 'overdue'];
+
+const paymentKindLabels: Record<PaymentKind, string> = {
+  service: 'Наши услуги',
+  outsource: 'Услуги аутсорс',
+};
+
+const managedResourceTabLabels: Record<ManagedResourceTab, string> = {
+  site: 'Сайт',
+  report: 'Отчет',
+  links: 'Закуп ссылок',
+  plans: 'План работ',
+  content: 'Контент-план',
+  results: 'Результаты',
+  audit: 'Аудит',
+};
 
 const initialProjects: Project[] = [
   { id: 'project-ash', name: 'АШ', color: '#6D72FF' },
@@ -133,6 +203,104 @@ const requiredPeople: Person[] = [
 ];
 
 const initialPeople: Person[] = requiredPeople;
+
+const initialPaymentRows: PaymentRow[] = [
+  {
+    id: 'payment-promteh-2026-08',
+    projectId: 'project-promteh',
+    periodLabel: 'Август 2026',
+    dueDate: '2026-08-25',
+    status: 'planned',
+    kind: 'service',
+    clientAmount: 0,
+    outsourceAmount: 0,
+    linkBudgetLimit: 0,
+    note: 'Дедлайн по отчету и оплатам - 25 число.',
+  },
+  {
+    id: 'payment-aquaguard-2026-08',
+    projectId: 'project-aquaguard',
+    periodLabel: 'Август 2026',
+    dueDate: '2026-08-25',
+    status: 'planned',
+    kind: 'service',
+    clientAmount: 0,
+    outsourceAmount: 0,
+    linkBudgetLimit: 0,
+    note: 'Суммы можно внести через админку или вкладку оплат.',
+  },
+  {
+    id: 'payment-smartstroy-2026-08',
+    projectId: 'project-smart',
+    periodLabel: 'Август 2026',
+    dueDate: '2026-08-25',
+    status: 'planned',
+    kind: 'service',
+    clientAmount: 0,
+    outsourceAmount: 0,
+    linkBudgetLimit: 0,
+    note: 'Отдельно учитывается фактическая закупка ссылок.',
+  },
+];
+
+function findInitialProjectId(projectName: string) {
+  return initialProjects.find((project) => normalizeProjectName(project.name) === normalizeProjectName(projectName))?.id;
+}
+
+function buildInitialManagedResources(): ManagedResource[] {
+  const resources: ManagedResource[] = [];
+  const addResource = (
+    projectName: string,
+    tab: ManagedResourceTab,
+    title: string,
+    url: string,
+    dateLabel = '',
+    note = '',
+  ) => {
+    const projectId = findInitialProjectId(projectName);
+    if (!projectId || !url) return;
+    resources.push({
+      id: `resource-${tab}-${projectId}-${resources.length + 1}`,
+      projectId,
+      tab,
+      title,
+      url,
+      dateLabel,
+      note,
+    });
+  };
+
+  CLIENT_QUICK_LINKS.forEach((links) => {
+    addResource(links.projectName, 'site', `${links.clientName}: сайт`, links.siteUrl);
+    links.reports.forEach((report) => {
+      addResource(links.projectName, 'report', report.title, report.url, report.reportDate, report.label);
+    });
+  });
+
+  REQUIRED_LINK_PROJECTS.forEach((project) => {
+    addResource(project.name, 'links', 'Таблица закупа ссылок', LINK_SOURCE_SPREADSHEET_URL, '', 'Общий источник по закупу ссылок');
+  });
+
+  CONTENT_PLAN_SOURCES.forEach((source) => {
+    addResource(source.projectName, 'content', source.title, source.spreadsheetUrl, source.period, source.note);
+  });
+
+  WORK_PLAN_SOURCES.forEach((source) => {
+    addResource(source.projectName, 'plans', source.title, source.url, source.period, source.documentTitle);
+  });
+
+  CLIENT_AUDIT_SOURCES.forEach((source) => {
+    addResource(source.projectName, 'audit', `Аудит: ${source.clientName}`, source.url, source.sheetName, 'Сбор вводных от клиента');
+  });
+
+  PROMOTION_RESULT_SOURCES.forEach((source) => {
+    addResource(source.projectName, 'results', source.spreadsheetTitle, source.url, source.periodLabel, source.note);
+  });
+
+  return resources;
+}
+
+const initialManagedResources = buildInitialManagedResources();
 
 const legacyPersonIdMap: Record<string, string> = {
   'person-vlad': 'person-aleksey',
@@ -692,6 +860,7 @@ const navItems = [
   { id: 'admin' as const, label: 'Админка', icon: SlidersHorizontal },
   { id: 'dashboard' as const, label: 'Общий дашборд', icon: BarChart3 },
   { id: 'seo' as const, label: 'SEO-проекты', icon: Target },
+  { id: 'payments' as const, label: 'Оплаты', icon: CreditCard },
   { id: 'external' as const, label: 'Сторонние проекты', icon: FileText },
 ];
 
@@ -802,6 +971,11 @@ function App() {
   const [projects, setProjects] = useStoredState<Project[]>('task-seo-projects', initialProjects);
   const [people, setPeople] = useStoredState<Person[]>('task-seo-people', initialPeople);
   const [tasks, setTasks] = useStoredState<Task[]>('task-seo-tasks', initialTasks);
+  const [paymentRows, setPaymentRows] = useStoredState<PaymentRow[]>('task-seo-payments', initialPaymentRows);
+  const [managedResources, setManagedResources] = useStoredState<ManagedResource[]>(
+    'task-seo-managed-resources',
+    initialManagedResources,
+  );
   const [activeView, setActiveView] = useState<View>('tasks');
   const [seoProjectId, setSeoProjectId] = useStoredState<string>('task-seo-selected-project-analytics', initialProjects[0].id);
   const [themeMode, setThemeMode] = useStoredState<ThemeMode>('task-seo-theme-mode', 'dark');
@@ -829,6 +1003,21 @@ function App() {
   });
   const [projectDraft, setProjectDraft] = useState('');
   const [personDraft, setPersonDraft] = useState({ name: '', role: '' });
+  const [paymentDraft, setPaymentDraft] = useState<PaymentDraft>({
+    projectId: initialProjects[0].id,
+    periodLabel: 'Август 2026',
+    dueDate: '2026-08-25',
+    kind: 'service',
+    clientAmount: '',
+  });
+  const [resourceDraft, setResourceDraft] = useState<ManagedResourceDraft>({
+    projectId: initialProjects[0].id,
+    tab: 'report',
+    title: '',
+    url: '',
+    dateLabel: '',
+    note: '',
+  });
 
   const peopleById = useMemo(() => new Map(people.map((person) => [person.id, person])), [people]);
   const days = useMemo(() => getDays(14), []);
@@ -840,12 +1029,7 @@ function App() {
   useEffect(() => {
     setProjects((current) => {
       const withoutLegacy = current.filter((project) => !legacyProjectNamesToRemove.has(normalizeProjectName(project.name)));
-      const names = new Set(withoutLegacy.map((project) => normalizeProjectName(project.name)));
-      const missingProjects = REQUIRED_LINK_PROJECTS.filter(
-        (project) => !names.has(normalizeProjectName(project.name)),
-      );
-      const changed = withoutLegacy.length !== current.length || missingProjects.length > 0;
-      return changed ? [...withoutLegacy, ...missingProjects] : current;
+      return withoutLegacy.length !== current.length ? withoutLegacy : current;
     });
   }, [setProjects]);
 
@@ -862,14 +1046,6 @@ function App() {
         if (!required || person.role === required.role) return person;
         changed = true;
         return { ...person, role: required.role };
-      });
-
-      const names = new Set(next.map((person) => normalizeProjectName(person.name)));
-      requiredPeople.forEach((person) => {
-        if (!names.has(normalizeProjectName(person.name))) {
-          next.push(person);
-          changed = true;
-        }
       });
 
       return changed ? next : current;
@@ -1057,12 +1233,48 @@ function App() {
     return map;
   }, []);
 
-  const clientLinksByProject = useMemo(
-    () => new Map(CLIENT_QUICK_LINKS.map((item) => [normalizeProjectName(item.projectName), item])),
-    [],
-  );
+  const clientLinksByProject = useMemo(() => {
+    const map = new Map<string, ClientQuickLinks>();
+    projects.forEach((project) => {
+      const resources = managedResources.filter((resource) => resource.projectId === project.id);
+      const site = resources.find((resource) => resource.tab === 'site');
+      const reports = resources
+        .filter((resource) => resource.tab === 'report')
+        .map((resource) => ({
+          id: resource.id,
+          label: resource.note || 'Отчет',
+          reportDate: resource.dateLabel || 'без даты',
+          title: resource.title,
+          url: resource.url,
+        }));
+
+      if (!site && reports.length === 0) return;
+      map.set(normalizeProjectName(project.name), {
+        projectName: project.name,
+        clientName: project.name,
+        siteUrl: site?.url ?? '#',
+        reports,
+      });
+    });
+    return map;
+  }, [managedResources, projects]);
+
+  const managedResourcesByProject = useMemo(() => {
+    const map = new Map<string, ManagedResource[]>();
+    managedResources.forEach((resource) => {
+      const current = map.get(resource.projectId) ?? [];
+      current.push(resource);
+      map.set(resource.projectId, current);
+    });
+    return map;
+  }, [managedResources]);
 
   const collapsedProjectIds = useMemo(() => new Set(collapsedProjects), [collapsedProjects]);
+
+  useEffect(() => {
+    if (projects.some((project) => project.id === seoProjectId)) return;
+    setSeoProjectId(projects[0]?.id ?? '');
+  }, [projects, seoProjectId, setSeoProjectId]);
 
   const completion = useMemo(() => {
     const total = tasks.length || 1;
@@ -1222,6 +1434,14 @@ function App() {
     setProjectDraft('');
   };
 
+  const deleteProject = (projectId: string) => {
+    setProjects((current) => current.filter((project) => project.id !== projectId));
+    setTasks((current) => current.filter((task) => task.projectId !== projectId));
+    setPaymentRows((current) => current.filter((row) => row.projectId !== projectId));
+    setManagedResources((current) => current.filter((resource) => resource.projectId !== projectId));
+    setCollapsedProjects((current) => current.filter((id) => id !== projectId));
+  };
+
   const addPerson = () => {
     const name = personDraft.name.trim();
     if (!name) return;
@@ -1230,6 +1450,74 @@ function App() {
       { id: uid('person'), name, role: personDraft.role.trim() || 'ответственный' },
     ]);
     setPersonDraft({ name: '', role: '' });
+  };
+
+  const deletePerson = (personId: string) => {
+    setPeople((current) => current.filter((person) => person.id !== personId));
+    setTasks((current) =>
+      current.map((task) => ({
+        ...task,
+        ownerIds: task.ownerIds.filter((ownerId) => ownerId !== personId),
+        timeline: task.timeline.filter((item) => item.ownerId !== personId),
+      })),
+    );
+  };
+
+  const deleteTask = (taskId: string) => {
+    setTasks((current) => current.filter((task) => task.id !== taskId));
+    setExpanded((current) => {
+      const next = new Set(current);
+      next.delete(taskId);
+      return next;
+    });
+  };
+
+  const addPaymentRow = (projectIdOverride?: string) => {
+    const projectId = projectIdOverride ?? paymentDraft.projectId;
+    if (!projectId || !paymentDraft.periodLabel.trim()) return;
+    const nextRow: PaymentRow = {
+      id: uid('payment'),
+      projectId,
+      periodLabel: paymentDraft.periodLabel.trim(),
+      dueDate: paymentDraft.dueDate,
+      status: 'planned',
+      kind: paymentDraft.kind,
+      clientAmount: parseMoneyInput(paymentDraft.clientAmount),
+      outsourceAmount: 0,
+      linkBudgetLimit: 0,
+      note: '',
+    };
+    setPaymentRows((current) => [nextRow, ...current]);
+    setPaymentDraft((current) => ({ ...current, clientAmount: '' }));
+  };
+
+  const updatePaymentRow = (rowId: string, patch: Partial<PaymentRow>) => {
+    setPaymentRows((current) => current.map((row) => (row.id === rowId ? { ...row, ...patch } : row)));
+  };
+
+  const deletePaymentRow = (rowId: string) => {
+    setPaymentRows((current) => current.filter((row) => row.id !== rowId));
+  };
+
+  const addManagedResource = () => {
+    const title = resourceDraft.title.trim();
+    const url = resourceDraft.url.trim();
+    if (!resourceDraft.projectId || !title || !url) return;
+    const nextResource: ManagedResource = {
+      id: uid('resource'),
+      projectId: resourceDraft.projectId,
+      tab: resourceDraft.tab,
+      title,
+      url,
+      dateLabel: resourceDraft.dateLabel.trim(),
+      note: resourceDraft.note.trim(),
+    };
+    setManagedResources((current) => [nextResource, ...current]);
+    setResourceDraft((current) => ({ ...current, title: '', url: '', dateLabel: '', note: '' }));
+  };
+
+  const deleteManagedResource = (resourceId: string) => {
+    setManagedResources((current) => current.filter((resource) => resource.id !== resourceId));
   };
 
   const toggleOwnerDraft = (ownerId: string) => {
@@ -1260,6 +1548,7 @@ function App() {
             <Metric compact label="контент" value={`${contentTopics.length}`} />
             <Metric compact label="планов" value={`${WORK_PLAN_SOURCES.length}`} />
             <Metric compact label="аудитов" value={`${CLIENT_AUDIT_SOURCES.length}`} />
+            <Metric compact label="оплат" value={`${paymentRows.length}`} />
           </div>
         </header>
 
@@ -1347,12 +1636,28 @@ function App() {
             onTabChange={setAdminTab}
             projects={projects}
             people={people}
+            tasks={tasks}
+            paymentRows={paymentRows}
+            linkRows={linkRows}
+            managedResources={managedResources}
             projectDraft={projectDraft}
             personDraft={personDraft}
+            paymentDraft={paymentDraft}
+            resourceDraft={resourceDraft}
             onProjectDraftChange={setProjectDraft}
             onPersonDraftChange={setPersonDraft}
+            onPaymentDraftChange={setPaymentDraft}
+            onResourceDraftChange={setResourceDraft}
             onProjectAdd={addProject}
             onPersonAdd={addPerson}
+            onPaymentAdd={addPaymentRow}
+            onResourceAdd={addManagedResource}
+            onProjectDelete={deleteProject}
+            onPersonDelete={deletePerson}
+            onTaskDelete={deleteTask}
+            onPaymentUpdate={updatePaymentRow}
+            onPaymentDelete={deletePaymentRow}
+            onResourceDelete={deleteManagedResource}
           />
         )}
 
@@ -1373,9 +1678,43 @@ function App() {
             tasks={tasks}
             peopleById={peopleById}
             linkRows={linkRows}
+            linkSummaries={linkSummaries}
+            contentTopicsByProject={contentTopicsByProject}
+            contentSummaries={contentSummaries}
+            contentSourcesByProject={contentSourcesByProject}
+            workPlansByProject={workPlansByProject}
+            auditSourcesByProject={auditSourcesByProject}
+            managedResourcesByProject={managedResourcesByProject}
+            paymentRows={paymentRows}
+            paymentDraft={paymentDraft}
             promotionSources={PROMOTION_RESULT_SOURCES}
             selectedProjectId={seoProjectId}
             onProjectChange={setSeoProjectId}
+            linkLoadStatus={linkLoadStatus}
+            linkError={linkError}
+            linkUpdatedAt={linkUpdatedAt}
+            contentLoadStatus={contentLoadStatus}
+            contentError={contentError}
+            contentUpdatedAt={contentUpdatedAt}
+            onReloadLinks={loadLinkRows}
+            onReloadContent={loadContentTopics}
+            onPaymentDraftChange={setPaymentDraft}
+            onPaymentAdd={addPaymentRow}
+            onPaymentUpdate={updatePaymentRow}
+            onPaymentDelete={deletePaymentRow}
+          />
+        )}
+
+        {activeView === 'payments' && (
+          <PaymentsView
+            projects={projects}
+            paymentRows={paymentRows}
+            paymentDraft={paymentDraft}
+            linkRows={linkRows}
+            onPaymentDraftChange={setPaymentDraft}
+            onPaymentAdd={addPaymentRow}
+            onPaymentUpdate={updatePaymentRow}
+            onPaymentDelete={deletePaymentRow}
           />
         )}
 
@@ -2183,10 +2522,12 @@ function ClientQuickLinksBar({ links }: { links: ClientQuickLinks }) {
   return (
     <div className="client-quick-links" aria-label={`Быстрые ссылки клиента ${links.clientName}`}>
       <span>{links.clientName}</span>
-      <a href={links.siteUrl} target="_blank" rel="noreferrer" title={links.siteUrl}>
-        <ExternalLink size={14} />
-        Сайт
-      </a>
+      {links.siteUrl !== '#' && (
+        <a href={links.siteUrl} target="_blank" rel="noreferrer" title={links.siteUrl}>
+          <ExternalLink size={14} />
+          Сайт
+        </a>
+      )}
       {links.reports.map((report) => (
         <a href={report.url} target="_blank" rel="noreferrer" title={report.title} key={report.id}>
           <FileText size={14} />
@@ -2974,12 +3315,28 @@ type AdminViewProps = {
   onTabChange: (tab: AdminTab) => void;
   projects: Project[];
   people: Person[];
+  tasks: Task[];
+  paymentRows: PaymentRow[];
+  linkRows: LinkPurchase[];
+  managedResources: ManagedResource[];
   projectDraft: string;
   personDraft: { name: string; role: string };
+  paymentDraft: PaymentDraft;
+  resourceDraft: ManagedResourceDraft;
   onProjectDraftChange: (value: string) => void;
   onPersonDraftChange: Dispatch<SetStateAction<{ name: string; role: string }>>;
+  onPaymentDraftChange: Dispatch<SetStateAction<PaymentDraft>>;
+  onResourceDraftChange: Dispatch<SetStateAction<ManagedResourceDraft>>;
   onProjectAdd: () => void;
   onPersonAdd: () => void;
+  onPaymentAdd: (projectIdOverride?: string) => void;
+  onResourceAdd: () => void;
+  onProjectDelete: (projectId: string) => void;
+  onPersonDelete: (personId: string) => void;
+  onTaskDelete: (taskId: string) => void;
+  onPaymentUpdate: (rowId: string, patch: Partial<PaymentRow>) => void;
+  onPaymentDelete: (rowId: string) => void;
+  onResourceDelete: (resourceId: string) => void;
 };
 
 function AdminView({
@@ -2987,19 +3344,37 @@ function AdminView({
   onTabChange,
   projects,
   people,
+  tasks,
+  paymentRows,
+  linkRows,
+  managedResources,
   projectDraft,
   personDraft,
+  paymentDraft,
+  resourceDraft,
   onProjectDraftChange,
   onPersonDraftChange,
+  onPaymentDraftChange,
+  onResourceDraftChange,
   onProjectAdd,
   onPersonAdd,
+  onPaymentAdd,
+  onResourceAdd,
+  onProjectDelete,
+  onPersonDelete,
+  onTaskDelete,
+  onPaymentUpdate,
+  onPaymentDelete,
+  onResourceDelete,
 }: AdminViewProps) {
+  const projectById = new Map(projects.map((project) => [project.id, project]));
+
   return (
     <section className="panel admin-view">
       <div className="section-heading">
         <div>
           <h2>Админка</h2>
-          <p>Здесь добавляются проекты и база ответственных, чтобы не вводить их в каждой задаче.</p>
+          <p>Центр управления панелью: проекты, ответственные, задачи, источники вкладок и оплаты.</p>
         </div>
         <div className="segmented" role="group" aria-label="Раздел админки">
           <button className={tab === 'projects' ? 'is-active' : ''} type="button" onClick={() => onTabChange('projects')}>
@@ -3008,10 +3383,19 @@ function AdminView({
           <button className={tab === 'people' ? 'is-active' : ''} type="button" onClick={() => onTabChange('people')}>
             Ответственные
           </button>
+          <button className={tab === 'tasks' ? 'is-active' : ''} type="button" onClick={() => onTabChange('tasks')}>
+            Задачи
+          </button>
+          <button className={tab === 'sources' ? 'is-active' : ''} type="button" onClick={() => onTabChange('sources')}>
+            Источники
+          </button>
+          <button className={tab === 'payments' ? 'is-active' : ''} type="button" onClick={() => onTabChange('payments')}>
+            Оплаты
+          </button>
         </div>
       </div>
 
-      {tab === 'projects' ? (
+      {tab === 'projects' && (
         <div className="admin-layout">
           <div className="admin-form glass-inner">
             <h3>Новый проект</h3>
@@ -3033,11 +3417,16 @@ function AdminView({
               <div key={project.id} className="admin-row">
                 <span className="project-dot" style={{ background: project.color }} />
                 <strong>{project.name}</strong>
+                <button className="ghost-button danger-button" type="button" onClick={() => onProjectDelete(project.id)}>
+                  Удалить
+                </button>
               </div>
             ))}
           </div>
         </div>
-      ) : (
+      )}
+
+      {tab === 'people' && (
         <div className="admin-layout">
           <div className="admin-form glass-inner">
             <h3>Новый ответственный</h3>
@@ -3070,10 +3459,149 @@ function AdminView({
                   <strong>{person.name}</strong>
                   <small>{person.role}</small>
                 </div>
+                <button className="ghost-button danger-button" type="button" onClick={() => onPersonDelete(person.id)}>
+                  Удалить
+                </button>
               </div>
             ))}
           </div>
         </div>
+      )}
+
+      {tab === 'tasks' && (
+        <div className="admin-single-column">
+          <div className="admin-note glass-inner">
+            <strong>Управление задачами</strong>
+            <p>Добавление задач остается в списке задач, а здесь можно быстро убрать лишние строки из панели.</p>
+          </div>
+          <div className="admin-list">
+            {tasks.map((task) => (
+              <div key={task.id} className="admin-row admin-task-row">
+                <span className="project-dot" style={{ background: projectById.get(task.projectId)?.color ?? '#d8eef3' }} />
+                <div>
+                  <strong>{task.title}</strong>
+                  <small>
+                    {projectById.get(task.projectId)?.name ?? 'Без проекта'} · {statusLabels[task.status]} · дедлайн{' '}
+                    {formatDate(task.deadline)}
+                  </small>
+                </div>
+                <button className="ghost-button danger-button" type="button" onClick={() => onTaskDelete(task.id)}>
+                  Удалить
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab === 'sources' && (
+        <div className="admin-layout">
+          <div className="admin-form glass-inner">
+            <h3>Новый источник</h3>
+            <label className="field">
+              <span>Проект</span>
+              <select
+                value={resourceDraft.projectId}
+                onChange={(event) =>
+                  onResourceDraftChange((current) => ({ ...current, projectId: event.target.value }))
+                }
+              >
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>Вкладка</span>
+              <select
+                value={resourceDraft.tab}
+                onChange={(event) =>
+                  onResourceDraftChange((current) => ({
+                    ...current,
+                    tab: event.target.value as ManagedResourceTab,
+                  }))
+                }
+              >
+                {Object.entries(managedResourceTabLabels).map(([id, label]) => (
+                  <option key={id} value={id}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="field">
+              <span>Название</span>
+              <input
+                value={resourceDraft.title}
+                onChange={(event) => onResourceDraftChange((current) => ({ ...current, title: event.target.value }))}
+                placeholder="Например: отчет за август"
+              />
+            </label>
+            <label className="field">
+              <span>Ссылка</span>
+              <input
+                value={resourceDraft.url}
+                onChange={(event) => onResourceDraftChange((current) => ({ ...current, url: event.target.value }))}
+                placeholder="https://..."
+              />
+            </label>
+            <label className="field">
+              <span>Дата / период</span>
+              <input
+                value={resourceDraft.dateLabel}
+                onChange={(event) => onResourceDraftChange((current) => ({ ...current, dateLabel: event.target.value }))}
+                placeholder="17 июля / август"
+              />
+            </label>
+            <label className="field">
+              <span>Комментарий</span>
+              <input
+                value={resourceDraft.note}
+                onChange={(event) => onResourceDraftChange((current) => ({ ...current, note: event.target.value }))}
+                placeholder="Коротко что внутри"
+              />
+            </label>
+            <button className="primary-button" type="button" onClick={onResourceAdd}>
+              <Plus size={17} />
+              Добавить источник
+            </button>
+          </div>
+          <div className="admin-list">
+            {managedResources.map((resource) => (
+              <div key={resource.id} className="admin-row admin-source-row">
+                <span>{managedResourceTabLabels[resource.tab]}</span>
+                <div>
+                  <strong>{resource.title}</strong>
+                  <small>
+                    {projectById.get(resource.projectId)?.name ?? 'Без проекта'}
+                    {resource.dateLabel ? ` · ${resource.dateLabel}` : ''}
+                  </small>
+                </div>
+                <a className="ghost-button" href={resource.url} target="_blank" rel="noreferrer">
+                  Открыть
+                </a>
+                <button className="ghost-button danger-button" type="button" onClick={() => onResourceDelete(resource.id)}>
+                  Удалить
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab === 'payments' && (
+        <PaymentRowsEditor
+          projects={projects}
+          rows={paymentRows}
+          draft={paymentDraft}
+          linkRows={linkRows}
+          onDraftChange={onPaymentDraftChange}
+          onAdd={onPaymentAdd}
+          onUpdate={onPaymentUpdate}
+          onDelete={onPaymentDelete}
+        />
       )}
     </section>
   );
@@ -3211,31 +3739,95 @@ function SeoProjectsView({
   tasks,
   peopleById,
   linkRows,
+  linkSummaries,
+  contentTopicsByProject,
+  contentSummaries,
+  contentSourcesByProject,
+  workPlansByProject,
+  auditSourcesByProject,
+  managedResourcesByProject,
+  paymentRows,
+  paymentDraft,
   promotionSources,
   selectedProjectId,
   onProjectChange,
+  linkLoadStatus,
+  linkError,
+  linkUpdatedAt,
+  contentLoadStatus,
+  contentError,
+  contentUpdatedAt,
+  onReloadLinks,
+  onReloadContent,
+  onPaymentDraftChange,
+  onPaymentAdd,
+  onPaymentUpdate,
+  onPaymentDelete,
 }: {
   projects: Project[];
   tasks: Task[];
   peopleById: Map<string, Person>;
   linkRows: LinkPurchase[];
+  linkSummaries: Map<string, LinkPurchaseSummary>;
+  contentTopicsByProject: Map<string, ContentPlanTopic[]>;
+  contentSummaries: Map<string, ContentPlanSummary>;
+  contentSourcesByProject: Map<string, ContentPlanSource>;
+  workPlansByProject: Map<string, WorkPlanSource[]>;
+  auditSourcesByProject: Map<string, ClientAuditSource[]>;
+  managedResourcesByProject: Map<string, ManagedResource[]>;
+  paymentRows: PaymentRow[];
+  paymentDraft: PaymentDraft;
   promotionSources: PromotionResultSource[];
   selectedProjectId: string;
   onProjectChange: (projectId: string) => void;
+  linkLoadStatus: LinkLoadStatus;
+  linkError: string;
+  linkUpdatedAt: string;
+  contentLoadStatus: LinkLoadStatus;
+  contentError: string;
+  contentUpdatedAt: string;
+  onReloadLinks: () => void;
+  onReloadContent: () => void;
+  onPaymentDraftChange: Dispatch<SetStateAction<PaymentDraft>>;
+  onPaymentAdd: (projectIdOverride?: string) => void;
+  onPaymentUpdate: (rowId: string, patch: Partial<PaymentRow>) => void;
+  onPaymentDelete: (rowId: string) => void;
 }) {
+  const [activeTab, setActiveTab] = useStoredState<SeoProjectTab>('task-seo-project-active-tab', 'analytics');
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? projects[0];
   const selectedKey = normalizeProjectName(selectedProject?.name ?? '');
   const selectedLinkRows = linkRows.filter((row) => normalizeProjectName(row.projectName) === selectedKey);
+  const selectedLinkSummary = linkSummaries.get(selectedKey);
+  const selectedContentTopics = contentTopicsByProject.get(selectedKey) ?? [];
+  const selectedContentSummary = contentSummaries.get(selectedKey);
+  const selectedContentSource = contentSourcesByProject.get(selectedKey);
+  const selectedWorkPlans = workPlansByProject.get(selectedKey) ?? [];
+  const selectedAuditSources = auditSourcesByProject.get(selectedKey) ?? [];
+  const selectedResources = managedResourcesByProject.get(selectedProject?.id ?? '') ?? [];
+  const selectedPaymentRows = selectedProject ? paymentRows.filter((row) => row.projectId === selectedProject.id) : [];
   const selectedSources = promotionSources.filter((source) => normalizeProjectName(source.projectName) === selectedKey);
   const selectedTasks = selectedProject ? tasks.filter((task) => task.projectId === selectedProject.id) : [];
   const activeTasks = selectedTasks.filter((task) => task.status !== 'done').length;
+  const seoTabs: Array<{ id: SeoProjectTab; label: string; count?: number }> = [
+    { id: 'analytics', label: 'Аналитика' },
+    { id: 'links', label: 'Закуп ссылок', count: selectedLinkRows.length },
+    { id: 'content', label: 'Контент', count: selectedContentTopics.length },
+    { id: 'plans', label: 'План работ', count: selectedWorkPlans.length },
+    { id: 'audit', label: 'Аудит', count: selectedAuditSources.length + 1 },
+    {
+      id: 'reports',
+      label: 'Отчеты',
+      count: selectedResources.filter((resource) => resource.tab === 'report' || resource.tab === 'site').length,
+    },
+    { id: 'payments', label: 'Оплаты', count: selectedPaymentRows.length },
+  ];
 
   return (
     <section className="seo-projects-view">
       <div className="dashboard-hero panel seo-projects-hero">
         <div>
           <h2>SEO-проекты</h2>
-          <p>Разверни аналитику по одному проекту: ссылки, переходы, лиды, цели и ближайшие задачи.</p>
+          <p>Разверни одного клиента: аналитика, закуп ссылок, аудит, контент, отчеты и график оплат.</p>
         </div>
         <div className="hero-metrics">
           <Metric label="Проекты" value={String(projects.length)} />
@@ -3270,11 +3862,103 @@ function SeoProjectsView({
       {selectedProject ? (
         <div className="seo-project-layout">
           <div className="seo-project-main">
-            <ProjectSeoAnalyticsTiles
-              project={selectedProject}
-              linkRows={selectedLinkRows}
-              promotionSources={selectedSources}
-            />
+            <div className="project-tabs seo-inner-tabs" role="group" aria-label={`Разделы SEO-проекта ${selectedProject.name}`}>
+              {seoTabs.map((item) => (
+                <button
+                  className={activeTab === item.id ? 'is-active' : ''}
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  {item.label}
+                  {typeof item.count === 'number' && <em>{item.count}</em>}
+                </button>
+              ))}
+            </div>
+
+            {activeTab === 'analytics' && (
+              <ProjectSeoAnalyticsTiles
+                project={selectedProject}
+                linkRows={selectedLinkRows}
+                promotionSources={selectedSources}
+              />
+            )}
+
+            {activeTab === 'links' && (
+              <section className="panel seo-inner-panel">
+                <LinkPurchasePanel
+                  project={selectedProject}
+                  rows={selectedLinkRows}
+                  summary={selectedLinkSummary}
+                  loadStatus={linkLoadStatus}
+                  error={linkError}
+                  updatedAt={linkUpdatedAt}
+                  onReload={onReloadLinks}
+                />
+              </section>
+            )}
+
+            {activeTab === 'content' && (
+              <section className="panel seo-inner-panel">
+                <ContentPlanPanel
+                  project={selectedProject}
+                  source={selectedContentSource}
+                  topics={selectedContentTopics}
+                  summary={selectedContentSummary}
+                  loadStatus={contentLoadStatus}
+                  error={contentError}
+                  updatedAt={contentUpdatedAt}
+                  onReload={onReloadContent}
+                />
+                <ManagedResourcesList
+                  title="Дополнительные источники контента"
+                  resources={selectedResources.filter((resource) => resource.tab === 'content')}
+                />
+              </section>
+            )}
+
+            {activeTab === 'plans' && (
+              <section className="panel seo-inner-panel">
+                <WorkPlanPanel project={selectedProject} plans={selectedWorkPlans} />
+                <ManagedResourcesList
+                  title="Дополнительные планы работ"
+                  resources={selectedResources.filter((resource) => resource.tab === 'plans')}
+                />
+              </section>
+            )}
+
+            {activeTab === 'audit' && (
+              <section className="panel seo-inner-panel">
+                <AuditPanel project={selectedProject} sources={selectedAuditSources} />
+                <ManagedResourcesList
+                  title="Дополнительные источники аудита"
+                  resources={selectedResources.filter((resource) => resource.tab === 'audit')}
+                />
+              </section>
+            )}
+
+            {activeTab === 'reports' && (
+              <section className="panel seo-inner-panel">
+                <SeoProjectReportsPanel
+                  project={selectedProject}
+                  resources={selectedResources.filter((resource) => resource.tab === 'report' || resource.tab === 'site')}
+                />
+              </section>
+            )}
+
+            {activeTab === 'payments' && (
+              <PaymentRowsEditor
+                projects={projects}
+                rows={selectedPaymentRows}
+                draft={paymentDraft}
+                linkRows={selectedLinkRows}
+                fixedProjectId={selectedProject.id}
+                onDraftChange={onPaymentDraftChange}
+                onAdd={onPaymentAdd}
+                onUpdate={onPaymentUpdate}
+                onDelete={onPaymentDelete}
+              />
+            )}
           </div>
           <SeoProjectTaskPanel project={selectedProject} tasks={selectedTasks} peopleById={peopleById} />
         </div>
@@ -3298,6 +3982,8 @@ function ProjectSeoAnalyticsTiles({
   const source = promotionSources[0];
   const goalExamples = source?.goalExamples ?? [];
   const hasGoalField = Boolean(source?.fields.includes('Достижение цели'));
+  const goalAnalytics = source?.goalAnalytics;
+  const goalTrendMax = Math.max(...(goalAnalytics?.monthly.map((item) => item.goals) ?? [0]), 1);
   const linkChartItems = [
     { label: 'Всего строк', value: linkSummary.count },
     { label: 'Размещено', value: linkSummary.placed },
@@ -3344,7 +4030,7 @@ function ProjectSeoAnalyticsTiles({
         <div className="analytics-tile-head">
           <div>
             <span>Динамика переходов</span>
-            <h3>{source ? source.recordsLabel : 'нет источника'}</h3>
+            <h3>{goalAnalytics ? `${goalAnalytics.visits} переходов` : source ? source.recordsLabel : 'нет источника'}</h3>
           </div>
           <RefreshCw size={20} />
         </div>
@@ -3357,8 +4043,10 @@ function ProjectSeoAnalyticsTiles({
           <i />
         </div>
         <p>
-          {source
-            ? `${source.spreadsheetTitle} · ${source.periodLabel}. Для помесячной динамики нужен периодный срез.`
+          {goalAnalytics
+            ? `${goalAnalytics.uniqueQueries} ключевых запросов привели переходы. Период: ${source?.periodLabel}.`
+            : source
+              ? `${source.spreadsheetTitle} · ${source.periodLabel}. Для помесячной динамики нужен периодный срез.`
             : 'источник Метрики не подключен'}
         </p>
         {source && (
@@ -3387,29 +4075,83 @@ function ProjectSeoAnalyticsTiles({
         <p>Слот под заявки уже есть. Когда появится источник, сюда встанут лиды и динамика по периодам.</p>
       </article>
 
-      <article className="analytics-tile">
+      <article className="analytics-tile analytics-goal-summary">
         <div className="analytics-tile-head">
           <div>
             <span>Цели на сайте</span>
-            <h3>{hasGoalField ? (goalExamples.length ? `${goalExamples.length} примера` : 'колонка готова') : 'нет источника'}</h3>
+            <h3>{goalAnalytics ? `${goalAnalytics.goalCount} целей` : hasGoalField ? 'колонка готова' : 'нет источника'}</h3>
           </div>
           <Target size={20} />
         </div>
-        <div className="analytics-chip-row">
-          {(hasGoalField
-            ? goalExamples.length
-              ? goalExamples
-              : ['цели будут подтягиваться из таблицы']
-            : ['цели будут подтягиваться из таблицы']
-          ).map((goal) => (
-            <em key={goal}>{goal}</em>
-          ))}
+        {goalAnalytics ? (
+          <>
+            <div className="goal-summary-grid">
+              <div>
+                <strong>{goalAnalytics.uniqueQueries}</strong>
+                <span>ключей с переходами</span>
+              </div>
+              <div>
+                <strong>{goalAnalytics.goalRows}</strong>
+                <span>строк с целями</span>
+              </div>
+              <div>
+                <strong>{goalAnalytics.goalCount}</strong>
+                <span>достижений целей</span>
+              </div>
+            </div>
+            <div className="goal-trend-chart" aria-label="Динамика достижений целей по месяцам">
+              {goalAnalytics.monthly.map((point) => (
+                <div key={point.month}>
+                  <strong>{point.goals}</strong>
+                  <span style={{ height: `${Math.max(10, (point.goals / goalTrendMax) * 100)}%` }} />
+                  <em>{point.month}</em>
+                  <small>{point.visits} пер.</small>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="analytics-chip-row">
+              {(hasGoalField
+                ? goalExamples.length
+                  ? goalExamples
+                  : ['цели будут подтягиваться из таблицы']
+                : ['цели будут подтягиваться из таблицы']
+              ).map((goal) => (
+                <em key={goal}>{goal}</em>
+              ))}
+            </div>
+            <p>
+              {hasGoalField
+                ? 'Поле “Достижение цели” есть в таблице результатов продвижения.'
+                : 'Когда появится таблица целей, она попадет в эту часть отчета.'}
+            </p>
+          </>
+        )}
+      </article>
+
+      <article className="analytics-tile analytics-goal-queries">
+        <div className="analytics-tile-head">
+          <div>
+            <span>Ключевые запросы и цели</span>
+            <h3>{goalAnalytics ? `${goalAnalytics.topQueries.length} запросов` : 'нет данных'}</h3>
+          </div>
+          <LayoutList size={20} />
         </div>
-        <p>
-          {hasGoalField
-            ? 'Поле “Достижение цели” есть в таблице результатов продвижения.'
-            : 'Когда появится таблица целей, она попадет в эту часть отчета.'}
-        </p>
+        {goalAnalytics ? (
+          <div className="goal-query-list">
+            {goalAnalytics.topQueries.map((item) => (
+              <div className="goal-query-row" key={item.query}>
+                <strong>{item.query}</strong>
+                <span>{item.visits} переходов</span>
+                <em>{item.goals} целей</em>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>Детализация по ключевым запросам появится после подключения таблицы результатов продвижения.</p>
+        )}
       </article>
     </section>
   );
@@ -3462,6 +4204,328 @@ function SeoProjectTaskPanel({
         </div>
       )}
     </aside>
+  );
+}
+
+function ManagedResourcesList({ title, resources }: { title: string; resources: ManagedResource[] }) {
+  if (resources.length === 0) return null;
+
+  return (
+    <section className="managed-resource-section">
+      <div className="tile-heading">
+        <ExternalLink size={18} />
+        <h3>{title}</h3>
+      </div>
+      <div className="managed-resource-grid">
+        {resources.map((resource) => (
+          <a className="managed-resource-card" href={resource.url} target="_blank" rel="noreferrer" key={resource.id}>
+            <span>{managedResourceTabLabels[resource.tab]}</span>
+            <strong>{resource.title}</strong>
+            <p>{resource.note || resource.dateLabel || 'Источник добавлен через админку.'}</p>
+            {resource.dateLabel && <em>{resource.dateLabel}</em>}
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SeoProjectReportsPanel({
+  project,
+  resources,
+}: {
+  project: Project;
+  resources: ManagedResource[];
+}) {
+  const reportResources = resources.filter((resource) => resource.tab === 'report');
+  const siteResources = resources.filter((resource) => resource.tab === 'site');
+
+  return (
+    <div className="seo-report-panel">
+      <div className="link-panel-head">
+        <div>
+          <strong>Ссылки и отчеты: {project.name}</strong>
+          <p>Кнопки на сайт, документы отчетности и дополнительные материалы из админки.</p>
+        </div>
+      </div>
+
+      <ManagedResourcesList title="Сайты" resources={siteResources} />
+      <ManagedResourcesList title="Отчеты" resources={reportResources} />
+
+      {resources.length === 0 && (
+        <div className="empty-row">Для этого проекта пока нет сайта или отчетов. Добавить можно в админке.</div>
+      )}
+    </div>
+  );
+}
+
+function PaymentsView({
+  projects,
+  paymentRows,
+  paymentDraft,
+  linkRows,
+  onPaymentDraftChange,
+  onPaymentAdd,
+  onPaymentUpdate,
+  onPaymentDelete,
+}: {
+  projects: Project[];
+  paymentRows: PaymentRow[];
+  paymentDraft: PaymentDraft;
+  linkRows: LinkPurchase[];
+  onPaymentDraftChange: Dispatch<SetStateAction<PaymentDraft>>;
+  onPaymentAdd: (projectIdOverride?: string) => void;
+  onPaymentUpdate: (rowId: string, patch: Partial<PaymentRow>) => void;
+  onPaymentDelete: (rowId: string) => void;
+}) {
+  const summary = getPaymentSummary(paymentRows, linkRows, projects);
+
+  return (
+    <section className="payments-view">
+      <div className="dashboard-hero panel payments-hero">
+        <div>
+          <h2>График оплат</h2>
+          <p>Отдельная вкладка по оплатам клиентов, аутсорсу и фактическим затратам на закуп ссылок.</p>
+        </div>
+        <div className="hero-metrics">
+          <Metric label="К оплате" value={formatMoney(summary.clientAmount)} />
+          <Metric label="Аутсорс" value={formatMoney(summary.outsourceAmount)} />
+          <Metric label="Закуп ссылок" value={formatMoney(summary.linkFact)} />
+          <Metric label="Остаток" value={formatMoney(summary.margin)} tone={summary.margin < 0 ? 'danger' : 'success'} />
+        </div>
+      </div>
+      <PaymentRowsEditor
+        projects={projects}
+        rows={paymentRows}
+        draft={paymentDraft}
+        linkRows={linkRows}
+        onDraftChange={onPaymentDraftChange}
+        onAdd={onPaymentAdd}
+        onUpdate={onPaymentUpdate}
+        onDelete={onPaymentDelete}
+      />
+    </section>
+  );
+}
+
+function PaymentRowsEditor({
+  projects,
+  rows,
+  draft,
+  linkRows,
+  fixedProjectId,
+  onDraftChange,
+  onAdd,
+  onUpdate,
+  onDelete,
+}: {
+  projects: Project[];
+  rows: PaymentRow[];
+  draft: PaymentDraft;
+  linkRows: LinkPurchase[];
+  fixedProjectId?: string;
+  onDraftChange: Dispatch<SetStateAction<PaymentDraft>>;
+  onAdd: (projectIdOverride?: string) => void;
+  onUpdate: (rowId: string, patch: Partial<PaymentRow>) => void;
+  onDelete: (rowId: string) => void;
+}) {
+  const projectById = new Map(projects.map((project) => [project.id, project]));
+  const visibleProjectId = fixedProjectId ?? draft.projectId;
+
+  return (
+    <section className="panel payment-editor">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>График оплат</h2>
+          <p>Статус оплаты, тип услуги, аутсорс и отдельная строка затрат на закуп ссылок.</p>
+        </div>
+        <CreditCard size={20} />
+      </div>
+
+      <div className="payment-add-form glass-inner">
+        {!fixedProjectId && (
+          <label className="field">
+            <span>Проект</span>
+            <select
+              value={draft.projectId}
+              onChange={(event) => onDraftChange((current) => ({ ...current, projectId: event.target.value }))}
+            >
+              {projects.map((project) => (
+                <option value={project.id} key={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <label className="field">
+          <span>Период</span>
+          <input
+            value={draft.periodLabel}
+            onChange={(event) => onDraftChange((current) => ({ ...current, periodLabel: event.target.value }))}
+            placeholder="Август 2026"
+          />
+        </label>
+        <label className="field">
+          <span>Дедлайн оплаты</span>
+          <input
+            type="date"
+            value={draft.dueDate}
+            onChange={(event) => onDraftChange((current) => ({ ...current, dueDate: event.target.value }))}
+          />
+        </label>
+        <label className="field">
+          <span>Вид оплаты</span>
+          <select
+            value={draft.kind}
+            onChange={(event) => onDraftChange((current) => ({ ...current, kind: event.target.value as PaymentKind }))}
+          >
+            {Object.entries(paymentKindLabels).map(([id, label]) => (
+              <option key={id} value={id}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>Сумма клиента</span>
+          <input
+            value={draft.clientAmount}
+            onChange={(event) => onDraftChange((current) => ({ ...current, clientAmount: event.target.value }))}
+            placeholder="125000"
+            inputMode="numeric"
+          />
+        </label>
+        <button className="primary-button" type="button" onClick={() => onAdd(fixedProjectId)}>
+          <Plus size={17} />
+          Добавить оплату
+        </button>
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="empty-row">Строк оплат пока нет. Добавь первую строку выше.</div>
+      ) : (
+        <div className="payment-table">
+          <div className="payment-row payment-head">
+            <span>Проект / период</span>
+            <span>Статус</span>
+            <span>Вид</span>
+            <span>Клиент</span>
+            <span>Аутсорс</span>
+            <span>Закуп ссылок</span>
+            <span>Остаток</span>
+            <span />
+          </div>
+          {rows.map((row) => {
+            const project = projectById.get(row.projectId);
+            const projectLinkRows =
+              fixedProjectId || linkRows.length === 0
+                ? linkRows
+                : linkRows.filter((link) => normalizeProjectName(link.projectName) === normalizeProjectName(project?.name ?? ''));
+            const linkFact = summarizeLinkPurchases(projectLinkRows).factCost;
+            const outsourceCost = row.kind === 'outsource' ? row.outsourceAmount : 0;
+            const margin = row.clientAmount - outsourceCost - linkFact;
+            return (
+              <div className="payment-row" key={row.id}>
+                <div>
+                  <strong>{project?.name ?? 'Без проекта'}</strong>
+                  <input
+                    value={row.periodLabel}
+                    onChange={(event) => onUpdate(row.id, { periodLabel: event.target.value })}
+                    aria-label="Период оплаты"
+                  />
+                  <input
+                    type="date"
+                    value={row.dueDate}
+                    onChange={(event) => onUpdate(row.id, { dueDate: event.target.value })}
+                    aria-label="Дедлайн оплаты"
+                  />
+                </div>
+                <select
+                  value={row.status}
+                  onChange={(event) => onUpdate(row.id, { status: event.target.value as PaymentStatus })}
+                  aria-label="Статус оплаты"
+                >
+                  {paymentStatusOrder.map((status) => (
+                    <option key={status} value={status}>
+                      {paymentStatusLabels[status]}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={row.kind}
+                  onChange={(event) => onUpdate(row.id, { kind: event.target.value as PaymentKind })}
+                  aria-label="Вид оплаты"
+                >
+                  {Object.entries(paymentKindLabels).map(([id, label]) => (
+                    <option key={id} value={id}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={row.clientAmount || ''}
+                  onChange={(event) => onUpdate(row.id, { clientAmount: parseMoneyInput(event.target.value) })}
+                  aria-label="Сумма от клиента"
+                  inputMode="numeric"
+                />
+                <input
+                  value={row.outsourceAmount || ''}
+                  onChange={(event) => onUpdate(row.id, { outsourceAmount: parseMoneyInput(event.target.value) })}
+                  aria-label="Оплата аутсорсу"
+                  inputMode="numeric"
+                  disabled={row.kind !== 'outsource'}
+                  placeholder={row.kind === 'outsource' ? '0' : 'не нужно'}
+                />
+                <div className="payment-link-cost">
+                  <strong>{formatMoney(linkFact)}</strong>
+                  <input
+                    value={row.linkBudgetLimit || ''}
+                    onChange={(event) => onUpdate(row.id, { linkBudgetLimit: parseMoneyInput(event.target.value) })}
+                    aria-label="Лимит затрат на закуп ссылок"
+                    placeholder="лимит"
+                    inputMode="numeric"
+                  />
+                </div>
+                <strong className={margin < 0 ? 'payment-negative' : 'payment-positive'}>{formatMoney(margin)}</strong>
+                <button className="ghost-button danger-button" type="button" onClick={() => onDelete(row.id)}>
+                  Удалить
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {fixedProjectId && visibleProjectId && (
+        <p className="payment-editor-note">
+          Новая строка будет добавлена в проект {projectById.get(visibleProjectId)?.name ?? 'выбранный проект'}.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function getPaymentSummary(rows: PaymentRow[], linkRows: LinkPurchase[], projects: Project[]) {
+  const linkFactByProject = new Map<string, number>();
+  linkRows.forEach((row) => {
+    const key = normalizeProjectName(row.projectName);
+    linkFactByProject.set(key, (linkFactByProject.get(key) ?? 0) + row.factCost);
+  });
+
+  return rows.reduce(
+    (summary, row) => {
+      const project = projects.find((item) => item.id === row.projectId);
+      const linkFact = linkFactByProject.get(normalizeProjectName(project?.name ?? '')) ?? 0;
+      const outsourceCost = row.kind === 'outsource' ? row.outsourceAmount : 0;
+      return {
+        clientAmount: summary.clientAmount + row.clientAmount,
+        outsourceAmount: summary.outsourceAmount + outsourceCost,
+        linkFact: summary.linkFact + linkFact,
+        margin: summary.margin + row.clientAmount - outsourceCost - linkFact,
+      };
+    },
+    { clientAmount: 0, outsourceAmount: 0, linkFact: 0, margin: 0 },
   );
 }
 
@@ -3595,6 +4659,12 @@ function Metric({
       <strong>{value}</strong>
     </div>
   );
+}
+
+function parseMoneyInput(value: string) {
+  const normalized = value.replace(/\s/g, '').replace(/[^\d,.-]/g, '').replace(',', '.');
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function formatMoney(value: number) {
