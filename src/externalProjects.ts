@@ -55,7 +55,7 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
   title: 'Сторонние проекты',
   documentTitle: '10.08',
   tabTitle: '10.08.26',
-  collaborator: 'Антон',
+  collaborator: 'Отдел маркетинга',
   updatedLabel: 'по документу от 10.08.26',
   url: 'https://docs.google.com/document/d/1hec-2lJGGsjDsmmbXHTk4YbFgwJV82avNA-EIT1ryEo/edit?tab=t.k4dzyo6kfkhb',
   sections: [
@@ -73,10 +73,25 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
     },
     {
       id: 'avito-test',
-      title: 'Тест Авито',
-      status: 'next',
-      items: ['Тест признан дорогим инструментом', 'Есть смысл перезапустить тест на МСК'],
-      note: 'Подробные метрики оставлены в Google Docs.',
+      title: 'Авито: запуск Москва',
+      status: 'active',
+      items: ['Запустить Авито по Москве', 'Контролировать расход бюджета 40 000 ₽', 'Заложить 15 000 ₽ на исполнителя'],
+      note: 'Запускаем Москва. Бюджет кампании 40 000 ₽, исполнитель 15 000 ₽.',
+      goal: 'Запустить тест Авито по Москве и оценить стоимость заявок.',
+      budgetLabel: '40 000 ₽',
+      people: ['Отдел маркетинга'],
+      budgetLines: [
+        {
+          id: 'avito-moscow-budget',
+          label: 'Бюджет запуска Москва',
+          amountLabel: '40 000 ₽',
+        },
+        {
+          id: 'avito-moscow-executor',
+          label: 'Исполнитель',
+          amountLabel: '15 000 ₽',
+        },
+      ],
     },
     {
       id: 'trial-lesson-mailing',

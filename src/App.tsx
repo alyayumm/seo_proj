@@ -315,7 +315,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'client-statuses-2026-08-24-v2';
+const taskSeedVersion = 'client-statuses-2026-08-24-v3';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -324,8 +324,11 @@ const requiredTaskSeeds: Task[] = [
     projectId: 'project-ash',
     title: 'Редизайн сайта Автоправо',
     description: 'Изменили ТЗ и брендбук, ориентир - сайты Симакина. Дедлайн по окну 20-23.08.',
+    sourceLabel: 'Редизайн',
+    sourceUrl:
+      'https://www.figma.com/design/BrReyqlaV4p15QX0bekG2X/%D0%90%D0%B2%D1%82%D0%BE%D0%BF%D1%80%D0%B0%D0%B2%D0%BE?node-id=519-8247&t=RXaNEtFVQQizrAjv-1',
     status: 'active',
-    ownerIds: ['person-aleksey'],
+    ownerIds: ['person-outsource'],
     createdAt: '2026-08-10',
     deadline: '2026-08-23',
     timelineEnabled: false,
@@ -2168,8 +2171,8 @@ function ExternalProjectsView({
         <div>
           <h2>{source.title}</h2>
           <p>
-            Отдельная зона для задач, которые идут не внутри клиентского SEO-списка, а в рабочем документе с{' '}
-            {source.collaborator}.
+            Отдельная зона для задач, которые идут не внутри клиентского SEO-списка, а в рабочем документе по
+            отдельным направлениям.
           </p>
         </div>
         <div className="hero-metrics">
