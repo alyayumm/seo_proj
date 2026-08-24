@@ -818,25 +818,32 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 24px;
-  border: 1px solid rgba(79, 101, 255, 0.22);
+  min-height: 30px;
+  border: 1px solid rgba(255, 225, 211, 0.62);
   border-radius: 999px;
-  color: #294fc5;
-  background: rgba(255, 255, 255, 0.68);
-  padding: 0 9px;
-  font-size: 11px;
+  color: #0d2428;
+  background:
+    linear-gradient(135deg, rgba(255, 225, 211, 0.96), rgba(216, 238, 243, 0.88));
+  box-shadow: 0 12px 28px rgba(0, 48, 56, 0.18);
+  padding: 0 12px;
+  font-size: 12px;
   font-weight: 900;
   text-decoration: none;
   transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
     border-color 0.18s ease,
     background 0.18s ease,
     color 0.18s ease;
 }
 
 .task-source-link:hover {
-  border-color: rgba(79, 101, 255, 0.42);
-  color: #101524;
-  background: white;
+  transform: translateY(-1px);
+  border-color: rgba(255, 225, 211, 0.92);
+  color: #061417;
+  background:
+    linear-gradient(135deg, #ffe1d3, rgba(216, 238, 243, 0.98));
+  box-shadow: 0 16px 34px rgba(0, 48, 56, 0.24);
 }
 
 .task-source-link:focus-visible {
