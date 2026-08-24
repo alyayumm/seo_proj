@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { CSSProperties, Dispatch, SetStateAction } from 'react';
+import type { CSSProperties, Dispatch, FormEvent, SetStateAction } from 'react';
 import {
   AlertTriangle,
   BarChart3,
@@ -12,14 +12,15 @@ import {
   FileText,
   LayoutList,
   Layers3,
+  Moon,
   Plus,
   RefreshCw,
   SlidersHorizontal,
+  Sun,
   Target,
   Users,
 } from 'lucide-react';
 import {
-  CLIENT_AUDIT_SPREADSHEET_URL,
   CLIENT_AUDIT_SOURCES,
   SEO_AUDIT_CHECKLIST,
   type ClientAuditSource,
@@ -41,13 +42,22 @@ import {
   type LinkPurchase,
   type LinkPurchaseSummary,
 } from './linkPurchases';
-import { EXTERNAL_PROJECTS_SOURCE, type ExternalProjectSection, type ExternalProjectsSource } from './externalProjects';
+import {
+  EXTERNAL_PROJECTS_SOURCE,
+  type ExternalBudgetLine,
+  type ExternalProjectAsset,
+  type ExternalProjectSection,
+  type ExternalProjectsSource,
+  type ExternalTimelineItem,
+  type ExternalWeeklyUpdate,
+} from './externalProjects';
 import { PROMOTION_RESULT_SOURCES, type PromotionResultSource } from './promotionResults';
 import { WORK_PLAN_SOURCES, type WorkPlanSource } from './workPlans';
 
-type View = 'tasks' | 'admin' | 'dashboard' | 'external';
+type View = 'tasks' | 'admin' | 'dashboard' | 'seo' | 'external';
 type Status = 'planned' | 'active' | 'done' | 'risk';
 type CalendarMode = 'plan' | 'fact';
+type ThemeMode = 'dark' | 'light';
 type AdminTab = 'projects' | 'people';
 type ProjectTab = 'tasks' | 'links' | 'plans' | 'content' | 'results' | 'audit';
 type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -681,6 +691,7 @@ const navItems = [
   { id: 'tasks' as const, label: 'Список задач', icon: LayoutList },
   { id: 'admin' as const, label: 'Админка', icon: SlidersHorizontal },
   { id: 'dashboard' as const, label: 'Общий дашборд', icon: BarChart3 },
+  { id: 'seo' as const, label: 'SEO-проекты', icon: Target },
   { id: 'external' as const, label: 'Сторонние проекты', icon: FileText },
 ];
 
@@ -689,6 +700,45 @@ const externalStatusLabels: Record<ExternalProjectSection['status'], string> = {
   done: 'готово',
   waiting: 'ожидание',
   next: 'следующий шаг',
+};
+
+const externalTimelineStatusLabels: Record<ExternalTimelineItem['status'], string> = {
+  active: 'в работе',
+  done: 'готово',
+  planned: 'план',
+  waiting: 'ожидание',
+};
+
+const externalAssetKindLabels: Record<ExternalProjectAsset['kind'], string> = {
+  file: 'файл',
+  link: 'ссылка',
+  photo: 'фото',
+};
+
+type ExternalProjectAdditions = Record<
+  string,
+  {
+    budgetLines: ExternalBudgetLine[];
+    assets: ExternalProjectAsset[];
+    weeklyUpdates: ExternalWeeklyUpdate[];
+  }
+>;
+
+type ExternalBudgetDraft = {
+  label: string;
+  amountLabel: string;
+};
+
+type ExternalAssetDraft = {
+  title: string;
+  url: string;
+  kind: ExternalProjectAsset['kind'];
+};
+
+type ExternalWeeklyDraft = {
+  weekLabel: string;
+  title: string;
+  status: ExternalTimelineItem['status'];
 };
 
 function todayIso() {
@@ -753,6 +803,8 @@ function App() {
   const [people, setPeople] = useStoredState<Person[]>('task-seo-people', initialPeople);
   const [tasks, setTasks] = useStoredState<Task[]>('task-seo-tasks', initialTasks);
   const [activeView, setActiveView] = useState<View>('tasks');
+  const [seoProjectId, setSeoProjectId] = useStoredState<string>('task-seo-selected-project-analytics', initialProjects[0].id);
+  const [themeMode, setThemeMode] = useStoredState<ThemeMode>('task-seo-theme-mode', 'dark');
   const [calendarMode, setCalendarMode] = useState<CalendarMode>('plan');
   const [adminTab, setAdminTab] = useState<AdminTab>('projects');
   const [projectTabs, setProjectTabs] = useState<Record<string, ProjectTab>>({});
@@ -780,6 +832,10 @@ function App() {
 
   const peopleById = useMemo(() => new Map(people.map((person) => [person.id, person])), [people]);
   const days = useMemo(() => getDays(14), []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = themeMode;
+  }, [themeMode]);
 
   useEffect(() => {
     setProjects((current) => {
@@ -940,8 +996,6 @@ function App() {
     });
     return map;
   }, [linkRowsByProject]);
-
-  const linkTotalSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
 
   const contentTopicsByProject = useMemo(() => {
     const map = new Map<string, ContentPlanTopic[]>();
@@ -1310,15 +1364,18 @@ function App() {
             completion={completion}
             overdueCount={overdueCount}
             collisions={collisions}
+          />
+        )}
+
+        {activeView === 'seo' && (
+          <SeoProjectsView
+            projects={projects}
+            tasks={tasks}
+            peopleById={peopleById}
             linkRows={linkRows}
-            linkSummaries={linkSummaries}
-            linkTotalSummary={linkTotalSummary}
-            workPlans={WORK_PLAN_SOURCES}
-            auditSources={CLIENT_AUDIT_SOURCES}
-            linkLoadStatus={linkLoadStatus}
-            linkError={linkError}
-            linkUpdatedAt={linkUpdatedAt}
-            onReloadLinks={loadLinkRows}
+            promotionSources={PROMOTION_RESULT_SOURCES}
+            selectedProjectId={seoProjectId}
+            onProjectChange={setSeoProjectId}
           />
         )}
 
@@ -1348,15 +1405,326 @@ function App() {
             );
           })}
         </div>
+        <button
+          className="theme-toggle"
+          type="button"
+          onClick={() => setThemeMode((current) => (current === 'dark' ? 'light' : 'dark'))}
+          aria-label={themeMode === 'dark' ? 'Включить светлую тему' : 'Включить темную тему'}
+          title={themeMode === 'dark' ? 'Светлая тема' : 'Темная тема'}
+        >
+          {themeMode === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          <span>{themeMode === 'dark' ? 'Светлая' : 'Темная'}</span>
+        </button>
       </nav>
     </div>
   );
 }
 
 function ExternalProjectsView({ source }: { source: ExternalProjectsSource }) {
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [projectAdditions, setProjectAdditions] = useStoredState<ExternalProjectAdditions>(
+    'task-seo-external-project-additions',
+    {},
+  );
+  const [budgetDraft, setBudgetDraft] = useState<ExternalBudgetDraft>({ label: '', amountLabel: '' });
+  const [assetDraft, setAssetDraft] = useState<ExternalAssetDraft>({ title: '', url: '', kind: 'link' });
+  const [weeklyDraft, setWeeklyDraft] = useState<ExternalWeeklyDraft>({
+    weekLabel: source.tabTitle,
+    title: '',
+    status: 'active',
+  });
   const activeCount = source.sections.filter((section) => section.status === 'active').length;
   const waitingCount = source.sections.filter((section) => section.status === 'waiting').length;
   const nextCount = source.sections.filter((section) => section.status === 'next').length;
+  const selectedSection = source.sections.find((section) => section.id === selectedSectionId);
+
+  const updateProjectAdditions = (
+    sectionId: string,
+    updater: (current: ExternalProjectAdditions[string]) => ExternalProjectAdditions[string],
+  ) => {
+    setProjectAdditions((current) => ({
+      ...current,
+      [sectionId]: updater(getExternalAdditions(current, sectionId)),
+    }));
+  };
+
+  const handleAddBudgetLine = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedSection || !budgetDraft.label.trim()) return;
+
+    const nextLine: ExternalBudgetLine = {
+      id: uid('external-budget'),
+      label: budgetDraft.label.trim(),
+      amountLabel: budgetDraft.amountLabel.trim() || 'сумма не задана',
+    };
+
+    updateProjectAdditions(selectedSection.id, (current) => ({
+      ...current,
+      budgetLines: [...current.budgetLines, nextLine],
+    }));
+    setBudgetDraft({ label: '', amountLabel: '' });
+  };
+
+  const handleAddAsset = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedSection || !assetDraft.title.trim() || !assetDraft.url.trim()) return;
+
+    const nextAsset: ExternalProjectAsset = {
+      id: uid('external-asset'),
+      title: assetDraft.title.trim(),
+      url: assetDraft.url.trim(),
+      kind: assetDraft.kind,
+    };
+
+    updateProjectAdditions(selectedSection.id, (current) => ({
+      ...current,
+      assets: [...current.assets, nextAsset],
+    }));
+    setAssetDraft({ title: '', url: '', kind: 'link' });
+  };
+
+  const handleAddWeeklyUpdate = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedSection || !weeklyDraft.weekLabel.trim() || !weeklyDraft.title.trim()) return;
+
+    const nextUpdate: ExternalWeeklyUpdate = {
+      id: uid('external-week'),
+      weekLabel: weeklyDraft.weekLabel.trim(),
+      dateLabel: 'понедельник',
+      items: [
+        {
+          id: uid('external-week-item'),
+          title: weeklyDraft.title.trim(),
+          status: weeklyDraft.status,
+        },
+      ],
+    };
+
+    updateProjectAdditions(selectedSection.id, (current) => ({
+      ...current,
+      weeklyUpdates: [nextUpdate, ...current.weeklyUpdates],
+    }));
+    setWeeklyDraft((current) => ({ ...current, title: '' }));
+  };
+
+  if (selectedSection) {
+    const additions = getExternalAdditions(projectAdditions, selectedSection.id);
+    const people = getExternalPeople(selectedSection, source.collaborator);
+    const budgetLines = getExternalBudgetLines(selectedSection, additions);
+    const assets = getExternalAssets(selectedSection, additions, source.url);
+    const weeklyUpdates = getExternalWeeklyUpdates(selectedSection, additions, source);
+    const timeline = weeklyUpdates.flatMap((week) => week.items);
+    const photos = assets.filter((asset) => asset.kind === 'photo');
+
+    return (
+      <section className="external-view external-detail-view">
+        <button className="ghost-button external-back-button" type="button" onClick={() => setSelectedSectionId(null)}>
+          <ChevronRight size={16} />
+          К папкам
+        </button>
+
+        <div className="dashboard-hero panel external-detail-hero">
+          <div>
+            <span className={`external-status ${selectedSection.status}`}>
+              {externalStatusLabels[selectedSection.status]}
+            </span>
+            <h2>{selectedSection.title}</h2>
+            <p>{selectedSection.goal ?? selectedSection.items[0] ?? 'Конечная цель пока не задана.'}</p>
+          </div>
+          <div className="hero-metrics">
+            <Metric label="Бюджет" value={selectedSection.budgetLabel ?? 'не задан'} />
+            <Metric label="Люди" value={String(people.length)} />
+            <Metric label="Материалы" value={String(assets.length)} />
+            <Metric label="Хронология" value={String(timeline.length)} />
+          </div>
+        </div>
+
+        <div className="external-detail-layout">
+          <div className="external-detail-main">
+            <section className="external-detail-card external-goal-card">
+              <div className="tile-heading">
+                <Target size={18} />
+                <h3>Конечная цель</h3>
+              </div>
+              <p>{selectedSection.goal ?? selectedSection.items[0] ?? 'Цель пока не внесена.'}</p>
+              {selectedSection.note && <span>{selectedSection.note}</span>}
+            </section>
+
+            <section className="external-detail-card">
+              <div className="tile-heading">
+                <BarChart3 size={18} />
+                <h3>Бюджет</h3>
+              </div>
+              <strong className="external-budget-total">{selectedSection.budgetLabel ?? 'не задан'}</strong>
+              <div className="external-budget-list">
+                {budgetLines.length ? (
+                  budgetLines.map((line) => (
+                    <div className="external-budget-row" key={line.id}>
+                      <span>{line.label}</span>
+                      <strong>{line.amountLabel}</strong>
+                    </div>
+                  ))
+                ) : (
+                  <p className="empty-note">Строки трат пока не внесены.</p>
+                )}
+              </div>
+              <form className="external-add-form" onSubmit={handleAddBudgetLine}>
+                <input
+                  value={budgetDraft.label}
+                  onChange={(event) => setBudgetDraft((current) => ({ ...current, label: event.target.value }))}
+                  placeholder="Статья расхода"
+                />
+                <input
+                  value={budgetDraft.amountLabel}
+                  onChange={(event) => setBudgetDraft((current) => ({ ...current, amountLabel: event.target.value }))}
+                  placeholder="Сумма"
+                />
+                <button type="submit" aria-label="Добавить строку бюджета">
+                  <Plus size={16} />
+                </button>
+              </form>
+            </section>
+
+            <section className="external-detail-card external-wide-card">
+              <div className="tile-heading">
+                <FileText size={18} />
+                <h3>Файлы и ссылки</h3>
+              </div>
+              <div className="external-asset-grid">
+                {assets.map((asset) => (
+                  <a className={`external-asset-card ${asset.kind}`} key={asset.id} href={asset.url} target="_blank" rel="noreferrer">
+                    <span>{externalAssetKindLabels[asset.kind]}</span>
+                    <strong>{asset.title}</strong>
+                    <ExternalLink size={14} />
+                  </a>
+                ))}
+              </div>
+              <form className="external-add-form external-asset-form" onSubmit={handleAddAsset}>
+                <input
+                  value={assetDraft.title}
+                  onChange={(event) => setAssetDraft((current) => ({ ...current, title: event.target.value }))}
+                  placeholder="Название"
+                />
+                <input
+                  value={assetDraft.url}
+                  onChange={(event) => setAssetDraft((current) => ({ ...current, url: event.target.value }))}
+                  placeholder="Ссылка"
+                />
+                <select
+                  value={assetDraft.kind}
+                  onChange={(event) =>
+                    setAssetDraft((current) => ({ ...current, kind: event.target.value as ExternalProjectAsset['kind'] }))
+                  }
+                >
+                  <option value="link">Ссылка</option>
+                  <option value="file">Файл</option>
+                  <option value="photo">Фото</option>
+                </select>
+                <button type="submit" aria-label="Добавить материал">
+                  <Plus size={16} />
+                </button>
+              </form>
+            </section>
+          </div>
+
+          <aside className="external-detail-side">
+            <section className="external-detail-card">
+              <div className="tile-heading">
+                <Users size={18} />
+                <h3>Задействованные лица</h3>
+              </div>
+              <div className="external-people-list">
+                {people.map((person) => (
+                  <span key={person}>
+                    <i>{person.slice(0, 1)}</i>
+                    {person}
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            <section className="external-detail-card">
+              <div className="tile-heading">
+                <Clock3 size={18} />
+                <h3>Недельная хронология</h3>
+              </div>
+              <div className="external-week-list">
+                {weeklyUpdates.map((week) => (
+                  <div className="external-week-group" key={week.id}>
+                    <header>
+                      <strong>{week.weekLabel}</strong>
+                      <span>{week.dateLabel}</span>
+                    </header>
+                    <div className="external-timeline-list">
+                      {week.items.map((item) => (
+                        <div className={`external-timeline-row ${item.status}`} key={item.id}>
+                          <span className="mini-dot" />
+                          <div>
+                            <strong>{item.title}</strong>
+                            <p>
+                              {externalTimelineStatusLabels[item.status]}
+                              {item.dateLabel ? ` · ${item.dateLabel}` : ''}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <form className="external-add-form external-week-form" onSubmit={handleAddWeeklyUpdate}>
+                <input
+                  value={weeklyDraft.weekLabel}
+                  onChange={(event) => setWeeklyDraft((current) => ({ ...current, weekLabel: event.target.value }))}
+                  placeholder="Лист / понедельник"
+                />
+                <select
+                  value={weeklyDraft.status}
+                  onChange={(event) =>
+                    setWeeklyDraft((current) => ({
+                      ...current,
+                      status: event.target.value as ExternalTimelineItem['status'],
+                    }))
+                  }
+                >
+                  <option value="active">В работе</option>
+                  <option value="planned">План</option>
+                  <option value="waiting">Ожидание</option>
+                  <option value="done">Готово</option>
+                </select>
+                <input
+                  value={weeklyDraft.title}
+                  onChange={(event) => setWeeklyDraft((current) => ({ ...current, title: event.target.value }))}
+                  placeholder="Что изменилось"
+                />
+                <button type="submit" aria-label="Добавить обновление">
+                  <Plus size={16} />
+                </button>
+              </form>
+            </section>
+
+            <section className="external-detail-card">
+              <div className="tile-heading">
+                <FileSpreadsheet size={18} />
+                <h3>Фото</h3>
+              </div>
+              {photos.length ? (
+                <div className="external-photo-list">
+                  {photos.map((photo) => (
+                    <a key={photo.id} href={photo.url} target="_blank" rel="noreferrer">
+                      {photo.title}
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <p className="empty-note">Фотографии пока не добавлены.</p>
+              )}
+            </section>
+          </aside>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="external-view">
@@ -1391,30 +1759,107 @@ function ExternalProjectsView({ source }: { source: ExternalProjectsSource }) {
             </a>
           </div>
         </div>
-        <div className="external-grid">
+        <div className="external-folder-grid">
           {source.sections.map((section) => (
-            <article className="external-card" key={section.id}>
+            <button
+              className={`external-folder-card ${section.status}`}
+              key={section.id}
+              type="button"
+              onClick={() => setSelectedSectionId(section.id)}
+            >
               <div className="external-card-head">
                 <span className={`external-status ${section.status}`}>{externalStatusLabels[section.status]}</span>
-                {section.link && (
-                  <a href={section.link} target="_blank" rel="noreferrer" aria-label={`Открыть ${section.title}`}>
-                    <ExternalLink size={14} />
-                  </a>
-                )}
+                <ChevronRight size={16} />
               </div>
               <h3>{section.title}</h3>
               {section.note && <p>{section.note}</p>}
-              <ul className="external-items">
-                {section.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </article>
+              <div className="external-folder-footer">
+                <div className="avatar-stack" aria-hidden="true">
+                  {getExternalPeople(section, source.collaborator)
+                    .slice(0, 3)
+                    .map((person) => (
+                      <span key={person}>{person.slice(0, 1)}</span>
+                    ))}
+                </div>
+                <strong>{section.items.length} задач</strong>
+              </div>
+            </button>
           ))}
         </div>
       </section>
     </section>
   );
+}
+
+function getExternalAdditions(additions: ExternalProjectAdditions, sectionId: string) {
+  return {
+    budgetLines: additions[sectionId]?.budgetLines ?? [],
+    assets: additions[sectionId]?.assets ?? [],
+    weeklyUpdates: additions[sectionId]?.weeklyUpdates ?? [],
+  };
+}
+
+function getExternalPeople(section: ExternalProjectSection, fallback: string) {
+  return section.people?.length ? section.people : [fallback];
+}
+
+function getExternalBudgetLines(
+  section: ExternalProjectSection,
+  additions: ExternalProjectAdditions[string],
+) {
+  return [...(section.budgetLines ?? []), ...additions.budgetLines];
+}
+
+function getExternalAssets(
+  section: ExternalProjectSection,
+  additions: ExternalProjectAdditions[string],
+  sourceUrl: string,
+) {
+  const baseAssets: ExternalProjectAsset[] = [
+    {
+      id: `${section.id}-source-doc`,
+      title: 'Документ-источник',
+      url: sourceUrl,
+      kind: 'file',
+    },
+    ...(section.assets ?? []),
+  ];
+
+  if (section.link && !baseAssets.some((asset) => asset.url === section.link)) {
+    baseAssets.unshift({
+      id: `${section.id}-main-link`,
+      title: 'Рабочая ссылка',
+      url: section.link,
+      kind: 'link',
+    });
+  }
+
+  return [...baseAssets, ...additions.assets];
+}
+
+function getExternalWeeklyUpdates(
+  section: ExternalProjectSection,
+  additions: ExternalProjectAdditions[string],
+  source: ExternalProjectsSource,
+) {
+  const sourceWeek: ExternalWeeklyUpdate = {
+    id: `${section.id}-week-${source.tabTitle}`,
+    weekLabel: source.tabTitle,
+    dateLabel: source.documentTitle,
+    items: getExternalTimeline(section),
+  };
+
+  return [...additions.weeklyUpdates, ...(section.weeklyUpdates ?? []), sourceWeek];
+}
+
+function getExternalTimeline(section: ExternalProjectSection) {
+  if (section.timeline?.length) return section.timeline;
+
+  return section.items.map((item, index) => ({
+    id: `${section.id}-timeline-${index}`,
+    title: item,
+    status: index === 0 && section.status === 'done' ? 'done' : index === 0 ? 'active' : 'planned',
+  })) satisfies ExternalTimelineItem[];
 }
 
 type TaskComposerProps = {
@@ -2641,15 +3086,6 @@ type DashboardViewProps = {
   completion: number;
   overdueCount: number;
   collisions: Array<{ id: string; task: Task; owner?: Person; count: number }>;
-  linkRows: LinkPurchase[];
-  linkSummaries: Map<string, LinkPurchaseSummary>;
-  linkTotalSummary: LinkPurchaseSummary;
-  workPlans: WorkPlanSource[];
-  auditSources: ClientAuditSource[];
-  linkLoadStatus: LinkLoadStatus;
-  linkError: string;
-  linkUpdatedAt: string;
-  onReloadLinks: () => void;
 };
 
 function DashboardView({
@@ -2659,15 +3095,6 @@ function DashboardView({
   completion,
   overdueCount,
   collisions,
-  linkRows,
-  linkSummaries,
-  linkTotalSummary,
-  workPlans,
-  auditSources,
-  linkLoadStatus,
-  linkError,
-  linkUpdatedAt,
-  onReloadLinks,
 }: DashboardViewProps) {
   const totalTimeline = tasks.reduce((sum, task) => sum + task.timeline.length, 0);
 
@@ -2682,20 +3109,12 @@ function DashboardView({
           <Metric label="Выполнение" value={`${completion}%`} />
           <Metric label="Просрочено" value={String(overdueCount)} tone={overdueCount ? 'danger' : 'success'} />
           <Metric label="Подпункты" value={String(totalTimeline)} />
-          <Metric label="Ссылки" value={String(linkRows.length)} />
-          <Metric label="Планы" value={String(workPlans.length)} />
-          <Metric label="Аудиты" value={String(auditSources.length)} />
+          <Metric label="Наложения" value={String(collisions.length)} tone={collisions.length ? 'warning' : 'success'} />
         </div>
       </div>
 
       <div className="dashboard-layout">
         <div className="dashboard-analytics">
-          <AnalyticsDashboardTiles
-            linkRows={linkRows}
-            linkTotalSummary={linkTotalSummary}
-            promotionSources={PROMOTION_RESULT_SOURCES}
-          />
-
           <div className="dashboard-main">
             <section className="panel">
               <div className="section-heading compact-heading">
@@ -2779,19 +3198,6 @@ function DashboardView({
             </div>
           </section>
 
-          <LinkReportSummary
-            projects={projects}
-            summaries={linkSummaries}
-            total={linkTotalSummary}
-            status={linkLoadStatus}
-            error={linkError}
-            updatedAt={linkUpdatedAt}
-            onReload={onReloadLinks}
-          />
-
-          <WorkPlanSummary plans={workPlans} />
-
-          <AuditSummary sources={auditSources} />
         </div>
 
         <TaskChronologyPanel tasks={tasks} projects={projects} peopleById={peopleById} />
@@ -2800,60 +3206,137 @@ function DashboardView({
   );
 }
 
-function AnalyticsDashboardTiles({
+function SeoProjectsView({
+  projects,
+  tasks,
+  peopleById,
   linkRows,
-  linkTotalSummary,
   promotionSources,
+  selectedProjectId,
+  onProjectChange,
 }: {
+  projects: Project[];
+  tasks: Task[];
+  peopleById: Map<string, Person>;
   linkRows: LinkPurchase[];
-  linkTotalSummary: LinkPurchaseSummary;
   promotionSources: PromotionResultSource[];
+  selectedProjectId: string;
+  onProjectChange: (projectId: string) => void;
 }) {
-  const linkChartItems = useMemo(() => {
-    const rowsByProject = new Map<string, LinkPurchase[]>();
-    linkRows.forEach((row) => {
-      const current = rowsByProject.get(row.projectName) ?? [];
-      current.push(row);
-      rowsByProject.set(row.projectName, current);
-    });
-
-    return Array.from(rowsByProject.entries())
-      .map(([projectName, rows]) => ({ projectName, summary: summarizeLinkPurchases(rows) }))
-      .sort((a, b) => b.summary.count - a.summary.count)
-      .slice(0, 5);
-  }, [linkRows]);
-  const maxLinks = Math.max(...linkChartItems.map((item) => item.summary.count), 1);
-  const goalSourceCount = promotionSources.filter((source) => source.fields.includes('Достижение цели')).length;
-  const goalExamples = promotionSources.flatMap((source) => source.goalExamples).slice(0, 3);
+  const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? projects[0];
+  const selectedKey = normalizeProjectName(selectedProject?.name ?? '');
+  const selectedLinkRows = linkRows.filter((row) => normalizeProjectName(row.projectName) === selectedKey);
+  const selectedSources = promotionSources.filter((source) => normalizeProjectName(source.projectName) === selectedKey);
+  const selectedTasks = selectedProject ? tasks.filter((task) => task.projectId === selectedProject.id) : [];
+  const activeTasks = selectedTasks.filter((task) => task.status !== 'done').length;
 
   return (
-    <section className="analytics-tile-grid" aria-label="Аналитические показатели">
+    <section className="seo-projects-view">
+      <div className="dashboard-hero panel seo-projects-hero">
+        <div>
+          <h2>SEO-проекты</h2>
+          <p>Разверни аналитику по одному проекту: ссылки, переходы, лиды, цели и ближайшие задачи.</p>
+        </div>
+        <div className="hero-metrics">
+          <Metric label="Проекты" value={String(projects.length)} />
+          <Metric label="Выбрано" value={selectedProject?.name ?? '—'} />
+          <Metric label="Задачи" value={String(activeTasks)} />
+          <Metric label="Источники" value={String(selectedSources.length)} />
+        </div>
+      </div>
+
+      <section className="panel seo-project-picker-panel">
+        <div className="section-heading compact-heading">
+          <div>
+            <h2>Выбор проекта</h2>
+            <p>Карточки ниже перестраиваются под выбранного клиента.</p>
+          </div>
+        </div>
+        <div className="seo-project-picker" role="group" aria-label="Выбрать SEO-проект">
+          {projects.map((project) => (
+            <button
+              className={project.id === selectedProject?.id ? 'is-active' : ''}
+              key={project.id}
+              type="button"
+              onClick={() => onProjectChange(project.id)}
+            >
+              <span className="mini-dot" style={{ background: project.color }} />
+              {project.name}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {selectedProject ? (
+        <div className="seo-project-layout">
+          <div className="seo-project-main">
+            <ProjectSeoAnalyticsTiles
+              project={selectedProject}
+              linkRows={selectedLinkRows}
+              promotionSources={selectedSources}
+            />
+          </div>
+          <SeoProjectTaskPanel project={selectedProject} tasks={selectedTasks} peopleById={peopleById} />
+        </div>
+      ) : (
+        <div className="empty-row">Пока нет проектов для аналитики.</div>
+      )}
+    </section>
+  );
+}
+
+function ProjectSeoAnalyticsTiles({
+  project,
+  linkRows,
+  promotionSources,
+}: {
+  project: Project;
+  linkRows: LinkPurchase[];
+  promotionSources: PromotionResultSource[];
+}) {
+  const linkSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
+  const source = promotionSources[0];
+  const goalExamples = source?.goalExamples ?? [];
+  const hasGoalField = Boolean(source?.fields.includes('Достижение цели'));
+  const linkChartItems = [
+    { label: 'Всего строк', value: linkSummary.count },
+    { label: 'Размещено', value: linkSummary.placed },
+    { label: 'В работе', value: linkSummary.inProgress },
+    { label: 'Купить', value: linkSummary.needToBuy },
+  ].filter((item) => item.value > 0);
+  const maxLinks = Math.max(...linkChartItems.map((item) => item.value), 1);
+
+  return (
+    <section className="analytics-tile-grid" aria-label={`Аналитика SEO-проекта ${project.name}`}>
       <article className="analytics-tile analytics-tile-large">
         <div className="analytics-tile-head">
           <div>
             <span>Закуп ссылок</span>
-            <h3>{linkTotalSummary.count} строк</h3>
+            <h3>{linkSummary.count ? `${linkSummary.count} строк` : 'нет строк'}</h3>
           </div>
           <BarChart3 size={20} />
         </div>
         {linkChartItems.length === 0 ? (
-          <div className="analytics-empty">Данные по закупу ссылок загружаются из Google Sheets.</div>
+          <div className="analytics-empty">нет строк закупа по проекту</div>
         ) : (
           <div className="analytics-bar-chart">
             {linkChartItems.map((item) => (
-              <div className="analytics-bar-row" key={item.projectName}>
-                <span>{item.projectName}</span>
+              <div className="analytics-bar-row" key={item.label}>
+                <span>{item.label}</span>
                 <div>
-                  <i style={{ width: `${Math.max(9, (item.summary.count / maxLinks) * 100)}%` }} />
+                  <i style={{ width: `${Math.max(9, (item.value / maxLinks) * 100)}%` }} />
                 </div>
-                <em>{item.summary.count}</em>
+                <em>{item.value}</em>
               </div>
             ))}
           </div>
         )}
         <div className="analytics-tile-footer">
-          <span>Размещено: {linkTotalSummary.placed}</span>
-          <span>Купить: {linkTotalSummary.needToBuy}</span>
+          <span>План: {formatMoney(linkSummary.planCost)}</span>
+          <span>Факт: {formatMoney(linkSummary.factCost)}</span>
+          <a href={LINK_SOURCE_SPREADSHEET_URL} target="_blank" rel="noreferrer">
+            Источник
+          </a>
         </div>
       </article>
 
@@ -2861,11 +3344,11 @@ function AnalyticsDashboardTiles({
         <div className="analytics-tile-head">
           <div>
             <span>Динамика переходов</span>
-            <h3>{promotionSources.length} источника</h3>
+            <h3>{source ? source.recordsLabel : 'нет источника'}</h3>
           </div>
           <RefreshCw size={20} />
         </div>
-        <div className="analytics-wave-chart" aria-hidden="true">
+        <div className={source ? 'analytics-wave-chart' : 'analytics-placeholder-chart'} aria-hidden="true">
           <i />
           <i />
           <i />
@@ -2873,19 +3356,25 @@ function AnalyticsDashboardTiles({
           <i />
           <i />
         </div>
-        <p>Подключены таблицы Метрики по ключевым запросам. Для помесячной динамики нужен периодный срез.</p>
-        <div className="analytics-chip-row">
-          {promotionSources.map((source) => (
-            <em key={source.id}>{source.projectName}</em>
-          ))}
-        </div>
+        <p>
+          {source
+            ? `${source.spreadsheetTitle} · ${source.periodLabel}. Для помесячной динамики нужен периодный срез.`
+            : 'источник Метрики не подключен'}
+        </p>
+        {source && (
+          <div className="analytics-chip-row">
+            {source.sampleQueries.map((query) => (
+              <em key={query}>{query}</em>
+            ))}
+          </div>
+        )}
       </article>
 
       <article className="analytics-tile">
         <div className="analytics-tile-head">
           <div>
             <span>Динамика лидов</span>
-            <h3>нет данных</h3>
+            <h3>данных пока нет</h3>
           </div>
           <Users size={20} />
         </div>
@@ -2902,18 +3391,77 @@ function AnalyticsDashboardTiles({
         <div className="analytics-tile-head">
           <div>
             <span>Цели на сайте</span>
-            <h3>{goalSourceCount} источника</h3>
+            <h3>{hasGoalField ? (goalExamples.length ? `${goalExamples.length} примера` : 'колонка готова') : 'нет источника'}</h3>
           </div>
           <Target size={20} />
         </div>
         <div className="analytics-chip-row">
-          {(goalExamples.length ? goalExamples : ['Достижение цели', 'Обратная связь']).map((goal) => (
+          {(hasGoalField
+            ? goalExamples.length
+              ? goalExamples
+              : ['цели будут подтягиваться из таблицы']
+            : ['цели будут подтягиваться из таблицы']
+          ).map((goal) => (
             <em key={goal}>{goal}</em>
           ))}
         </div>
-        <p>Колонка целей есть в таблицах результатов продвижения, выводится в клиентской вкладке “Результаты”.</p>
+        <p>
+          {hasGoalField
+            ? 'Поле “Достижение цели” есть в таблице результатов продвижения.'
+            : 'Когда появится таблица целей, она попадет в эту часть отчета.'}
+        </p>
       </article>
     </section>
+  );
+}
+
+function SeoProjectTaskPanel({
+  project,
+  tasks,
+  peopleById,
+}: {
+  project: Project;
+  tasks: Task[];
+  peopleById: Map<string, Person>;
+}) {
+  const activeTasks = tasks
+    .filter((task) => task.status !== 'done')
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || a.deadline.localeCompare(b.deadline));
+
+  return (
+    <aside className="panel seo-project-task-panel" style={{ '--project-color': project.color } as CSSProperties}>
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>Задачи проекта</h2>
+          <p>{project.name}: актуальное сверху, закрытое не смешивается с аналитикой.</p>
+        </div>
+        <span className="soft-count">{activeTasks.length}</span>
+      </div>
+      {activeTasks.length === 0 ? (
+        <div className="empty-row">Активных задач по проекту сейчас нет.</div>
+      ) : (
+        <div className="seo-project-task-list">
+          {activeTasks.slice(0, 8).map((task) => (
+            <article className={`seo-project-task ${task.status}`} key={task.id}>
+              <div>
+                <span className="mini-dot" />
+                <strong>{task.title}</strong>
+              </div>
+              <p>
+                {task.ownerIds
+                  .map((ownerId) => peopleById.get(ownerId)?.name)
+                  .filter(Boolean)
+                  .join(', ') || 'Без ответственного'}
+              </p>
+              <footer>
+                <span>{statusLabels[task.status]}</span>
+                <em>{formatDate(task.deadline)}</em>
+              </footer>
+            </article>
+          ))}
+        </div>
+      )}
+    </aside>
   );
 }
 
@@ -2997,162 +3545,6 @@ function TaskChronologyPanel({
         ))}
       </div>
     </aside>
-  );
-}
-
-function AuditSummary({ sources }: { sources: ClientAuditSource[] }) {
-  return (
-    <section className="panel audit-report">
-      <div className="section-heading compact-heading">
-        <div>
-          <h2>Изначальный аудит</h2>
-          <p>Аккаунт собирает вводные по клиенту, SEO-специалист закрывает стартовый чек-лист.</p>
-        </div>
-        <CheckCircle2 size={20} />
-      </div>
-
-      <div className="audit-summary-grid">
-        <div className="audit-summary-card">
-          <span>этап 1</span>
-          <strong>Сбор инфо с клиента</strong>
-          <p>Кристина · аккаунт менеджер · {sources.length} клиентских вкладок</p>
-          <a href={CLIENT_AUDIT_SPREADSHEET_URL} target="_blank" rel="noreferrer">
-            Открыть таблицу
-          </a>
-        </div>
-        <div className="audit-summary-card">
-          <span>этап 2</span>
-          <strong>SEO-чек-лист</strong>
-          <p>Николай · SEO-специалист · {SEO_AUDIT_CHECKLIST.totalChecks} проверок</p>
-          <a href={SEO_AUDIT_CHECKLIST.url} target="_blank" rel="noreferrer">
-            Открыть чек-лист
-          </a>
-        </div>
-      </div>
-
-      <div className="work-plan-list">
-        {sources.map((source) => (
-          <div className="work-plan-row" key={source.id}>
-            <div>
-              <strong>{source.projectName}</strong>
-              <p>{source.sheetName}</p>
-            </div>
-            <span>{source.clientName}</span>
-            <span>вводные</span>
-            <a href={source.url} target="_blank" rel="noreferrer">
-              Анкета
-            </a>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function WorkPlanSummary({ plans }: { plans: WorkPlanSource[] }) {
-  return (
-    <section className="panel work-plan-report">
-      <div className="section-heading compact-heading">
-        <div>
-          <h2>Планы работ по клиентам</h2>
-          <p>Источники SEO-планов и контент-плана, разложенные по проектам.</p>
-        </div>
-        <FileText size={20} />
-      </div>
-
-      <div className="work-plan-list">
-        {plans.map((plan) => (
-          <div className="work-plan-row" key={plan.id}>
-            <div>
-              <strong>{plan.projectName}</strong>
-              <p>
-                {plan.title} · {countWorkPlanItems(plan)} пунктов
-              </p>
-            </div>
-            <span>{plan.clientName}</span>
-            <span>{plan.period}</span>
-            <a href={plan.url} target="_blank" rel="noreferrer">
-              {plan.kind === 'doc' ? 'Документ' : 'Таблица'}
-            </a>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function LinkReportSummary({
-  projects,
-  summaries,
-  total,
-  status,
-  error,
-  updatedAt,
-  onReload,
-}: {
-  projects: Project[];
-  summaries: Map<string, LinkPurchaseSummary>;
-  total: LinkPurchaseSummary;
-  status: LinkLoadStatus;
-  error: string;
-  updatedAt: string;
-  onReload: () => void;
-}) {
-  const projectsWithLinks = projects
-    .map((project) => ({ project, summary: summaries.get(normalizeProjectName(project.name)) }))
-    .filter((item) => item.summary && item.summary.count > 0);
-
-  return (
-    <section className="panel link-report">
-      <div className="section-heading compact-heading">
-        <div>
-          <h2>Отчет по закупу ссылок</h2>
-          <p>
-            Склейка клиентов из Google Sheets в проекты
-            {updatedAt ? ` · обновлено ${updatedAt}` : ''}
-          </p>
-        </div>
-        <div className="link-actions">
-          <a href={LINK_SOURCE_SPREADSHEET_URL} target="_blank" rel="noreferrer">
-            <FileSpreadsheet size={15} />
-            Источник
-          </a>
-          <button type="button" onClick={onReload} disabled={status === 'loading'}>
-            <RefreshCw size={15} />
-            {status === 'loading' ? 'Обновляю' : 'Обновить'}
-          </button>
-        </div>
-      </div>
-
-      {status === 'error' && (
-        <div className="sync-state is-error">
-          <AlertTriangle size={16} />
-          <span>{error}</span>
-        </div>
-      )}
-
-      <div className="link-summary-grid report-grid">
-        <LinkStat label="всего строк" value={String(total.count)} />
-        <LinkStat label="план" value={formatMoney(total.planCost)} />
-        <LinkStat label="факт" value={formatMoney(total.factCost)} />
-        <LinkStat label="размещено" value={String(total.placed)} tone="success" />
-        <LinkStat label="купить" value={String(total.needToBuy)} tone="warning" />
-      </div>
-
-      <div className="report-table">
-        {projectsWithLinks.map(({ project, summary }) => (
-          <div key={project.id} className="report-row">
-            <div>
-              <span className="mini-dot" style={{ background: project.color }} />
-              <strong>{project.name}</strong>
-            </div>
-            <span>{summary?.count ?? 0} строк</span>
-            <span>{formatMoney(summary?.factCost ?? 0)}</span>
-            <span>{summary?.placed ?? 0} размещено</span>
-          </div>
-        ))}
-      </div>
-    </section>
   );
 }
 

@@ -1,3 +1,30 @@
+export type ExternalBudgetLine = {
+  id: string;
+  label: string;
+  amountLabel: string;
+};
+
+export type ExternalProjectAsset = {
+  id: string;
+  title: string;
+  url: string;
+  kind: 'file' | 'photo' | 'link';
+};
+
+export type ExternalTimelineItem = {
+  id: string;
+  title: string;
+  status: 'planned' | 'active' | 'done' | 'waiting';
+  dateLabel?: string;
+};
+
+export type ExternalWeeklyUpdate = {
+  id: string;
+  weekLabel: string;
+  dateLabel: string;
+  items: ExternalTimelineItem[];
+};
+
 export type ExternalProjectSection = {
   id: string;
   title: string;
@@ -5,6 +32,13 @@ export type ExternalProjectSection = {
   items: string[];
   note?: string;
   link?: string;
+  goal?: string;
+  budgetLabel?: string;
+  people?: string[];
+  budgetLines?: ExternalBudgetLine[];
+  assets?: ExternalProjectAsset[];
+  timeline?: ExternalTimelineItem[];
+  weeklyUpdates?: ExternalWeeklyUpdate[];
 };
 
 export type ExternalProjectsSource = {
