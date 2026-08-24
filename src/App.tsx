@@ -41,13 +41,15 @@ import {
   type LinkPurchase,
   type LinkPurchaseSummary,
 } from './linkPurchases';
+import { EXTERNAL_PROJECTS_SOURCE, type ExternalProjectSection, type ExternalProjectsSource } from './externalProjects';
+import { PROMOTION_RESULT_SOURCES, type PromotionResultSource } from './promotionResults';
 import { WORK_PLAN_SOURCES, type WorkPlanSource } from './workPlans';
 
-type View = 'tasks' | 'admin' | 'dashboard';
+type View = 'tasks' | 'admin' | 'dashboard' | 'external';
 type Status = 'planned' | 'active' | 'done' | 'risk';
 type CalendarMode = 'plan' | 'fact';
 type AdminTab = 'projects' | 'people';
-type ProjectTab = 'tasks' | 'links' | 'plans' | 'content' | 'audit';
+type ProjectTab = 'tasks' | 'links' | 'plans' | 'content' | 'results' | 'audit';
 type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 type Project = {
@@ -679,7 +681,15 @@ const navItems = [
   { id: 'tasks' as const, label: 'Список задач', icon: LayoutList },
   { id: 'admin' as const, label: 'Админка', icon: SlidersHorizontal },
   { id: 'dashboard' as const, label: 'Общий дашборд', icon: BarChart3 },
+  { id: 'external' as const, label: 'Сторонние проекты', icon: FileText },
 ];
+
+const externalStatusLabels: Record<ExternalProjectSection['status'], string> = {
+  active: 'в работе',
+  done: 'готово',
+  waiting: 'ожидание',
+  next: 'следующий шаг',
+};
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -982,6 +992,17 @@ function App() {
     return map;
   }, []);
 
+  const promotionResultsByProject = useMemo(() => {
+    const map = new Map<string, PromotionResultSource[]>();
+    PROMOTION_RESULT_SOURCES.forEach((source) => {
+      const key = normalizeProjectName(source.projectName);
+      const current = map.get(key) ?? [];
+      current.push(source);
+      map.set(key, current);
+    });
+    return map;
+  }, []);
+
   const clientLinksByProject = useMemo(
     () => new Map(CLIENT_QUICK_LINKS.map((item) => [normalizeProjectName(item.projectName), item])),
     [],
@@ -1222,6 +1243,7 @@ function App() {
                       contentSource={contentSourcesByProject.get(normalizeProjectName(project.name))}
                       workPlans={workPlansByProject.get(normalizeProjectName(project.name)) ?? []}
                       auditSources={auditSourcesByProject.get(normalizeProjectName(project.name)) ?? []}
+                      promotionResults={promotionResultsByProject.get(normalizeProjectName(project.name)) ?? []}
                       clientLinks={clientLinksByProject.get(normalizeProjectName(project.name))}
                       linkLoadStatus={linkLoadStatus}
                       linkError={linkError}
@@ -1299,6 +1321,8 @@ function App() {
             onReloadLinks={loadLinkRows}
           />
         )}
+
+        {activeView === 'external' && <ExternalProjectsView source={EXTERNAL_PROJECTS_SOURCE} />}
       </main>
 
       <nav className="side-nav glass" aria-label="Основное меню">
@@ -1326,6 +1350,70 @@ function App() {
         </div>
       </nav>
     </div>
+  );
+}
+
+function ExternalProjectsView({ source }: { source: ExternalProjectsSource }) {
+  const activeCount = source.sections.filter((section) => section.status === 'active').length;
+  const waitingCount = source.sections.filter((section) => section.status === 'waiting').length;
+  const nextCount = source.sections.filter((section) => section.status === 'next').length;
+
+  return (
+    <section className="external-view">
+      <div className="dashboard-hero panel external-hero">
+        <div>
+          <h2>{source.title}</h2>
+          <p>
+            Отдельная зона для задач, которые идут не внутри клиентского SEO-списка, а в рабочем документе с{' '}
+            {source.collaborator}.
+          </p>
+        </div>
+        <div className="hero-metrics">
+          <Metric label="Направления" value={String(source.sections.length)} />
+          <Metric label="В работе" value={String(activeCount)} />
+          <Metric label="Ожидание" value={String(waitingCount)} tone={waitingCount ? 'warning' : 'success'} />
+          <Metric label="Следующие" value={String(nextCount)} />
+        </div>
+      </div>
+
+      <section className="panel external-source-panel">
+        <div className="section-heading compact-heading">
+          <div>
+            <h2>{source.documentTitle}</h2>
+            <p>
+              Вкладка {source.tabTitle} · {source.updatedLabel}
+            </p>
+          </div>
+          <div className="link-actions">
+            <a href={source.url} target="_blank" rel="noreferrer">
+              <FileText size={15} />
+              Открыть документ
+            </a>
+          </div>
+        </div>
+        <div className="external-grid">
+          {source.sections.map((section) => (
+            <article className="external-card" key={section.id}>
+              <div className="external-card-head">
+                <span className={`external-status ${section.status}`}>{externalStatusLabels[section.status]}</span>
+                {section.link && (
+                  <a href={section.link} target="_blank" rel="noreferrer" aria-label={`Открыть ${section.title}`}>
+                    <ExternalLink size={14} />
+                  </a>
+                )}
+              </div>
+              <h3>{section.title}</h3>
+              {section.note && <p>{section.note}</p>}
+              <ul className="external-items">
+                {section.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+    </section>
   );
 }
 
@@ -1449,6 +1537,7 @@ type ProjectGroupProps = {
   contentSource?: ContentPlanSource;
   workPlans: WorkPlanSource[];
   auditSources: ClientAuditSource[];
+  promotionResults: PromotionResultSource[];
   clientLinks?: ClientQuickLinks;
   linkLoadStatus: LinkLoadStatus;
   linkError: string;
@@ -1480,6 +1569,7 @@ function ProjectGroup({
   contentSource,
   workPlans,
   auditSources,
+  promotionResults,
   clientLinks,
   linkLoadStatus,
   linkError,
@@ -1506,6 +1596,7 @@ function ProjectGroup({
     `${linkRows.length} ссылок`,
     `${workPlans.length} планов`,
     `${contentTopics.length} тем`,
+    `${promotionResults.length} результатов`,
     `${auditSources.length + 1} аудитов`,
   ].join(' · ');
 
@@ -1558,6 +1649,13 @@ function ProjectGroup({
               onClick={() => onTabChange('content')}
             >
               Контент <em>{contentTopics.length}</em>
+            </button>
+            <button
+              className={activeTab === 'results' ? 'is-active' : ''}
+              type="button"
+              onClick={() => onTabChange('results')}
+            >
+              Результаты <em>{promotionResults.length}</em>
             </button>
             <button
               className={activeTab === 'audit' ? 'is-active' : ''}
@@ -1626,6 +1724,8 @@ function ProjectGroup({
               onReload={onReloadContent}
             />
           )}
+
+          {activeTab === 'results' && <PromotionResultsPanel project={project} sources={promotionResults} />}
 
           {activeTab === 'audit' && <AuditPanel project={project} sources={auditSources} />}
         </div>
@@ -1955,6 +2055,97 @@ function groupContentTopicsByMonth(topics: ContentPlanTopic[]) {
     map.set(key, current);
   });
   return Array.from(map.entries()).map(([month, items]) => ({ month, items }));
+}
+
+function PromotionResultsPanel({ project, sources }: { project: Project; sources: PromotionResultSource[] }) {
+  const source = sources[0];
+
+  return (
+    <div className="promotion-panel">
+      <div className="link-panel-head">
+        <div>
+          <strong>Результаты продвижения: {project.name}</strong>
+          <p>Отдельная вкладка отчета под заявки, позиции / ключевые запросы и достижения целей на сайте.</p>
+        </div>
+        {source && (
+          <div className="link-actions">
+            <a href={source.url} target="_blank" rel="noreferrer">
+              <FileSpreadsheet size={15} />
+              Таблица Метрики
+            </a>
+          </div>
+        )}
+      </div>
+
+      <div className="promotion-result-grid">
+        <article className="promotion-result-card is-muted">
+          <span>Заявки</span>
+          <strong>Данных пока нет</strong>
+          <p>Блок уже заложен в отчет. Когда появится источник по заявкам, сюда можно будет добавить цифры и динамику.</p>
+        </article>
+
+        <article className="promotion-result-card">
+          <span>Позиции / запросы</span>
+          {source ? (
+            <>
+              <strong>{source.recordsLabel}</strong>
+              <p>
+                {source.spreadsheetTitle} · {source.periodLabel}
+              </p>
+              <div className="promotion-query-list">
+                {source.sampleQueries.map((query) => (
+                  <em key={query}>{query}</em>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <strong>Источник не подключен</strong>
+              <p>Для этого проекта пока нет таблицы с ключевыми запросами или позициями.</p>
+            </>
+          )}
+        </article>
+
+        <article className="promotion-result-card">
+          <span>Цели на сайте</span>
+          {source ? (
+            <>
+              <strong>{source.goalExamples.length ? `${source.goalExamples.length} примера` : 'Колонка готова'}</strong>
+              <p>В источнике есть поле “Достижение цели”, его можно использовать для итогового отчета.</p>
+              <div className="promotion-goals">
+                {(source.goalExamples.length ? source.goalExamples : ['Достижения целей будут подтягиваться из таблицы']).map(
+                  (goal) => (
+                    <em key={goal}>{goal}</em>
+                  ),
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <strong>Источник не подключен</strong>
+              <p>Когда появится таблица целей, она попадет в эту часть отчета.</p>
+            </>
+          )}
+        </article>
+      </div>
+
+      {source ? (
+        <article className="promotion-source-card">
+          <div>
+            <span>{source.clientName}</span>
+            <strong>{source.note}</strong>
+          </div>
+          <div className="promotion-field-list">
+            {source.fields.map((field) => (
+              <em key={field}>{field}</em>
+            ))}
+          </div>
+        </article>
+      ) : (
+        <div className="empty-row">Для проекта {project.name} пока нет отдельного источника по результатам продвижения.</div>
+      )}
+    </div>
+  );
 }
 
 function AuditPanel({ project, sources }: { project: Project; sources: ClientAuditSource[] }) {
@@ -2497,103 +2688,315 @@ function DashboardView({
         </div>
       </div>
 
-      <div className="dashboard-main">
-        <section className="panel">
-          <div className="section-heading compact-heading">
-            <div>
-              <h2>Выполнение по проектам</h2>
-              <p>Процент закрытых задач внутри каждого проекта.</p>
-            </div>
-            <Target size={20} />
-          </div>
-          <div className="project-bars">
-            {projects.map((project) => {
-              const projectTasks = tasks.filter((task) => task.projectId === project.id);
-              const done = projectTasks.filter((task) => task.status === 'done').length;
-              const percent = projectTasks.length ? Math.round((done / projectTasks.length) * 100) : 0;
-              return (
-                <div key={project.id} className="bar-row">
-                  <div>
-                    <span className="mini-dot" style={{ background: project.color }} />
-                    <strong>{project.name}</strong>
-                  </div>
-                  <div className="bar-track">
-                    <span style={{ width: `${percent}%`, background: project.color }} />
-                  </div>
-                  <em>{percent}%</em>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+      <div className="dashboard-layout">
+        <div className="dashboard-analytics">
+          <AnalyticsDashboardTiles
+            linkRows={linkRows}
+            linkTotalSummary={linkTotalSummary}
+            promotionSources={PROMOTION_RESULT_SOURCES}
+          />
 
-        <section className="panel">
-          <div className="section-heading compact-heading">
-            <div>
-              <h2>Наложения</h2>
-              <p>Ответственные с задачами рядом по срокам.</p>
-            </div>
-            <Users size={20} />
-          </div>
-          <div className="overlap-list">
-            {collisions.map((item) => (
-              <div key={item.id} className="overlap-item">
-                <span className="avatar">{item.owner?.name.slice(0, 1) ?? '?'}</span>
+          <div className="dashboard-main">
+            <section className="panel">
+              <div className="section-heading compact-heading">
                 <div>
-                  <strong>{item.owner?.name ?? 'Без имени'}</strong>
-                  <p>
-                    {item.count} задачи около {formatDate(item.task.deadline)} · {item.task.title}
-                  </p>
+                  <h2>Выполнение по проектам</h2>
+                  <p>Процент закрытых задач внутри каждого проекта.</p>
                 </div>
+                <Target size={20} />
+              </div>
+              <div className="project-bars">
+                {projects.map((project) => {
+                  const projectTasks = tasks.filter((task) => task.projectId === project.id);
+                  const done = projectTasks.filter((task) => task.status === 'done').length;
+                  const percent = projectTasks.length ? Math.round((done / projectTasks.length) * 100) : 0;
+                  return (
+                    <div key={project.id} className="bar-row">
+                      <div>
+                        <span className="mini-dot" style={{ background: project.color }} />
+                        <strong>{project.name}</strong>
+                      </div>
+                      <div className="bar-track">
+                        <span style={{ width: `${percent}%`, background: project.color }} />
+                      </div>
+                      <em>{percent}%</em>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="panel">
+              <div className="section-heading compact-heading">
+                <div>
+                  <h2>Наложения</h2>
+                  <p>Ответственные с задачами рядом по срокам.</p>
+                </div>
+                <Users size={20} />
+              </div>
+              <div className="overlap-list">
+                {collisions.map((item) => (
+                  <div key={item.id} className="overlap-item">
+                    <span className="avatar">{item.owner?.name.slice(0, 1) ?? '?'}</span>
+                    <div>
+                      <strong>{item.owner?.name ?? 'Без имени'}</strong>
+                      <p>
+                        {item.count} задачи около {formatDate(item.task.deadline)} · {item.task.title}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {collisions.length === 0 && <div className="empty-row">Наложений по дедлайнам не найдено.</div>}
+              </div>
+            </section>
+          </div>
+
+          <section className="panel">
+            <div className="section-heading compact-heading">
+              <div>
+                <h2>Ближайшие дедлайны</h2>
+                <p>Плановые точки на следующие дни.</p>
+              </div>
+              <Clock3 size={20} />
+            </div>
+            <div className="deadline-grid">
+              {tasks
+                .filter((task) => task.status !== 'done' && task.deadline)
+                .sort((a, b) => a.deadline.localeCompare(b.deadline))
+                .slice(0, 8)
+                .map((task) => (
+                  <div key={task.id} className={`deadline-card ${task.status}`}>
+                    <span>{formatDate(task.deadline)}</span>
+                    <strong>{task.title}</strong>
+                    <p>
+                      {task.ownerIds
+                        .map((ownerId) => peopleById.get(ownerId)?.name)
+                        .filter(Boolean)
+                        .join(', ')}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          </section>
+
+          <LinkReportSummary
+            projects={projects}
+            summaries={linkSummaries}
+            total={linkTotalSummary}
+            status={linkLoadStatus}
+            error={linkError}
+            updatedAt={linkUpdatedAt}
+            onReload={onReloadLinks}
+          />
+
+          <WorkPlanSummary plans={workPlans} />
+
+          <AuditSummary sources={auditSources} />
+        </div>
+
+        <TaskChronologyPanel tasks={tasks} projects={projects} peopleById={peopleById} />
+      </div>
+    </section>
+  );
+}
+
+function AnalyticsDashboardTiles({
+  linkRows,
+  linkTotalSummary,
+  promotionSources,
+}: {
+  linkRows: LinkPurchase[];
+  linkTotalSummary: LinkPurchaseSummary;
+  promotionSources: PromotionResultSource[];
+}) {
+  const linkChartItems = useMemo(() => {
+    const rowsByProject = new Map<string, LinkPurchase[]>();
+    linkRows.forEach((row) => {
+      const current = rowsByProject.get(row.projectName) ?? [];
+      current.push(row);
+      rowsByProject.set(row.projectName, current);
+    });
+
+    return Array.from(rowsByProject.entries())
+      .map(([projectName, rows]) => ({ projectName, summary: summarizeLinkPurchases(rows) }))
+      .sort((a, b) => b.summary.count - a.summary.count)
+      .slice(0, 5);
+  }, [linkRows]);
+  const maxLinks = Math.max(...linkChartItems.map((item) => item.summary.count), 1);
+  const goalSourceCount = promotionSources.filter((source) => source.fields.includes('Достижение цели')).length;
+  const goalExamples = promotionSources.flatMap((source) => source.goalExamples).slice(0, 3);
+
+  return (
+    <section className="analytics-tile-grid" aria-label="Аналитические показатели">
+      <article className="analytics-tile analytics-tile-large">
+        <div className="analytics-tile-head">
+          <div>
+            <span>Закуп ссылок</span>
+            <h3>{linkTotalSummary.count} строк</h3>
+          </div>
+          <BarChart3 size={20} />
+        </div>
+        {linkChartItems.length === 0 ? (
+          <div className="analytics-empty">Данные по закупу ссылок загружаются из Google Sheets.</div>
+        ) : (
+          <div className="analytics-bar-chart">
+            {linkChartItems.map((item) => (
+              <div className="analytics-bar-row" key={item.projectName}>
+                <span>{item.projectName}</span>
+                <div>
+                  <i style={{ width: `${Math.max(9, (item.summary.count / maxLinks) * 100)}%` }} />
+                </div>
+                <em>{item.summary.count}</em>
               </div>
             ))}
-            {collisions.length === 0 && <div className="empty-row">Наложений по дедлайнам не найдено.</div>}
           </div>
-        </section>
+        )}
+        <div className="analytics-tile-footer">
+          <span>Размещено: {linkTotalSummary.placed}</span>
+          <span>Купить: {linkTotalSummary.needToBuy}</span>
+        </div>
+      </article>
+
+      <article className="analytics-tile">
+        <div className="analytics-tile-head">
+          <div>
+            <span>Динамика переходов</span>
+            <h3>{promotionSources.length} источника</h3>
+          </div>
+          <RefreshCw size={20} />
+        </div>
+        <div className="analytics-wave-chart" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+          <i />
+        </div>
+        <p>Подключены таблицы Метрики по ключевым запросам. Для помесячной динамики нужен периодный срез.</p>
+        <div className="analytics-chip-row">
+          {promotionSources.map((source) => (
+            <em key={source.id}>{source.projectName}</em>
+          ))}
+        </div>
+      </article>
+
+      <article className="analytics-tile">
+        <div className="analytics-tile-head">
+          <div>
+            <span>Динамика лидов</span>
+            <h3>нет данных</h3>
+          </div>
+          <Users size={20} />
+        </div>
+        <div className="analytics-placeholder-chart" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+        </div>
+        <p>Слот под заявки уже есть. Когда появится источник, сюда встанут лиды и динамика по периодам.</p>
+      </article>
+
+      <article className="analytics-tile">
+        <div className="analytics-tile-head">
+          <div>
+            <span>Цели на сайте</span>
+            <h3>{goalSourceCount} источника</h3>
+          </div>
+          <Target size={20} />
+        </div>
+        <div className="analytics-chip-row">
+          {(goalExamples.length ? goalExamples : ['Достижение цели', 'Обратная связь']).map((goal) => (
+            <em key={goal}>{goal}</em>
+          ))}
+        </div>
+        <p>Колонка целей есть в таблицах результатов продвижения, выводится в клиентской вкладке “Результаты”.</p>
+      </article>
+    </section>
+  );
+}
+
+function TaskChronologyPanel({
+  tasks,
+  projects,
+  peopleById,
+}: {
+  tasks: Task[];
+  projects: Project[];
+  peopleById: Map<string, Person>;
+}) {
+  const today = todayIso();
+  const projectById = new Map(projects.map((project) => [project.id, project]));
+  const overdueTasks = tasks
+    .filter((task) => task.status !== 'done' && Boolean(task.deadline) && task.deadline < today)
+    .sort((a, b) => a.deadline.localeCompare(b.deadline));
+  const currentTasks = tasks
+    .filter((task) => task.status !== 'done' && (!task.deadline || task.deadline >= today))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || a.deadline.localeCompare(b.deadline));
+  const doneTasks = tasks
+    .filter((task) => task.status === 'done')
+    .sort((a, b) => (b.completedAt ?? b.createdAt).localeCompare(a.completedAt ?? a.createdAt));
+
+  const sections = [
+    { id: 'overdue', title: 'Просрочено', subtitle: 'закреп сверху', items: overdueTasks, tone: 'danger' },
+    { id: 'current', title: 'Новые и текущие', subtitle: 'свежее выше', items: currentTasks, tone: 'info' },
+    { id: 'done', title: 'Выполнено', subtitle: 'закрытое ниже', items: doneTasks, tone: 'success' },
+  ];
+
+  return (
+    <aside className="panel chronology-panel">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>Хронология задач</h2>
+          <p>Просроченное закреплено первым, новые идут сверху, выполненное собрано ниже.</p>
+        </div>
+        <Clock3 size={20} />
       </div>
 
-      <section className="panel">
-        <div className="section-heading compact-heading">
-          <div>
-            <h2>Ближайшие дедлайны</h2>
-            <p>Плановые точки на следующие дни.</p>
-          </div>
-          <Clock3 size={20} />
-        </div>
-        <div className="deadline-grid">
-          {tasks
-            .filter((task) => task.status !== 'done' && task.deadline)
-            .sort((a, b) => a.deadline.localeCompare(b.deadline))
-            .slice(0, 8)
-            .map((task) => (
-              <div key={task.id} className={`deadline-card ${task.status}`}>
-                <span>{formatDate(task.deadline)}</span>
-                <strong>{task.title}</strong>
-                <p>
-                  {task.ownerIds
+      <div className="chronology-sections">
+        {sections.map((section) => (
+          <section className={`chronology-section ${section.tone}`} key={section.id}>
+            <header>
+              <div>
+                <strong>{section.title}</strong>
+                <span>{section.subtitle}</span>
+              </div>
+              <em>{section.items.length}</em>
+            </header>
+            {section.items.length === 0 ? (
+              <div className="chronology-empty">Нет задач в этой группе.</div>
+            ) : (
+              <div className="chronology-list">
+                {section.items.slice(0, 12).map((task) => {
+                  const project = projectById.get(task.projectId);
+                  const owners = task.ownerIds
                     .map((ownerId) => peopleById.get(ownerId)?.name)
                     .filter(Boolean)
-                    .join(', ')}
-                </p>
+                    .join(', ');
+                  const displayDate =
+                    task.status === 'done' ? task.completedAt ?? task.deadline : task.deadline || task.createdAt;
+                  return (
+                    <article className={`chronology-item ${task.status}`} key={`${section.id}-${task.id}`}>
+                      <div className="chronology-item-top">
+                        <span>
+                          <i style={{ background: project?.color ?? '#4f65ff' }} />
+                          {project?.name ?? 'Проект'}
+                        </span>
+                        <em>{formatDate(displayDate)}</em>
+                      </div>
+                      <strong>{task.title}</strong>
+                      <p>{owners || 'Без ответственного'}</p>
+                      <small>{statusLabels[task.status]}</small>
+                    </article>
+                  );
+                })}
               </div>
-            ))}
-        </div>
-      </section>
-
-      <LinkReportSummary
-        projects={projects}
-        summaries={linkSummaries}
-        total={linkTotalSummary}
-        status={linkLoadStatus}
-        error={linkError}
-        updatedAt={linkUpdatedAt}
-        onReload={onReloadLinks}
-      />
-
-      <WorkPlanSummary plans={workPlans} />
-
-      <AuditSummary sources={auditSources} />
-    </section>
+            )}
+          </section>
+        ))}
+      </div>
+    </aside>
   );
 }
 
