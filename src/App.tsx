@@ -55,7 +55,7 @@ import {
 import { PROMOTION_RESULT_SOURCES, type PromotionResultSource } from './promotionResults';
 import { WORK_PLAN_SOURCES, type WorkPlanSource } from './workPlans';
 
-type View = 'tasks' | 'admin' | 'dashboard' | 'seo' | 'payments' | 'external';
+type View = 'tasks' | 'admin' | 'dashboard' | 'seo' | 'payments' | 'report' | 'external';
 type Status = 'planned' | 'active' | 'done' | 'risk';
 type CalendarMode = 'plan' | 'fact';
 type ThemeMode = 'dark' | 'light';
@@ -861,6 +861,7 @@ const navItems = [
   { id: 'dashboard' as const, label: 'Общий дашборд', icon: BarChart3 },
   { id: 'seo' as const, label: 'SEO-проекты', icon: Target },
   { id: 'payments' as const, label: 'Оплаты', icon: CreditCard },
+  { id: 'report' as const, label: 'Отчет', icon: FileSpreadsheet },
   { id: 'external' as const, label: 'Сторонние проекты', icon: FileText },
 ];
 
@@ -917,6 +918,28 @@ type ExternalWeeklyDraft = {
   status: ExternalTimelineItem['status'];
 };
 
+type WeekWindow = {
+  start: string;
+  end: string;
+};
+
+type WeeklyReportItem = {
+  id: string;
+  title: string;
+  meta: string;
+  date?: string;
+  statusLabel?: string;
+  tone?: 'success' | 'warning' | 'danger' | 'info';
+};
+
+type WeeklyProjectReport = {
+  id: string;
+  title: string;
+  color: string;
+  done: WeeklyReportItem[];
+  planned: WeeklyReportItem[];
+};
+
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -945,6 +968,45 @@ function normalizeProjectName(value: string) {
 
 function getDays(count = 14) {
   return Array.from({ length: count }, (_, index) => addDaysIso(index));
+}
+
+function toLocalIso(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getWeekWindow(offset = 0): WeekWindow {
+  const now = new Date();
+  const weekday = now.getDay() || 7;
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - weekday + 1 + offset * 7);
+  const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+  return {
+    start: toLocalIso(start),
+    end: toLocalIso(end),
+  };
+}
+
+function isIsoInWindow(value: string | undefined, window: WeekWindow) {
+  if (!value) return false;
+  return value >= window.start && value <= window.end;
+}
+
+function formatWeekWindow(window: WeekWindow) {
+  return `${formatDate(window.start)} - ${formatDate(window.end)}`;
+}
+
+function parseShortRuDateLabel(value: string) {
+  const match = value.match(/(\d{1,2})[.\-/](\d{1,2})(?:[.\-/](\d{2,4}))?/);
+  if (!match) return '';
+  const currentYear = new Date().getFullYear();
+  const yearPart = match[3] ? Number(match[3]) : currentYear;
+  const year = yearPart < 100 ? 2000 + yearPart : yearPart;
+  const month = Number(match[2]);
+  const day = Number(match[1]);
+  if (!day || !month || month > 12) return '';
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 function useStoredState<T>(key: string, initialValue: T) {
@@ -982,6 +1044,10 @@ function App() {
   const [managedResources, setManagedResources] = useStoredState<ManagedResource[]>(
     'task-seo-managed-resources',
     initialManagedResources,
+  );
+  const [externalProjectAdditions, setExternalProjectAdditions] = useStoredState<ExternalProjectAdditions>(
+    'task-seo-external-project-additions',
+    {},
   );
   const [activeView, setActiveView] = useState<View>('tasks');
   const [seoProjectId, setSeoProjectId] = useStoredState<string>('task-seo-selected-project-analytics', initialProjects[0].id);
@@ -1725,7 +1791,23 @@ function App() {
           />
         )}
 
-        {activeView === 'external' && <ExternalProjectsView source={EXTERNAL_PROJECTS_SOURCE} />}
+        {activeView === 'report' && (
+          <WeeklyReportView
+            projects={projects}
+            tasks={tasks}
+            peopleById={peopleById}
+            externalSource={EXTERNAL_PROJECTS_SOURCE}
+            externalAdditions={externalProjectAdditions}
+          />
+        )}
+
+        {activeView === 'external' && (
+          <ExternalProjectsView
+            source={EXTERNAL_PROJECTS_SOURCE}
+            projectAdditions={externalProjectAdditions}
+            onProjectAdditionsChange={setExternalProjectAdditions}
+          />
+        )}
       </main>
 
       <nav className="side-nav glass" aria-label="Основное меню">
@@ -1766,12 +1848,16 @@ function App() {
   );
 }
 
-function ExternalProjectsView({ source }: { source: ExternalProjectsSource }) {
+function ExternalProjectsView({
+  source,
+  projectAdditions,
+  onProjectAdditionsChange,
+}: {
+  source: ExternalProjectsSource;
+  projectAdditions: ExternalProjectAdditions;
+  onProjectAdditionsChange: Dispatch<SetStateAction<ExternalProjectAdditions>>;
+}) {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  const [projectAdditions, setProjectAdditions] = useStoredState<ExternalProjectAdditions>(
-    'task-seo-external-project-additions',
-    {},
-  );
   const [budgetDraft, setBudgetDraft] = useState<ExternalBudgetDraft>({ label: '', amountLabel: '' });
   const [assetDraft, setAssetDraft] = useState<ExternalAssetDraft>({ title: '', url: '', kind: 'link' });
   const [weeklyDraft, setWeeklyDraft] = useState<ExternalWeeklyDraft>({
@@ -1788,7 +1874,7 @@ function ExternalProjectsView({ source }: { source: ExternalProjectsSource }) {
     sectionId: string,
     updater: (current: ExternalProjectAdditions[string]) => ExternalProjectAdditions[string],
   ) => {
-    setProjectAdditions((current) => ({
+    onProjectAdditionsChange((current) => ({
       ...current,
       [sectionId]: updater(getExternalAdditions(current, sectionId)),
     }));
@@ -2201,7 +2287,7 @@ function getExternalWeeklyUpdates(
   return [...additions.weeklyUpdates, ...(section.weeklyUpdates ?? []), sourceWeek];
 }
 
-function getExternalTimeline(section: ExternalProjectSection) {
+function getExternalTimeline(section: ExternalProjectSection): ExternalTimelineItem[] {
   if (section.timeline?.length) return section.timeline;
 
   return section.items.map((item, index) => ({
@@ -3742,6 +3828,348 @@ function DashboardView({
       </div>
     </section>
   );
+}
+
+function WeeklyReportView({
+  projects,
+  tasks,
+  peopleById,
+  externalSource,
+  externalAdditions,
+}: {
+  projects: Project[];
+  tasks: Task[];
+  peopleById: Map<string, Person>;
+  externalSource: ExternalProjectsSource;
+  externalAdditions: ExternalProjectAdditions;
+}) {
+  const previousWeek = useMemo(() => getWeekWindow(-1), []);
+  const currentWeek = useMemo(() => getWeekWindow(0), []);
+  const seoReports = useMemo(
+    () => buildSeoWeeklyReports(projects, tasks, peopleById, previousWeek, currentWeek),
+    [currentWeek, peopleById, previousWeek, projects, tasks],
+  );
+  const externalReports = useMemo(
+    () => buildExternalWeeklyReports(externalSource, externalAdditions, previousWeek),
+    [externalAdditions, externalSource, previousWeek],
+  );
+  const seoDone = seoReports.reduce((sum, report) => sum + report.done.length, 0);
+  const seoPlanned = seoReports.reduce((sum, report) => sum + report.planned.length, 0);
+  const externalDone = externalReports.reduce((sum, report) => sum + report.done.length, 0);
+  const externalPlanned = externalReports.reduce((sum, report) => sum + report.planned.length, 0);
+
+  return (
+    <section className="weekly-report-view">
+      <div className="dashboard-hero panel weekly-report-hero">
+        <div>
+          <h2>Отчет</h2>
+          <p>
+            Сводка за прошлую неделю и план на текущую неделю по SEO-проектам и сторонним направлениям отдельно.
+          </p>
+        </div>
+        <div className="hero-metrics">
+          <Metric label="Прошлая неделя" value={formatWeekWindow(previousWeek)} />
+          <Metric label="Эта неделя" value={formatWeekWindow(currentWeek)} />
+          <Metric label="SEO сделано" value={String(seoDone)} tone={seoDone ? 'success' : undefined} />
+          <Metric label="SEO план" value={String(seoPlanned)} />
+          <Metric label="Сторонние план" value={String(externalPlanned)} />
+        </div>
+      </div>
+
+      <div className="weekly-report-grid">
+        <WeeklyReportSection
+          title="SEO-проекты"
+          description="Клиентские проекты: закрытые задачи и плановые работы по дедлайнам, статусам и хронологии."
+          doneCount={seoDone}
+          plannedCount={seoPlanned}
+          reports={seoReports}
+        />
+        <WeeklyReportSection
+          title="Сторонние проекты"
+          description="Отдельный блок по задачам из документа с учредителем и недельным обновлениям внутри папок."
+          doneCount={externalDone}
+          plannedCount={externalPlanned}
+          reports={externalReports}
+        />
+      </div>
+    </section>
+  );
+}
+
+function WeeklyReportSection({
+  title,
+  description,
+  doneCount,
+  plannedCount,
+  reports,
+}: {
+  title: string;
+  description: string;
+  doneCount: number;
+  plannedCount: number;
+  reports: WeeklyProjectReport[];
+}) {
+  return (
+    <section className="panel weekly-report-section">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>{title}</h2>
+          <p>{description}</p>
+        </div>
+        <div className="weekly-report-counters" aria-label={`Счетчики ${title}`}>
+          <span>
+            <CheckCircle2 size={14} />
+            {doneCount}
+          </span>
+          <span>
+            <Clock3 size={14} />
+            {plannedCount}
+          </span>
+        </div>
+      </div>
+
+      <div className="weekly-report-projects">
+        {reports.length ? (
+          reports.map((report) => <WeeklyReportProjectCard key={report.id} report={report} />)
+        ) : (
+          <div className="weekly-report-empty">Пока нет данных для недельного отчета.</div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function WeeklyReportProjectCard({ report }: { report: WeeklyProjectReport }) {
+  return (
+    <article className="weekly-report-project" style={{ '--project-color': report.color } as CSSProperties}>
+      <header>
+        <span className="project-dot" />
+        <h3>{report.title}</h3>
+      </header>
+      <div className="weekly-report-columns">
+        <WeeklyReportList title="Сделано за прошлую неделю" items={report.done} empty="Нет отмеченных завершений." />
+        <WeeklyReportList title="План на эту неделю" items={report.planned} empty="Нет задач на эту неделю." />
+      </div>
+    </article>
+  );
+}
+
+function WeeklyReportList({
+  title,
+  items,
+  empty,
+}: {
+  title: string;
+  items: WeeklyReportItem[];
+  empty: string;
+}) {
+  return (
+    <div className="weekly-report-column">
+      <div className="weekly-report-column-head">
+        <strong>{title}</strong>
+        <em>{items.length}</em>
+      </div>
+      {items.length ? (
+        <div className="weekly-report-list">
+          {items.map((item) => (
+            <div className={`weekly-report-line ${item.tone ?? ''}`} key={item.id}>
+              <span className="mini-dot" />
+              <div>
+                <strong>{item.title}</strong>
+                <p>{item.meta}</p>
+              </div>
+              {(item.date || item.statusLabel) && <em>{item.date ? formatDate(item.date) : item.statusLabel}</em>}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="weekly-report-empty">{empty}</div>
+      )}
+    </div>
+  );
+}
+
+function buildSeoWeeklyReports(
+  projects: Project[],
+  tasks: Task[],
+  peopleById: Map<string, Person>,
+  previousWeek: WeekWindow,
+  currentWeek: WeekWindow,
+) {
+  return projects
+    .map((project) => {
+      const projectTasks = tasks.filter((task) => task.projectId === project.id);
+      const done: WeeklyReportItem[] = [];
+      const planned: WeeklyReportItem[] = [];
+
+      projectTasks.forEach((task) => {
+        const owners = getTaskOwnersLabel(task, peopleById);
+        const doneTimelineItems = task.timeline.filter(
+          (item) => item.status === 'done' && isIsoInWindow(item.completedAt ?? item.dueDate, previousWeek),
+        );
+
+        if (doneTimelineItems.length) {
+          doneTimelineItems.forEach((item) => {
+            done.push({
+              id: `${task.id}-${item.id}-done`,
+              title: item.title,
+              meta: `${task.title} · ${peopleById.get(item.ownerId)?.name ?? owners}`,
+              date: item.completedAt ?? item.dueDate,
+              statusLabel: statusLabels[item.status],
+              tone: 'success',
+            });
+          });
+        } else if (task.status === 'done' && isIsoInWindow(task.completedAt ?? task.deadline, previousWeek)) {
+          done.push({
+            id: `${task.id}-done`,
+            title: task.title,
+            meta: owners,
+            date: task.completedAt ?? task.deadline,
+            statusLabel: statusLabels[task.status],
+            tone: 'success',
+          });
+        }
+
+        const openTimelineItems = task.timeline.filter((item) => item.status !== 'done');
+        const currentTimelineItems = openTimelineItems.filter(
+          (item) =>
+            isIsoInWindow(item.dueDate, currentWeek) ||
+            (Boolean(item.dueDate) && item.dueDate < currentWeek.start) ||
+            (!item.dueDate && item.status === 'active'),
+        );
+
+        if (currentTimelineItems.length) {
+          currentTimelineItems.forEach((item) => {
+            const overdue = Boolean(item.dueDate) && item.dueDate < currentWeek.start;
+            planned.push({
+              id: `${task.id}-${item.id}-planned`,
+              title: item.title,
+              meta: `${task.title} · ${peopleById.get(item.ownerId)?.name ?? owners}`,
+              date: item.dueDate,
+              statusLabel: overdue ? 'просрочено' : statusLabels[item.status],
+              tone: overdue ? 'danger' : item.status === 'active' ? 'info' : 'warning',
+            });
+          });
+        } else if (
+          task.status !== 'done' &&
+          (isIsoInWindow(task.deadline, currentWeek) ||
+            (Boolean(task.deadline) && task.deadline < currentWeek.start) ||
+            (!task.deadline && task.status === 'active'))
+        ) {
+          const overdue = Boolean(task.deadline) && task.deadline < currentWeek.start;
+          planned.push({
+            id: `${task.id}-planned`,
+            title: task.title,
+            meta: owners,
+            date: task.deadline,
+            statusLabel: overdue ? 'просрочено' : statusLabels[task.status],
+            tone: overdue ? 'danger' : task.status === 'active' ? 'info' : 'warning',
+          });
+        }
+      });
+
+      return {
+        id: project.id,
+        title: project.name,
+        color: project.color,
+        done: sortWeeklyItems(done, 'desc'),
+        planned: sortWeeklyItems(planned, 'asc'),
+      };
+    })
+    .filter((report) => report.done.length || report.planned.length);
+}
+
+function buildExternalWeeklyReports(
+  source: ExternalProjectsSource,
+  externalAdditions: ExternalProjectAdditions,
+  previousWeek: WeekWindow,
+) {
+  const colors: Record<ExternalProjectSection['status'], string> = {
+    active: '#326d7a',
+    done: '#d8eef3',
+    waiting: '#ffe1d3',
+    next: '#ffe1d3',
+  };
+
+  return source.sections
+    .map((section) => {
+      const additions = getExternalAdditions(externalAdditions, section.id);
+      const weeklyUpdates = getExternalWeeklyUpdates(section, additions, source);
+      const done: WeeklyReportItem[] = [];
+      const planned: WeeklyReportItem[] = [];
+
+      weeklyUpdates.forEach((week) => {
+        const weekDate = parseShortRuDateLabel(`${week.weekLabel} ${week.dateLabel}`);
+        if (!isIsoInWindow(weekDate, previousWeek)) return;
+        week.items
+          .filter((item) => item.status === 'done')
+          .forEach((item) => {
+            done.push({
+              id: `${section.id}-${week.id}-${item.id}-done`,
+              title: item.title,
+              meta: `${source.title} · лист ${week.weekLabel}`,
+              date: weekDate,
+              statusLabel: externalTimelineStatusLabels[item.status],
+              tone: 'success',
+            });
+          });
+      });
+
+      if (section.status === 'done' && done.length === 0) {
+        getExternalTimeline(section)
+          .filter((item) => item.status === 'done')
+          .forEach((item) => {
+            done.push({
+              id: `${section.id}-${item.id}-status-done`,
+              title: item.title,
+              meta: 'Статус папки: готово',
+              statusLabel: externalStatusLabels[section.status],
+              tone: 'success',
+            });
+          });
+      }
+
+      if (section.status !== 'done') {
+        getExternalTimeline(section)
+          .filter((item) => item.status !== 'done')
+          .forEach((item) => {
+            planned.push({
+              id: `${section.id}-${item.id}-planned`,
+              title: item.title,
+              meta: `${source.collaborator} · ${externalStatusLabels[section.status]}`,
+              date: parseShortRuDateLabel(item.dateLabel ?? ''),
+              statusLabel: externalTimelineStatusLabels[item.status],
+              tone: item.status === 'waiting' || section.status === 'waiting' ? 'warning' : 'info',
+            });
+          });
+      }
+
+      return {
+        id: section.id,
+        title: section.title,
+        color: colors[section.status],
+        done: sortWeeklyItems(done, 'desc'),
+        planned: sortWeeklyItems(planned, 'asc'),
+      };
+    })
+    .filter((report) => report.done.length || report.planned.length);
+}
+
+function getTaskOwnersLabel(task: Task, peopleById: Map<string, Person>) {
+  return (
+    task.ownerIds
+      .map((ownerId) => peopleById.get(ownerId)?.name)
+      .filter(Boolean)
+      .join(', ') || 'Без ответственного'
+  );
+}
+
+function sortWeeklyItems(items: WeeklyReportItem[], direction: 'asc' | 'desc') {
+  return [...items].sort((a, b) => {
+    const left = a.date || '9999-12-31';
+    const right = b.date || '9999-12-31';
+    return direction === 'asc' ? left.localeCompare(right) : right.localeCompare(left);
+  });
 }
 
 function SeoProjectsView({
