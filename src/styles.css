@@ -2168,6 +2168,52 @@ p {
   font-size: 24px;
 }
 
+.weekly-focus-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 225, 211, 0.16), transparent 34%),
+    linear-gradient(145deg, rgba(216, 238, 243, 0.09), rgba(7, 64, 73, 0.28)),
+    rgba(7, 22, 24, 0.64);
+}
+
+.weekly-focus-card span {
+  color: var(--sky);
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.weekly-focus-card h2 {
+  margin-top: 4px;
+}
+
+.weekly-focus-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.weekly-focus-list span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid rgba(216, 238, 243, 0.14);
+  border-radius: 999px;
+  color: var(--ink);
+  background: rgba(216, 238, 243, 0.08);
+}
+
+.weekly-focus-list i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
 .weekly-report-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -4008,7 +4054,8 @@ p {
   .topline,
   .composer-title,
   .section-heading,
-  .dashboard-hero {
+  .dashboard-hero,
+  .weekly-focus-card {
     align-items: stretch;
     flex-direction: column;
   }

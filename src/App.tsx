@@ -315,7 +315,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'client-statuses-2026-08-24-v1';
+const taskSeedVersion = 'client-statuses-2026-08-24-v2';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -385,33 +385,37 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-proskills-rustore-reviews',
     projectId: 'project-proskills',
     title: 'RuStore: положительные отзывы и ответы на негативные',
-    description: 'Собираем отзывы с ОП и ждем доступ к кабинету, чтобы ответить на имеющиеся негативные отзывы.',
-    status: 'active',
+    description: 'На 24.08: по Профскиллс все сделано.',
+    status: 'done',
     ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
     deadline: '2026-08-14',
+    completedAt: '2026-08-24',
     timelineEnabled: true,
     timeline: [
       {
         id: 'timeline-proskills-rustore-positive-reviews',
         title: 'Собрать положительные отзывы с ОП',
         ownerId: 'person-kristina',
-        status: 'active',
+        status: 'done',
         dueDate: '2026-08-14',
+        completedAt: '2026-08-24',
       },
       {
         id: 'timeline-proskills-rustore-access',
         title: 'Получить доступ к кабинету RuStore',
         ownerId: 'person-kristina',
-        status: 'planned',
+        status: 'done',
         dueDate: '2026-08-14',
+        completedAt: '2026-08-24',
       },
       {
         id: 'timeline-proskills-rustore-negative-replies',
         title: 'Ответить на имеющиеся негативные отзывы',
         ownerId: 'person-kristina',
-        status: 'planned',
+        status: 'done',
         dueDate: '2026-08-14',
+        completedAt: '2026-08-24',
       },
     ],
   },
@@ -792,8 +796,8 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'report-watchstore-2026-08',
     projectId: 'project-watch',
-    title: 'Обновить отчет за август: WatchStore',
-    description: 'На 24.08: нужно обновить отчет. Дедлайн по отчетам - 25 число каждого месяца.',
+    title: 'Сбор отчета за август: WatchStore',
+    description: 'Главный фокус недели: собрать клиентский отчет к 25.08.',
     status: 'active',
     ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
@@ -804,9 +808,9 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'report-aquaguard-2026-08',
     projectId: 'project-aquaguard',
-    title: 'Отчет за август: Аквагард',
-    description: 'Дедлайн по отчетам - 25 число каждого месяца.',
-    status: 'planned',
+    title: 'Сбор отчета за август: Аквагард',
+    description: 'Главный фокус недели: собрать клиентский отчет к 25.08.',
+    status: 'active',
     ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
     deadline: '2026-08-25',
@@ -816,8 +820,8 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'report-promteh-2026-08',
     projectId: 'project-promteh',
-    title: 'Отчет за август: Макулатура + прогноз',
-    description: 'К отчету на 25.08 добавить прогноз по данным Ahrefs.',
+    title: 'Сбор отчета за август: Макулатура + прогноз',
+    description: 'Главный фокус недели: собрать клиентский отчет к 25.08 и добавить прогноз по данным Ahrefs.',
     status: 'active',
     ownerIds: ['person-kristina', 'person-aleksey'],
     createdAt: '2026-08-10',
@@ -828,9 +832,9 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'report-smartstroy-2026-08',
     projectId: 'project-smart',
-    title: 'Отчет за август: СмартСтрой',
-    description: 'Дедлайн по отчетам - 25 число каждого месяца.',
-    status: 'planned',
+    title: 'Сбор отчета за август: СмартСтрой',
+    description: 'Главный фокус недели: собрать клиентский отчет к 25.08.',
+    status: 'active',
     ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
     deadline: '2026-08-25',
@@ -840,9 +844,9 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'report-balt-pallet-2026-08',
     projectId: 'project-balt-pallet',
-    title: 'Отчет за август: Паллет',
-    description: 'Дедлайн по отчетам - 25 число каждого месяца.',
-    status: 'planned',
+    title: 'Сбор отчета за август: Паллет',
+    description: 'Главный фокус недели: собрать клиентский отчет к 25.08.',
+    status: 'active',
     ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
     deadline: '2026-08-25',
@@ -3853,6 +3857,14 @@ function WeeklyReportView({
     () => buildExternalWeeklyReports(externalSource, externalAdditions, previousWeek),
     [externalAdditions, externalSource, previousWeek],
   );
+  const projectById = useMemo(() => new Map(projects.map((project) => [project.id, project])), [projects]);
+  const reportFocusTasks = useMemo(
+    () =>
+      tasks
+        .filter((task) => task.status !== 'done' && task.deadline === '2026-08-25' && task.title.includes('Сбор отчета'))
+        .sort((a, b) => a.title.localeCompare(b.title)),
+    [tasks],
+  );
   const seoDone = seoReports.reduce((sum, report) => sum + report.done.length, 0);
   const seoPlanned = seoReports.reduce((sum, report) => sum + report.planned.length, 0);
   const externalDone = externalReports.reduce((sum, report) => sum + report.done.length, 0);
@@ -3875,6 +3887,25 @@ function WeeklyReportView({
           <Metric label="Сторонние план" value={String(externalPlanned)} />
         </div>
       </div>
+
+      <section className="panel weekly-focus-card">
+        <div>
+          <span>Главный фокус недели</span>
+          <h2>Сбор отчетов по клиентам</h2>
+          <p>Все клиентские отчеты собраны в плане недели с дедлайном 25.08.</p>
+        </div>
+        <div className="weekly-focus-list">
+          {reportFocusTasks.map((task) => {
+            const project = projectById.get(task.projectId);
+            return (
+              <span key={task.id}>
+                <i style={{ background: project?.color ?? '#d8eef3' }} />
+                {project?.name ?? 'Проект'}
+              </span>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="weekly-report-grid">
         <WeeklyReportSection
