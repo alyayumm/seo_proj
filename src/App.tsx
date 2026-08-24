@@ -2103,7 +2103,7 @@ function ExternalProjectsView({
                           <div>
                             <strong>{item.title}</strong>
                             <p>
-                              {externalTimelineStatusLabels[item.status]}
+                              {item.displayStatusLabel ?? externalTimelineStatusLabels[item.status]}
                               {item.dateLabel ? ` · ${item.dateLabel}` : ''}
                             </p>
                           </div>
@@ -4145,7 +4145,7 @@ function buildExternalWeeklyReports(
               title: item.title,
               meta: `${source.title} · лист ${week.weekLabel}`,
               date: weekDate,
-              statusLabel: externalTimelineStatusLabels[item.status],
+              statusLabel: item.displayStatusLabel ?? externalTimelineStatusLabels[item.status],
               tone: 'success',
             });
           });
@@ -4172,9 +4172,11 @@ function buildExternalWeeklyReports(
             planned.push({
               id: `${section.id}-${item.id}-planned`,
               title: item.title,
-              meta: `${source.collaborator} · ${externalStatusLabels[section.status]}`,
+              meta: `${item.ownerLabel ?? source.collaborator} · ${
+                item.displayStatusLabel ?? externalStatusLabels[section.status]
+              }`,
               date: parseShortRuDateLabel(item.dateLabel ?? ''),
-              statusLabel: externalTimelineStatusLabels[item.status],
+              statusLabel: item.displayStatusLabel ?? externalTimelineStatusLabels[item.status],
               tone: item.status === 'waiting' || section.status === 'waiting' ? 'warning' : 'info',
             });
           });

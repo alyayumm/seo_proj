@@ -16,6 +16,8 @@ export type ExternalTimelineItem = {
   title: string;
   status: 'planned' | 'active' | 'done' | 'waiting';
   dateLabel?: string;
+  ownerLabel?: string;
+  displayStatusLabel?: string;
 };
 
 export type ExternalWeeklyUpdate = {
@@ -136,7 +138,40 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
       id: 'trial-lesson-mailing',
       title: 'Рассылка “пробный урок”',
       status: 'active',
-      items: ['Письмо на верстке', 'Рассылка на почту', 'Следующий этап: мессенджеры без упоминания АШ'],
+      items: ['Письмо на верстке', 'Рассылка на почту'],
+      note: 'Следующий этап: мессенджеры без упоминания АШ снят с плана этой недели.',
+      people: ['Отдел маркетинга', 'IT-отдел'],
+      timeline: [
+        {
+          id: 'trial-lesson-mailing-letter-layout',
+          title: 'Письмо на верстке',
+          status: 'done',
+          dateLabel: '17.08.26',
+        },
+        {
+          id: 'trial-lesson-mailing-email-send',
+          title: 'Рассылка на почту',
+          status: 'waiting',
+          dateLabel: 'новый дедлайн 26.08.26',
+          ownerLabel: 'IT-отдел',
+          displayStatusLabel: 'просрочено',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'trial-lesson-mailing-week-17-08-26',
+          weekLabel: '17.08.26',
+          dateLabel: 'прошлая неделя',
+          items: [
+            {
+              id: 'trial-lesson-mailing-letter-layout-done-17-08',
+              title: 'Письмо на верстке',
+              status: 'done',
+              dateLabel: '17.08.26',
+            },
+          ],
+        },
+      ],
     },
     {
       id: 'seo-dashboard',
