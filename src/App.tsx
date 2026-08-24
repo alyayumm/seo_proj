@@ -315,7 +315,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'client-statuses-2026-08-24-v3';
+const taskSeedVersion = 'client-statuses-2026-08-24-v4';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -764,8 +764,9 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'current-rectop-layout-templates',
     projectId: 'project-rectop',
-    title: 'WP-верстка и импорт контента',
-    description: 'На 17.08: сайт сверстан на WP, ждем правки импорта контента и финальную готовность.',
+    title: 'Ректоп: перенос на домен и первый блок главной',
+    description:
+      'Ректоп и сайт Ректоп - один проект. Сейчас осталось перенести сайт на домен и переверстать первый блок на главной.',
     status: 'active',
     ownerIds: ['person-outsource'],
     createdAt: '2026-08-10',
@@ -774,24 +775,24 @@ const requiredTaskSeeds: Task[] = [
     timeline: [
       {
         id: 'timeline-rectop-wp-layout',
-        title: 'Сверстать сайт на WP',
+        title: 'Сайт сверстан на WP',
         ownerId: 'person-outsource',
         status: 'done',
         dueDate: '',
         completedAt: '2026-08-17',
       },
       {
-        id: 'timeline-rectop-content-import-fixes',
-        title: 'Дождаться правок импорта контента',
+        id: 'timeline-rectop-domain-transfer',
+        title: 'Перенести сайт на домен',
         ownerId: 'person-outsource',
         status: 'active',
         dueDate: '',
       },
       {
-        id: 'timeline-rectop-final-ready',
-        title: 'Финальная готовность после импорта',
+        id: 'timeline-rectop-first-block-home',
+        title: 'Переверстать первый блок на главной',
         ownerId: 'person-outsource',
-        status: 'planned',
+        status: 'active',
         dueDate: '',
       },
     ],

@@ -145,9 +145,23 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
     },
     {
       id: 'rectop-site',
-      title: 'Сайт Ректоп',
-      status: 'waiting',
-      items: ['Ожидается обратная связь от Алексея'],
+      title: 'Ректоп',
+      status: 'active',
+      items: ['Перенести сайт на домен', 'Переверстать первый блок на главной'],
+      note: 'Ректоп и сайт Ректоп - один проект.',
+      people: ['Аутсорс'],
+      timeline: [
+        {
+          id: 'rectop-site-domain-transfer',
+          title: 'Перенести сайт на домен',
+          status: 'active',
+        },
+        {
+          id: 'rectop-site-first-block-home',
+          title: 'Переверстать первый блок на главной',
+          status: 'active',
+        },
+      ],
     },
     {
       id: 'education-test-site',
