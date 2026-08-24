@@ -871,6 +871,13 @@ const externalStatusLabels: Record<ExternalProjectSection['status'], string> = {
   next: 'следующий шаг',
 };
 
+const externalFolderArtByStatus: Record<ExternalProjectSection['status'], string> = {
+  active: './folders/folder-teal.png',
+  done: './folders/folder-teal.png',
+  waiting: './folders/folder-peach.png',
+  next: './folders/folder-peach.png',
+};
+
 const externalTimelineStatusLabels: Record<ExternalTimelineItem['status'], string> = {
   active: 'в работе',
   done: 'готово',
@@ -2106,6 +2113,9 @@ function ExternalProjectsView({ source }: { source: ExternalProjectsSource }) {
               type="button"
               onClick={() => setSelectedSectionId(section.id)}
             >
+              <div className="folder-visual" aria-hidden="true">
+                <img src={externalFolderArtByStatus[section.status]} alt="" loading="lazy" />
+              </div>
               <div className="external-card-head">
                 <span className={`external-status ${section.status}`}>{externalStatusLabels[section.status]}</span>
                 <ChevronRight size={16} />
