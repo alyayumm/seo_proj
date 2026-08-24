@@ -4,7 +4,8 @@
   font-synthesis: none;
   text-rendering: geometricPrecision;
   --font-ui: Manrope, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-  --font-display: "Bebas Neue", Manrope, "Segoe UI", system-ui, sans-serif;
+  --font-display: Manrope, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --font-brand: "Bebas Neue", Manrope, "Segoe UI", system-ui, sans-serif;
   --bg: #070909;
   --bg-2: #102126;
   --surface: rgba(10, 45, 52, 0.68);
@@ -156,7 +157,7 @@ button:disabled {
   border-radius: 14px;
   color: #061111;
   background: linear-gradient(145deg, var(--sky), var(--cyan));
-  font-family: var(--font-display);
+  font-family: var(--font-brand);
   font-size: 24px;
   font-weight: 400;
   letter-spacing: 0.03em;
@@ -171,30 +172,34 @@ p {
 
 h1 {
   font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 30px;
-  line-height: 1.05;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.12;
+  letter-spacing: 0;
+  text-wrap: balance;
 }
 
 h2 {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 20px;
   line-height: 1.15;
   letter-spacing: 0;
+  text-wrap: balance;
 }
 
 h3 {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 15px;
   line-height: 1.2;
   letter-spacing: 0;
+  text-wrap: balance;
 }
 
 p {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
+  text-wrap: pretty;
 }
 
 .topline p {
@@ -1044,9 +1049,10 @@ p {
   border-radius: 999px;
   color: white;
   background: #101524;
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 400;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .audit-card h4 {
@@ -1503,11 +1509,12 @@ p {
 .link-stat strong {
   overflow: hidden;
   color: var(--ink);
-  font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: 0.03em;
-  font-size: 17px;
-  line-height: 1.08;
+  font-family: var(--font-ui);
+  font-weight: 750;
+  letter-spacing: 0;
+  font-size: 16px;
+  line-height: 1.12;
+  font-variant-numeric: tabular-nums;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1642,14 +1649,15 @@ p {
 
 .metric strong {
   font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: 0.03em;
-  font-size: 24px;
-  line-height: 1;
+  font-weight: 750;
+  letter-spacing: 0;
+  font-size: 22px;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
 }
 
 .metric.compact strong {
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .metric.success strong {
@@ -1693,8 +1701,12 @@ p {
 .health-card strong {
   display: block;
   margin-top: 6px;
-  font-size: 44px;
+  font-family: var(--font-ui);
+  font-size: 40px;
+  font-weight: 750;
   line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .health-line,
@@ -2053,8 +2065,12 @@ p {
 
 .analytics-tile-head h3 {
   color: var(--ink);
-  font-size: 22px;
-  line-height: 1.05;
+  font-family: var(--font-ui);
+  font-size: 20px;
+  font-weight: 750;
+  line-height: 1.12;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .analytics-tile-head svg {
@@ -2863,8 +2879,12 @@ p {
 
 .external-budget-total {
   color: var(--sky);
-  font-size: 30px;
+  font-family: var(--font-ui);
+  font-size: 28px;
+  font-weight: 750;
   line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .external-budget-list,
