@@ -315,7 +315,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'client-statuses-2026-08-24-v4';
+const taskSeedVersion = 'client-statuses-2026-08-24-v5';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -726,13 +726,14 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-balt-semantics-source',
     projectId: 'project-balt-pallet',
     title: 'Семантика Балт Паллет',
-    description: 'Источник семантики: файл balt-pallet.ru - ся, вкладка balt-pallet_stranicy_zaprosy.',
+    description: 'Семантика Балт Паллет сделана 17.08. Источник: файл balt-pallet.ru - ся, вкладка balt-pallet_stranicy_zaprosy.',
     sourceLabel: 'Семантика',
     sourceUrl:
       'https://docs.google.com/spreadsheets/d/14iLj1IePYPPhC_GKvcQgaJXV8wTCX0OqxliMBCfJHyQ/edit?gid=1142275802#gid=1142275802',
-    status: 'active',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-17',
+    completedAt: '2026-08-17',
     deadline: '',
     timelineEnabled: false,
     timeline: [],
