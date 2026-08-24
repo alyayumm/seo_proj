@@ -70,6 +70,45 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
         'Соцсети под сайт',
         'Покупка домена: ожидание обратной связи от Кирилла',
       ],
+      timeline: [
+        {
+          id: 'aso-base-site-cases',
+          title: 'Блок кейсов реализован',
+          status: 'done',
+          dateLabel: 'готово ранее',
+        },
+        {
+          id: 'aso-base-site-franchise',
+          title: 'Добавить информацию о покупке франшизы',
+          status: 'planned',
+        },
+        {
+          id: 'aso-base-site-socials',
+          title: 'Соцсети под сайт',
+          status: 'done',
+          dateLabel: '17.08.26',
+        },
+        {
+          id: 'aso-base-site-domain',
+          title: 'Покупка домена: ожидание обратной связи от Кирилла',
+          status: 'waiting',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'aso-base-site-week-17-08-26',
+          weekLabel: '17.08.26',
+          dateLabel: 'прошлая неделя',
+          items: [
+            {
+              id: 'aso-base-site-socials-done-17-08',
+              title: 'Соцсети под сайт',
+              status: 'done',
+              dateLabel: '17.08.26',
+            },
+          ],
+        },
+      ],
     },
     {
       id: 'avito-test',
