@@ -44,6 +44,12 @@ import {
   type LinkPurchaseSummary,
 } from './linkPurchases';
 import {
+  EMPTY_METRIKA_STATS,
+  mergePromotionSourcesWithMetrika,
+  normalizeMetrikaStatsPayload,
+  type MetrikaStatsPayload,
+} from './metrikaStats';
+import {
   EXTERNAL_PROJECTS_SOURCE,
   type ExternalBudgetLine,
   type ExternalProjectAsset,
@@ -1319,6 +1325,28 @@ function App() {
     return map;
   }, []);
 
+  const [metrikaStats, setMetrikaStats] = useState<MetrikaStatsPayload>(EMPTY_METRIKA_STATS);
+  useEffect(() => {
+    let isMounted = true;
+    void fetch('./data/metrika-stats.json', { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (isMounted && payload) setMetrikaStats(normalizeMetrikaStatsPayload(payload));
+      })
+      .catch(() => {
+        if (isMounted) setMetrikaStats(EMPTY_METRIKA_STATS);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const promotionSources = useMemo(
+    () => mergePromotionSourcesWithMetrika(PROMOTION_RESULT_SOURCES, metrikaStats),
+    [metrikaStats],
+  );
+
   const workPlansByProject = useMemo(() => {
     const map = new Map<string, WorkPlanSource[]>();
     WORK_PLAN_SOURCES.forEach((source) => {
@@ -1343,14 +1371,14 @@ function App() {
 
   const promotionResultsByProject = useMemo(() => {
     const map = new Map<string, PromotionResultSource[]>();
-    PROMOTION_RESULT_SOURCES.forEach((source) => {
+    promotionSources.forEach((source) => {
       const key = normalizeProjectName(source.projectName);
       const current = map.get(key) ?? [];
       current.push(source);
       map.set(key, current);
     });
     return map;
-  }, []);
+  }, [promotionSources]);
 
   const clientLinksByProject = useMemo(() => {
     const map = new Map<string, ClientQuickLinks>();
@@ -1806,7 +1834,7 @@ function App() {
             managedResourcesByProject={managedResourcesByProject}
             paymentRows={paymentRows}
             paymentDraft={paymentDraft}
-            promotionSources={PROMOTION_RESULT_SOURCES}
+            promotionSources={promotionSources}
             selectedProjectId={seoProjectId}
             onProjectChange={setSeoProjectId}
             linkLoadStatus={linkLoadStatus}
