@@ -2221,6 +2221,141 @@ p {
   border-radius: 999px;
 }
 
+.report-archive-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.report-archive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+  padding-top: 8px;
+}
+
+.report-archive-folder {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-content: end;
+  gap: 8px;
+  min-height: 148px;
+  padding: 44px 16px 15px;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.report-archive-folder::before,
+.report-archive-folder::after {
+  position: absolute;
+  content: '';
+  z-index: -1;
+  border: 1px solid rgba(216, 238, 243, 0.24);
+  pointer-events: none;
+}
+
+.report-archive-folder::before {
+  top: 0;
+  left: 16px;
+  width: 92px;
+  height: 34px;
+  border-radius: 16px 16px 4px 4px;
+  background: linear-gradient(145deg, rgba(126, 231, 241, 0.32), rgba(50, 109, 122, 0.74));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.report-archive-folder::after {
+  inset: 24px 0 0;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 78% 12%, rgba(216, 238, 243, 0.2), transparent 28%),
+    linear-gradient(145deg, rgba(50, 109, 122, 0.7), rgba(7, 64, 73, 0.78));
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.report-archive-folder:nth-child(even)::before {
+  background: linear-gradient(145deg, rgba(255, 225, 211, 0.72), rgba(255, 160, 132, 0.46));
+}
+
+.report-archive-folder:nth-child(even)::after {
+  background:
+    radial-gradient(circle at 78% 12%, rgba(255, 255, 255, 0.24), transparent 28%),
+    linear-gradient(145deg, rgba(255, 225, 211, 0.76), rgba(255, 178, 151, 0.56));
+}
+
+.report-archive-folder.is-active::after {
+  border-color: rgba(126, 231, 241, 0.76);
+  box-shadow: 0 0 0 1px rgba(126, 231, 241, 0.26), 0 20px 44px rgba(0, 0, 0, 0.26);
+}
+
+.report-archive-folder > span,
+.report-archive-folder > strong,
+.report-archive-folder > p,
+.report-archive-folder-metrics {
+  position: relative;
+  z-index: 1;
+}
+
+.report-archive-folder > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: #061111;
+  background: rgba(216, 238, 243, 0.86);
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.report-archive-folder > strong {
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.report-archive-folder > p {
+  margin: 0;
+  color: rgba(247, 252, 252, 0.78);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.report-archive-folder:nth-child(even) > strong {
+  color: #07181b;
+}
+
+.report-archive-folder:nth-child(even) > p {
+  color: rgba(7, 24, 27, 0.7);
+}
+
+.report-archive-folder-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.report-archive-folder-metrics em {
+  min-height: 26px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  color: var(--sky);
+  background: rgba(7, 22, 24, 0.28);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.report-archive-folder:nth-child(even) .report-archive-folder-metrics em {
+  color: #326d7a;
+  background: rgba(255, 255, 255, 0.48);
+}
+
 .weekly-report-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -3952,6 +4087,38 @@ p {
 :root[data-theme='light'] .external-folder-card {
   color: white;
   border-color: rgba(50, 109, 122, 0.18);
+}
+
+:root[data-theme='light'] .report-archive-folder::before {
+  border-color: rgba(50, 109, 122, 0.16);
+  background: linear-gradient(145deg, rgba(216, 238, 243, 0.96), rgba(50, 109, 122, 0.3));
+}
+
+:root[data-theme='light'] .report-archive-folder::after {
+  border-color: rgba(50, 109, 122, 0.15);
+  background:
+    radial-gradient(circle at 78% 12%, rgba(255, 255, 255, 0.34), transparent 28%),
+    linear-gradient(145deg, rgba(216, 238, 243, 0.92), rgba(50, 109, 122, 0.34));
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme='light'] .report-archive-folder:nth-child(even)::before {
+  background: linear-gradient(145deg, rgba(255, 225, 211, 0.96), rgba(255, 178, 151, 0.34));
+}
+
+:root[data-theme='light'] .report-archive-folder:nth-child(even)::after {
+  background:
+    radial-gradient(circle at 78% 12%, rgba(255, 255, 255, 0.38), transparent 28%),
+    linear-gradient(145deg, rgba(255, 225, 211, 0.92), rgba(255, 178, 151, 0.36));
+}
+
+:root[data-theme='light'] .report-archive-folder > p {
+  color: var(--muted);
+}
+
+:root[data-theme='light'] .report-archive-folder-metrics em {
+  color: #326d7a;
+  background: rgba(255, 255, 255, 0.56);
 }
 
 :root[data-theme='light'] .external-folder-card.next,
