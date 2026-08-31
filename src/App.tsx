@@ -321,7 +321,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'client-statuses-2026-08-24-v6';
+const taskSeedVersion = 'client-statuses-2026-08-31-v1';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -470,11 +470,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-promteh-forecast-ahrefs',
     projectId: 'project-promteh',
     title: 'Прогноз по Промтеху для отчета',
-    description: 'На 24.08: данные из Ahrefs собраны, сам прогноз идет в отчет к 25.08.',
-    status: 'active',
+    description: 'На 31.08: прогноз и новый формат отчета закрыты в отчетной неделе.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-17',
     deadline: '2026-08-25',
+    completedAt: '2026-08-31',
     timelineEnabled: true,
     timeline: [
       {
@@ -497,8 +498,9 @@ const requiredTaskSeeds: Task[] = [
         id: 'timeline-promteh-forecast-ready',
         title: 'Добавить прогноз по Промтеху в отчет',
         ownerId: 'person-aleksey',
-        status: 'active',
+        status: 'done',
         dueDate: '2026-08-25',
+        completedAt: '2026-08-31',
       },
     ],
   },
@@ -506,11 +508,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-promteh-site-usability-indexing',
     projectId: 'project-promteh',
     title: 'Точечные правки сайта, верстка, юзабилити и индексация',
-    description: 'На 24.08: в работе мелкие точечные правки по сайту, верстке, юзабилити и индексации.',
-    status: 'active',
+    description: 'На 31.08: сделаны небольшие доработки по верстке, перелинковке и пожеланиям клиента.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-24',
     deadline: '',
+    completedAt: '2026-08-31',
     timelineEnabled: false,
     timeline: [],
   },
@@ -580,11 +583,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-aquaguard-catalog-products',
     projectId: 'project-aquaguard',
     title: 'Заполнение и мелкие правки по товарке',
-    description: 'На 24.08: каталог реализован, в работе заполнение и мелкие правки по товарке.',
-    status: 'active',
+    description: 'На 31.08: исправлены косяки после Ольги по карточкам и каталогу.',
+    status: 'done',
     ownerIds: ['person-olga'],
     createdAt: '2026-08-10',
     deadline: '',
+    completedAt: '2026-08-31',
     timelineEnabled: false,
     timeline: [],
   },
@@ -720,11 +724,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-balt-site-usability-fixes',
     projectId: 'project-balt-pallet',
     title: 'Правки по сайту, верстке и юзабилити',
-    description: 'На 24.08: в работе правки по сайту, верстке и юзабилити.',
-    status: 'active',
+    description: 'На 31.08: добавлены усиления валидации от спама и убран Instagram с сайта.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-24',
     deadline: '',
+    completedAt: '2026-08-31',
     timelineEnabled: false,
     timeline: [],
   },
@@ -805,14 +810,221 @@ const requiredTaskSeeds: Task[] = [
     ],
   },
   {
+    id: 'weekly-promteh-report-2026-08-31',
+    projectId: 'project-promteh',
+    title: 'Отчет на 31.08: Промтех',
+    description: 'Сделано за отчетную неделю по Промтеху.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-31',
+    deadline: '2026-08-31',
+    completedAt: '2026-08-31',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-promteh-layout-linking-client-notes-31-08',
+        title: 'Небольшие доработки по верстке, перелинковке и пожеланиям клиента',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-promteh-metrika-automation-31-08',
+        title: 'Частично настроить автоматизацию выгрузки метрик для отчетов',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-promteh-new-report-format-31-08',
+        title: 'Создать новый формат отчета',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+    ],
+  },
+  {
+    id: 'weekly-smartstroy-report-2026-08-31',
+    projectId: 'project-smart',
+    title: 'Отчет на 31.08: Смартстрой',
+    description: 'Сделано за отчетную неделю по Смартстрою.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-31',
+    deadline: '2026-08-31',
+    completedAt: '2026-08-31',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-smartstroy-metrika-automation-31-08',
+        title: 'Частично настроить автоматизацию выгрузки метрик для отчетов',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-smartstroy-new-report-format-31-08',
+        title: 'Создать новый формат отчета',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+    ],
+  },
+  {
+    id: 'weekly-aquaguard-report-2026-08-31',
+    projectId: 'project-aquaguard',
+    title: 'Отчет на 31.08: Аквагард',
+    description: 'Сделано за отчетную неделю по Аквагарду.',
+    status: 'done',
+    ownerIds: ['person-aleksey', 'person-olga'],
+    createdAt: '2026-08-31',
+    deadline: '2026-08-31',
+    completedAt: '2026-08-31',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-aquaguard-catalog-card-fixes-31-08',
+        title: 'Исправить косяки после Ольги по карточкам и каталогу',
+        ownerId: 'person-olga',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-aquaguard-mobile-layout-31-08',
+        title: 'Исправить мобильную верстку',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-aquaguard-microdata-31-08',
+        title: 'Исправить микроразметку',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-aquaguard-feed-auto-file-31-08',
+        title: 'Настроить автоматическое формирование файла фида при обновлении товаров',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-aquaguard-metrika-automation-31-08',
+        title: 'Частично настроить автоматизацию выгрузки метрик для отчетов',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-aquaguard-new-report-format-31-08',
+        title: 'Создать новый формат отчета',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+    ],
+  },
+  {
+    id: 'weekly-balt-pallet-report-2026-08-31',
+    projectId: 'project-balt-pallet',
+    title: 'Отчет на 31.08: Балт Паллет',
+    description: 'Сделано за отчетную неделю по Балт Паллет.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-31',
+    deadline: '2026-08-31',
+    completedAt: '2026-08-31',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-balt-spam-validation-31-08',
+        title: 'Добавить усиления валидации от спама',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-balt-remove-instagram-31-08',
+        title: 'Убрать Instagram с сайта',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-balt-metrika-automation-31-08',
+        title: 'Частично настроить автоматизацию выгрузки метрик для отчетов',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-balt-new-report-format-31-08',
+        title: 'Создать новый формат отчета',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+    ],
+  },
+  {
+    id: 'weekly-watch-report-2026-08-31',
+    projectId: 'project-watch',
+    title: 'Отчет на 31.08: Часы',
+    description: 'Сделано за отчетную неделю по Часам.',
+    status: 'done',
+    ownerIds: ['person-outsource'],
+    createdAt: '2026-08-31',
+    deadline: '2026-08-31',
+    completedAt: '2026-08-31',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-watch-cart-31-08',
+        title: 'Реализовать функционал корзины',
+        ownerId: 'person-outsource',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-watch-feed-moderation-31-08',
+        title: 'Внести правки для прохождения модерации товарного фида',
+        ownerId: 'person-outsource',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+    ],
+  },
+  {
     id: 'report-watchstore-2026-08',
     projectId: 'project-watch',
     title: 'Сбор отчета за август: WatchStore',
-    description: 'Главный фокус недели: собрать клиентский отчет к 25.08.',
-    status: 'active',
+    description: 'Отчет за август закрыт в недельном отчете на 31.08.',
+    status: 'done',
     ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
     deadline: '2026-08-25',
+    completedAt: '2026-08-31',
     timelineEnabled: false,
     timeline: [],
   },
@@ -820,11 +1032,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'report-aquaguard-2026-08',
     projectId: 'project-aquaguard',
     title: 'Сбор отчета за август: Аквагард',
-    description: 'Главный фокус недели: собрать клиентский отчет к 25.08.',
-    status: 'active',
+    description: 'Отчет за август закрыт в недельном отчете на 31.08.',
+    status: 'done',
     ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
     deadline: '2026-08-25',
+    completedAt: '2026-08-31',
     timelineEnabled: false,
     timeline: [],
   },
@@ -832,11 +1045,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'report-promteh-2026-08',
     projectId: 'project-promteh',
     title: 'Сбор отчета за август: Макулатура + прогноз',
-    description: 'Главный фокус недели: собрать клиентский отчет к 25.08 и добавить прогноз по данным Ahrefs.',
-    status: 'active',
+    description: 'Отчет за август и новый формат отчета закрыты в недельном отчете на 31.08.',
+    status: 'done',
     ownerIds: ['person-kristina', 'person-aleksey'],
     createdAt: '2026-08-10',
     deadline: '2026-08-25',
+    completedAt: '2026-08-31',
     timelineEnabled: false,
     timeline: [],
   },
@@ -844,11 +1058,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'report-smartstroy-2026-08',
     projectId: 'project-smart',
     title: 'Сбор отчета за август: СмартСтрой',
-    description: 'Главный фокус недели: собрать клиентский отчет к 25.08.',
-    status: 'active',
+    description: 'Отчет за август закрыт в недельном отчете на 31.08.',
+    status: 'done',
     ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
     deadline: '2026-08-25',
+    completedAt: '2026-08-31',
     timelineEnabled: false,
     timeline: [],
   },
@@ -856,11 +1071,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'report-balt-pallet-2026-08',
     projectId: 'project-balt-pallet',
     title: 'Сбор отчета за август: Паллет',
-    description: 'Главный фокус недели: собрать клиентский отчет к 25.08.',
-    status: 'active',
+    description: 'Отчет за август закрыт в недельном отчете на 31.08.',
+    status: 'done',
     ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
     deadline: '2026-08-25',
+    completedAt: '2026-08-31',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3917,17 +4133,17 @@ function WeeklyReportView({
   externalSource: ExternalProjectsSource;
   externalAdditions: ExternalProjectAdditions;
 }) {
-  const previousWeek = useMemo(() => getWeekWindow(-1), []);
+  const latestReportWeek = useMemo(() => getWeekWindow(0), []);
   const archiveStarts = useMemo(
-    () => collectReportArchiveStarts(tasks, externalSource, externalAdditions, previousWeek),
-    [externalAdditions, externalSource, previousWeek, tasks],
+    () => collectReportArchiveStarts(tasks, externalSource, externalAdditions, latestReportWeek),
+    [externalAdditions, externalSource, latestReportWeek, tasks],
   );
-  const [selectedArchiveStart, setSelectedArchiveStart] = useState(previousWeek.start);
+  const [selectedArchiveStart, setSelectedArchiveStart] = useState(latestReportWeek.start);
   useEffect(() => {
     if (!archiveStarts.includes(selectedArchiveStart)) {
-      setSelectedArchiveStart(archiveStarts[0] ?? previousWeek.start);
+      setSelectedArchiveStart(archiveStarts[0] ?? latestReportWeek.start);
     }
-  }, [archiveStarts, previousWeek.start, selectedArchiveStart]);
+  }, [archiveStarts, latestReportWeek.start, selectedArchiveStart]);
   const selectedReportWeek = useMemo(() => getWeekWindowFromIso(selectedArchiveStart), [selectedArchiveStart]);
   const selectedPlanWeek = useMemo(
     () => getWeekWindowFromIso(addDaysToIso(selectedArchiveStart, 7)),
@@ -3957,9 +4173,14 @@ function WeeklyReportView({
   const reportFocusTasks = useMemo(
     () =>
       tasks
-        .filter((task) => task.status !== 'done' && task.deadline === '2026-08-25' && task.title.includes('Сбор отчета'))
+        .filter(
+          (task) =>
+            task.status === 'done' &&
+            task.completedAt === selectedArchiveStart &&
+            task.title.startsWith('Отчет на'),
+        )
         .sort((a, b) => a.title.localeCompare(b.title)),
-    [tasks],
+    [selectedArchiveStart, tasks],
   );
   const seoDone = seoReports.reduce((sum, report) => sum + report.done.length, 0);
   const seoPlanned = seoReports.reduce((sum, report) => sum + report.planned.length, 0);
@@ -3973,7 +4194,7 @@ function WeeklyReportView({
         <div>
           <h2>Отчет</h2>
           <p>
-            Сводка за прошлую неделю и план на текущую неделю по SEO-проектам и сторонним направлениям отдельно.
+            Сводка по выбранной отчетной папке: SEO-проекты и сторонние направления отдельно.
           </p>
         </div>
         <div className="hero-metrics">
@@ -3993,9 +4214,9 @@ function WeeklyReportView({
 
       <section className="panel weekly-focus-card">
         <div>
-          <span>Главный фокус недели</span>
-          <h2>Сбор отчетов по клиентам</h2>
-          <p>Все клиентские отчеты собраны в плане недели с дедлайном 25.08.</p>
+          <span>Открытая отчетная папка</span>
+          <h2>{selectedReportTitle}</h2>
+          <p>Сводка по клиентским отчетам и выполненным работам за выбранный понедельник.</p>
         </div>
         <div className="weekly-focus-list">
           {reportFocusTasks.map((task) => {
@@ -4045,7 +4266,7 @@ function ReportArchiveFolders({
     <section className="panel report-archive-panel">
       <div className="section-heading compact-heading">
         <div>
-          <h2>Папка прошлых отчетов</h2>
+          <h2>Папка отчетов</h2>
           <p>Каждый сохраненный отчет привязан к понедельнику недели.</p>
         </div>
       </div>
