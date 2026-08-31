@@ -1278,9 +1278,19 @@ function formatWeekWindow(window: WeekWindow) {
   return `${formatDate(window.start)} - ${formatDate(window.end)}`;
 }
 
+function formatNumericDate(value: string) {
+  if (!value) return 'без даты';
+  const [, month, day] = value.split('-');
+  return `${day}.${month}`;
+}
+
 function formatReportArchiveTitle(window: WeekWindow) {
-  const [, month, day] = window.start.split('-');
-  return `Отчет за ${day}.${month}`;
+  return `Отчет за ${formatNumericDate(window.start)}-${formatNumericDate(window.end)}`;
+}
+
+function isWeeklyReportTask(task: Task) {
+  const title = task.title.trim().toLowerCase();
+  return task.id.startsWith('weekly-') || title.startsWith('отчет на');
 }
 
 function parseShortRuDateLabel(value: string) {
@@ -4307,7 +4317,7 @@ function WeeklyReportView({
   externalSource: ExternalProjectsSource;
   externalAdditions: ExternalProjectAdditions;
 }) {
-  const latestReportWeek = useMemo(() => getWeekWindow(0), []);
+  const latestReportWeek = useMemo(() => getWeekWindow(-1), []);
   const archiveStarts = useMemo(
     () => collectReportArchiveStarts(tasks, externalSource, externalAdditions, latestReportWeek),
     [externalAdditions, externalSource, latestReportWeek, tasks],
@@ -4323,6 +4333,7 @@ function WeeklyReportView({
     () => getWeekWindowFromIso(addDaysToIso(selectedArchiveStart, 7)),
     [selectedArchiveStart],
   );
+  const selectedReportSendDate = selectedPlanWeek.start;
   const archiveFolders = useMemo(
     () =>
       buildReportArchiveFolders(
@@ -4340,8 +4351,8 @@ function WeeklyReportView({
     [peopleById, projects, selectedPlanWeek, selectedReportWeek, tasks],
   );
   const externalReports = useMemo(
-    () => buildExternalWeeklyReports(externalSource, externalAdditions, selectedReportWeek),
-    [externalAdditions, externalSource, selectedReportWeek],
+    () => buildExternalWeeklyReports(externalSource, externalAdditions, selectedReportWeek, selectedPlanWeek),
+    [externalAdditions, externalSource, selectedPlanWeek, selectedReportWeek],
   );
   const projectById = useMemo(() => new Map(projects.map((project) => [project.id, project])), [projects]);
   const reportFocusTasks = useMemo(
@@ -4350,11 +4361,11 @@ function WeeklyReportView({
         .filter(
           (task) =>
             task.status === 'done' &&
-            task.completedAt === selectedArchiveStart &&
+            task.completedAt === selectedReportSendDate &&
             task.title.startsWith('Отчет на'),
         )
         .sort((a, b) => a.title.localeCompare(b.title)),
-    [selectedArchiveStart, tasks],
+    [selectedReportSendDate, tasks],
   );
   const seoDone = seoReports.reduce((sum, report) => sum + report.done.length, 0);
   const seoPlanned = seoReports.reduce((sum, report) => sum + report.planned.length, 0);
@@ -4374,6 +4385,7 @@ function WeeklyReportView({
         <div className="hero-metrics">
           <Metric label="Открыт отчет" value={selectedReportTitle} />
           <Metric label="Период" value={formatWeekWindow(selectedReportWeek)} />
+          <Metric label="Отправка" value={formatNumericDate(selectedReportSendDate)} />
           <Metric label="SEO сделано" value={String(seoDone)} tone={seoDone ? 'success' : undefined} />
           <Metric label="SEO план" value={String(seoPlanned)} />
           <Metric label="Сторонние план" value={String(externalPlanned)} />
@@ -4390,7 +4402,9 @@ function WeeklyReportView({
         <div>
           <span>Открытая отчетная папка</span>
           <h2>{selectedReportTitle}</h2>
-          <p>Сводка по клиентским отчетам и выполненным работам за выбранный понедельник.</p>
+          <p>
+            Работы за {formatWeekWindow(selectedReportWeek)}. Отправка отчета - {formatNumericDate(selectedReportSendDate)}.
+          </p>
         </div>
         <div className="weekly-focus-list">
           {reportFocusTasks.map((task) => {
@@ -4408,7 +4422,7 @@ function WeeklyReportView({
       <div className="weekly-report-grid">
         <WeeklyReportSection
           title="SEO-проекты"
-          description={`Открытая папка: ${selectedReportTitle}. План считается на следующую неделю: ${formatWeekWindow(
+          description={`Открытая папка: ${selectedReportTitle}. План на следующую неделю: ${formatWeekWindow(
             selectedPlanWeek,
           )}.`}
           doneCount={seoDone}
@@ -4417,7 +4431,9 @@ function WeeklyReportView({
         />
         <WeeklyReportSection
           title="Сторонние проекты"
-          description="Отдельный блок по задачам из документа с учредителем и недельным обновлениям внутри папок."
+          description={`Отдельный блок по задачам из документа с учредителем. План на следующую неделю: ${formatWeekWindow(
+            selectedPlanWeek,
+          )}.`}
           doneCount={externalDone}
           plannedCount={externalPlanned}
           reports={externalReports}
@@ -4575,6 +4591,8 @@ function buildSeoWeeklyReports(
   previousWeek: WeekWindow,
   currentWeek: WeekWindow,
 ) {
+  const reportSendDate = currentWeek.start;
+
   return projects
     .map((project) => {
       const projectTasks = tasks.filter((task) => task.projectId === project.id);
@@ -4583,8 +4601,12 @@ function buildSeoWeeklyReports(
 
       projectTasks.forEach((task) => {
         const owners = getTaskOwnersLabel(task, peopleById);
+        const isSentReportTask = isWeeklyReportTask(task);
         const doneTimelineItems = task.timeline.filter(
-          (item) => item.status === 'done' && isIsoInWindow(item.completedAt ?? item.dueDate, previousWeek),
+          (item) =>
+            item.status === 'done' &&
+            (isIsoInWindow(item.completedAt ?? item.dueDate, previousWeek) ||
+              (isSentReportTask && (item.completedAt ?? item.dueDate) === reportSendDate)),
         );
 
         if (doneTimelineItems.length) {
@@ -4598,7 +4620,11 @@ function buildSeoWeeklyReports(
               tone: 'success',
             });
           });
-        } else if (task.status === 'done' && isIsoInWindow(task.completedAt ?? task.deadline, previousWeek)) {
+        } else if (
+          task.status === 'done' &&
+          (isIsoInWindow(task.completedAt ?? task.deadline, previousWeek) ||
+            (isSentReportTask && (task.completedAt ?? task.deadline) === reportSendDate))
+        ) {
           done.push({
             id: `${task.id}-done`,
             title: task.title,
@@ -4662,6 +4688,7 @@ function buildExternalWeeklyReports(
   source: ExternalProjectsSource,
   externalAdditions: ExternalProjectAdditions,
   previousWeek: WeekWindow,
+  currentWeek: WeekWindow,
 ) {
   const colors: Record<ExternalProjectSection['status'], string> = {
     active: '#326d7a',
@@ -4711,16 +4738,26 @@ function buildExternalWeeklyReports(
       if (section.status !== 'done') {
         getExternalTimeline(section)
           .filter((item) => item.status !== 'done')
+          .filter((item) => {
+            const itemDate = parseShortRuDateLabel(item.dateLabel ?? '');
+            return (
+              isIsoInWindow(itemDate, currentWeek) ||
+              (Boolean(itemDate) && itemDate < currentWeek.start) ||
+              (!itemDate && (item.status === 'active' || section.status === 'active'))
+            );
+          })
           .forEach((item) => {
+            const itemDate = parseShortRuDateLabel(item.dateLabel ?? '');
+            const overdue = Boolean(itemDate) && itemDate < currentWeek.start;
             planned.push({
               id: `${section.id}-${item.id}-planned`,
               title: item.title,
               meta: `${item.ownerLabel ?? source.collaborator} · ${
                 item.displayStatusLabel ?? externalStatusLabels[section.status]
               }`,
-              date: parseShortRuDateLabel(item.dateLabel ?? ''),
-              statusLabel: item.displayStatusLabel ?? externalTimelineStatusLabels[item.status],
-              tone: item.status === 'waiting' || section.status === 'waiting' ? 'warning' : 'info',
+              date: itemDate,
+              statusLabel: overdue ? 'просрочено' : item.displayStatusLabel ?? externalTimelineStatusLabels[item.status],
+              tone: overdue ? 'danger' : item.status === 'waiting' || section.status === 'waiting' ? 'warning' : 'info',
             });
           });
       }
@@ -4760,15 +4797,16 @@ function collectReportArchiveStarts(
   latestPastWeek: WeekWindow,
 ) {
   const starts = new Set<string>([latestPastWeek.start]);
-  const addArchiveDate = (value?: string) => {
-    const start = getWeekStartIso(value ?? '');
+  const addArchiveDate = (value?: string, parentTask?: Task) => {
+    const rawStart = getWeekStartIso(value ?? '');
+    const start = parentTask && isWeeklyReportTask(parentTask) && rawStart ? addDaysToIso(rawStart, -7) : rawStart;
     if (start && start <= latestPastWeek.start) starts.add(start);
   };
 
   tasks.forEach((task) => {
-    if (task.status === 'done') addArchiveDate(task.completedAt ?? task.deadline);
+    if (task.status === 'done') addArchiveDate(task.completedAt ?? task.deadline, task);
     task.timeline.forEach((item) => {
-      if (item.status === 'done') addArchiveDate(item.completedAt ?? item.dueDate);
+      if (item.status === 'done') addArchiveDate(item.completedAt ?? item.dueDate, task);
     });
   });
 
@@ -4794,7 +4832,7 @@ function buildReportArchiveFolders(
     const reportWeek = getWeekWindowFromIso(start);
     const planWeek = getWeekWindowFromIso(addDaysToIso(start, 7));
     const seoReports = buildSeoWeeklyReports(projects, tasks, peopleById, reportWeek, planWeek);
-    const externalReports = buildExternalWeeklyReports(externalSource, externalAdditions, reportWeek);
+    const externalReports = buildExternalWeeklyReports(externalSource, externalAdditions, reportWeek, planWeek);
 
     return {
       start,

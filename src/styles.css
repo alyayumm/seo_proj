@@ -2334,8 +2334,8 @@ p {
 
 .weekly-report-hero .hero-metrics {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  min-width: min(100%, 560px);
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  min-width: min(100%, 680px);
 }
 
 .weekly-report-hero .metric {
