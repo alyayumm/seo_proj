@@ -1,0 +1,46 @@
+name: Update Bitrix24 snapshot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '25 5 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bitrix24-snapshot
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch Bitrix24 snapshot
+        run: node scripts/fetch-bitrix24-snapshot.mjs
+        env:
+          BITRIX24_WEBHOOK_URL: ${{ secrets.BITRIX24_WEBHOOK_URL }}
+          BITRIX24_SEO_GROUP_ID: ${{ vars.BITRIX24_SEO_GROUP_ID }}
+          BITRIX24_SEO_PROJECT_NAME: ${{ vars.BITRIX24_SEO_PROJECT_NAME }}
+          BITRIX24_TASK_LIMIT: ${{ vars.BITRIX24_TASK_LIMIT }}
+          BITRIX24_CRM_LIMIT: ${{ vars.BITRIX24_CRM_LIMIT }}
+
+      - name: Commit Bitrix24 snapshot
+        run: |
+          if [ -z "$(git status --porcelain public/data/bitrix24-snapshot.json)" ]; then
+            echo "No Bitrix24 snapshot changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/bitrix24-snapshot.json
+          git commit -m "chore: update bitrix24 snapshot"
+          git push

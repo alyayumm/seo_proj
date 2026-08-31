@@ -60,6 +60,11 @@ import {
 } from './externalProjects';
 import { PROMOTION_RESULT_SOURCES, type PromotionResultSource } from './promotionResults';
 import { WORK_PLAN_SOURCES, type WorkPlanSource } from './workPlans';
+import {
+  EMPTY_BITRIX24_SNAPSHOT,
+  normalizeBitrix24Snapshot,
+  type Bitrix24Snapshot,
+} from './bitrix24';
 
 type View = 'tasks' | 'admin' | 'dashboard' | 'seo' | 'payments' | 'report' | 'external';
 type Status = 'planned' | 'active' | 'done' | 'risk';
@@ -1203,6 +1208,19 @@ function formatDate(value: string) {
   }).format(new Date(`${value}T12:00:00`));
 }
 
+function formatDateTime(value: string) {
+  if (!value) return 'без даты';
+  const normalized = value.includes('T') ? value : `${value}T12:00:00`;
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) return 'без даты';
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
 function normalizeProjectName(value: string) {
   return value.trim().toLowerCase();
 }
@@ -1562,6 +1580,23 @@ function App() {
     () => mergePromotionSourcesWithMetrika(PROMOTION_RESULT_SOURCES, metrikaStats),
     [metrikaStats],
   );
+
+  const [bitrix24Snapshot, setBitrix24Snapshot] = useState<Bitrix24Snapshot>(EMPTY_BITRIX24_SNAPSHOT);
+  useEffect(() => {
+    let isMounted = true;
+    void fetch('./data/bitrix24-snapshot.json', { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (isMounted && payload) setBitrix24Snapshot(normalizeBitrix24Snapshot(payload));
+      })
+      .catch(() => {
+        if (isMounted) setBitrix24Snapshot(EMPTY_BITRIX24_SNAPSHOT);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const workPlansByProject = useMemo(() => {
     const map = new Map<string, WorkPlanSource[]>();
@@ -2032,6 +2067,7 @@ function App() {
             completion={completion}
             overdueCount={overdueCount}
             collisions={collisions}
+            bitrix24Snapshot={bitrix24Snapshot}
           />
         )}
 
@@ -4000,6 +4036,7 @@ type DashboardViewProps = {
   completion: number;
   overdueCount: number;
   collisions: Array<{ id: string; task: Task; owner?: Person; count: number }>;
+  bitrix24Snapshot: Bitrix24Snapshot;
 };
 
 function DashboardView({
@@ -4009,6 +4046,7 @@ function DashboardView({
   completion,
   overdueCount,
   collisions,
+  bitrix24Snapshot,
 }: DashboardViewProps) {
   const totalTimeline = tasks.reduce((sum, task) => sum + task.timeline.length, 0);
 
@@ -4112,9 +4150,145 @@ function DashboardView({
             </div>
           </section>
 
+          <Bitrix24DashboardPanel snapshot={bitrix24Snapshot} />
         </div>
 
         <TaskChronologyPanel tasks={tasks} projects={projects} peopleById={peopleById} />
+      </div>
+    </section>
+  );
+}
+
+function Bitrix24DashboardPanel({ snapshot }: { snapshot: Bitrix24Snapshot }) {
+  const clientCount = snapshot.crm.leads.length + snapshot.crm.contacts.length + snapshot.crm.companies.length;
+  const customFieldCount = snapshot.crm.fields.filter((field) => field.isUserField).length;
+  const doneTasks = snapshot.tasks.filter((task) => task.status === '5' || task.statusLabel.toLowerCase() === 'готово').length;
+  const latestTasks = [...snapshot.tasks]
+    .sort((left, right) => (right.createdDate || '').localeCompare(left.createdDate || ''))
+    .slice(0, 5);
+  const latestDeals = snapshot.crm.deals.slice(0, 4);
+  const crmHasRows = clientCount > 0 || snapshot.crm.deals.length > 0 || customFieldCount > 0;
+  const hasSnapshot = Boolean(snapshot.updatedAt || snapshot.tasks.length || crmHasRows || snapshot.errors.length);
+
+  return (
+    <section className="panel bitrix-panel">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>Bitrix24</h2>
+          <p>
+            {hasSnapshot
+              ? `CRM и задачи проекта ${snapshot.seoProjectName || 'SEO'} · обновлено ${formatDateTime(snapshot.updatedAt)}`
+              : 'Подключение готово. Данные появятся после запуска backend-выгрузки.'}
+          </p>
+        </div>
+        <Layers3 size={20} />
+      </div>
+
+      <div className="bitrix-metrics">
+        <Metric label="Клиенты CRM" value={String(clientCount)} compact />
+        <Metric label="Сделки" value={String(snapshot.crm.deals.length)} compact />
+        <Metric label="SEO-задачи" value={String(snapshot.tasks.length)} compact />
+        <Metric label="Выполнено" value={String(doneTasks)} compact tone={doneTasks ? 'success' : undefined} />
+        <Metric label="Поля CRM" value={String(customFieldCount)} compact />
+      </div>
+
+      {snapshot.errors.length > 0 && (
+        <div className="bitrix-error-list" role="status">
+          <strong>Что не загрузилось</strong>
+          {snapshot.errors.slice(0, 3).map((error) => (
+            <span key={error}>{error}</span>
+          ))}
+        </div>
+      )}
+
+      <div className="bitrix-columns">
+        <div className="bitrix-block">
+          <div className="bitrix-block-head">
+            <h3>SEO-задачи из Bitrix24</h3>
+            <span>{snapshot.seoProjectGroupId ? `проект #${snapshot.seoProjectGroupId}` : 'проект SEO'}</span>
+          </div>
+          {latestTasks.length === 0 ? (
+            <div className="empty-row">Пока нет загруженных задач из проекта SEO.</div>
+          ) : (
+            <div className="bitrix-task-list">
+              {latestTasks.map((task) => (
+                <article className="bitrix-task-row" key={task.id}>
+                  <div>
+                    <span>#{task.id}</span>
+                    <strong>{task.title}</strong>
+                    {task.description && <p>{task.description}</p>}
+                  </div>
+                  <dl>
+                    <div>
+                      <dt>Статус</dt>
+                      <dd>{task.statusLabel}</dd>
+                    </div>
+                    <div>
+                      <dt>Ответственный</dt>
+                      <dd>{task.responsibleName}</dd>
+                    </div>
+                    <div>
+                      <dt>Постановщик</dt>
+                      <dd>{task.creatorName}</dd>
+                    </div>
+                    <div>
+                      <dt>Дедлайн</dt>
+                      <dd>{formatDateTime(task.deadline)}</dd>
+                    </div>
+                    {task.closedDate && (
+                      <div>
+                        <dt>Закрыта</dt>
+                        <dd>{formatDateTime(task.closedDate)}</dd>
+                      </div>
+                    )}
+                  </dl>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="bitrix-block">
+          <div className="bitrix-block-head">
+            <h3>CRM-срез</h3>
+            <span>{snapshot.portalHost || 'портал не подключен'}</span>
+          </div>
+          <div className="bitrix-crm-summary">
+            <div>
+              <strong>{snapshot.crm.leads.length}</strong>
+              <span>лидов</span>
+            </div>
+            <div>
+              <strong>{snapshot.crm.contacts.length}</strong>
+              <span>контактов</span>
+            </div>
+            <div>
+              <strong>{snapshot.crm.companies.length}</strong>
+              <span>компаний</span>
+            </div>
+          </div>
+          {latestDeals.length > 0 ? (
+            <div className="bitrix-deal-list">
+              {latestDeals.map((deal) => (
+                <div key={deal.id}>
+                  <strong>{deal.title}</strong>
+                  <span>
+                    {deal.stageId || 'без стадии'} · {deal.assignedByName}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-row">Сделки появятся после первой успешной выгрузки CRM.</div>
+          )}
+          {snapshot.crm.fields.length > 0 && (
+            <div className="bitrix-field-strip" aria-label="Пользовательские поля CRM">
+              {snapshot.crm.fields.slice(0, 10).map((field) => (
+                <em key={`${field.entityType}-${field.code}`}>{field.title}</em>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

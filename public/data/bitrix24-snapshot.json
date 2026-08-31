@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "",
+  "portalHost": "",
+  "seoProjectName": "SEO",
+  "seoProjectGroupId": "",
+  "users": [],
+  "tasks": [],
+  "crm": {
+    "leads": [],
+    "deals": [],
+    "contacts": [],
+    "companies": [],
+    "fields": []
+  },
+  "errors": []
+}
