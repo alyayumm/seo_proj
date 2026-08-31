@@ -6,6 +6,10 @@ const OUTPUT_PATH = fileURLToPath(new URL('../public/data/bitrix24-snapshot.json
 const SEO_PROJECT_NAME = process.env.BITRIX24_SEO_PROJECT_NAME || 'SEO';
 const TASK_LIMIT = parseLimit('BITRIX24_TASK_LIMIT', 500);
 const CRM_LIMIT = parseLimit('BITRIX24_CRM_LIMIT', 500);
+const TASK_COMMENT_TASK_LIMIT = parseLimit('BITRIX24_TASK_COMMENT_TASK_LIMIT', 80);
+const TASK_COMMENTS_PER_TASK_LIMIT = parseLimit('BITRIX24_COMMENTS_PER_TASK_LIMIT', 5);
+const TASK_RESULT_TASK_LIMIT = parseLimit('BITRIX24_TASK_RESULT_TASK_LIMIT', 80);
+const TASK_RESULTS_PER_TASK_LIMIT = parseLimit('BITRIX24_TASK_RESULTS_PER_TASK_LIMIT', 5);
 const PAGE_LIMIT = 50;
 const MAX_PAGES = 200;
 const REQUEST_TIMEOUT_MS = 30000;
@@ -253,6 +257,51 @@ function normalizeTask(task, userMap, group) {
   };
 }
 
+function attachmentCount(value) {
+  if (!value || typeof value !== 'object') return 0;
+  return Object.keys(value).length;
+}
+
+function normalizeTaskComment(comment, task, userMap) {
+  const id = idValue(pick(comment, ['ID', 'id']));
+  const authorId = idValue(pick(comment, ['AUTHOR_ID', 'authorId']));
+  if (!id) return null;
+
+  return {
+    id,
+    taskId: task.id,
+    taskTitle: task.title,
+    authorId,
+    authorName: compactText(pick(comment, ['AUTHOR_NAME', 'authorName']), 120) || userName(userMap, authorId),
+    postDate: idValue(pick(comment, ['POST_DATE', 'postDate'])),
+    message: compactText(pick(comment, ['POST_MESSAGE', 'postMessage', 'POST_MESSAGE_HTML', 'postMessageHtml']), 700),
+    attachmentsCount: attachmentCount(pick(comment, ['ATTACHED_OBJECTS', 'attachedObjects'])),
+  };
+}
+
+function normalizeTaskResult(result, task, userMap) {
+  const id = idValue(pick(result, ['id', 'ID']));
+  const createdById = idValue(pick(result, ['createdBy', 'CREATED_BY']));
+  if (!id) return null;
+
+  const filesValue = pick(result, ['files', 'FILES']);
+  const filesCount = Array.isArray(filesValue) ? filesValue.length : 0;
+
+  return {
+    id,
+    taskId: task.id,
+    taskTitle: task.title,
+    commentId: idValue(pick(result, ['commentId', 'COMMENT_ID'])),
+    createdById,
+    createdByName: userName(userMap, createdById),
+    createdAt: idValue(pick(result, ['createdAt', 'CREATED_AT'])),
+    updatedAt: idValue(pick(result, ['updatedAt', 'UPDATED_AT'])),
+    status: idValue(pick(result, ['status', 'STATUS'])),
+    text: compactText(pick(result, ['text', 'TEXT', 'formattedText', 'FORMATTED_TEXT']), 900),
+    filesCount,
+  };
+}
+
 async function fetchSeoGroup(baseUrl) {
   const configuredId = idValue(process.env.BITRIX24_SEO_GROUP_ID);
   if (configuredId) return { id: configuredId, name: SEO_PROJECT_NAME };
@@ -308,11 +357,64 @@ async function fetchSeoTasks(baseUrl, group, userMap) {
       select: TASK_SELECT,
       params: { WITH_PARSED_DESCRIPTION: 'N' },
     },
-    (result) => resultArray(result, ['tasks']),
+    (result) => resultArray(result, ['tasks', 'items']),
     TASK_LIMIT,
   );
 
   return tasks.map((task) => normalizeTask(task, userMap, group)).filter((task) => task.id);
+}
+
+async function fetchTaskComments(baseUrl, tasks, userMap, errors) {
+  const comments = [];
+  const commentTasks = tasks.slice(0, TASK_COMMENT_TASK_LIMIT);
+
+  for (const task of commentTasks) {
+    try {
+      const payload = await callBitrix(baseUrl, 'task.commentitem.getlist', {
+        TASKID: Number(task.id) || task.id,
+        ORDER: { POST_DATE: 'desc' },
+      });
+      const taskComments = resultArray(payload.result, ['comments', 'items'])
+        .map((comment) => normalizeTaskComment(comment, task, userMap))
+        .filter(Boolean)
+        .slice(0, TASK_COMMENTS_PER_TASK_LIMIT);
+      comments.push(...taskComments);
+    } catch (error) {
+      if (errors.length < 8) {
+        errors.push(safeErrorLabel(`task.commentitem.getlist task ${task.id}`, error));
+      }
+    }
+  }
+
+  return comments
+    .sort((left, right) => (right.postDate || '').localeCompare(left.postDate || ''))
+    .slice(0, TASK_COMMENT_TASK_LIMIT * TASK_COMMENTS_PER_TASK_LIMIT);
+}
+
+async function fetchTaskResults(baseUrl, tasks, userMap, errors) {
+  const results = [];
+  const resultTasks = tasks.slice(0, TASK_RESULT_TASK_LIMIT);
+
+  for (const task of resultTasks) {
+    try {
+      const payload = await callBitrix(baseUrl, 'tasks.task.result.list', {
+        taskId: Number(task.id) || task.id,
+      });
+      const taskResults = resultArray(payload.result, ['results', 'items'])
+        .map((result) => normalizeTaskResult(result, task, userMap))
+        .filter(Boolean)
+        .slice(0, TASK_RESULTS_PER_TASK_LIMIT);
+      results.push(...taskResults);
+    } catch (error) {
+      if (errors.length < 8) {
+        errors.push(safeErrorLabel(`tasks.task.result.list task ${task.id}`, error));
+      }
+    }
+  }
+
+  return results
+    .sort((left, right) => (right.createdAt || '').localeCompare(left.createdAt || ''))
+    .slice(0, TASK_RESULT_TASK_LIMIT * TASK_RESULTS_PER_TASK_LIMIT);
 }
 
 function isCustomFieldCode(code) {
@@ -445,6 +547,8 @@ function emptyPayload(portalHost = '', errors = []) {
     seoProjectGroupId: '',
     users: [],
     tasks: [],
+    comments: [],
+    results: [],
     crm: {
       leads: [],
       deals: [],
@@ -506,6 +610,18 @@ async function main() {
     errors.push(safeErrorLabel('tasks.task.list', error));
   }
 
+  let comments = [];
+  if (tasks.length > 0) {
+    comments = await fetchTaskComments(baseUrl, tasks, userMap, errors);
+    console.log(`Bitrix24 SEO task comments: ${comments.length}`);
+  }
+
+  let results = [];
+  if (tasks.length > 0) {
+    results = await fetchTaskResults(baseUrl, tasks, userMap, errors);
+    console.log(`Bitrix24 SEO task results: ${results.length}`);
+  }
+
   const crm = {
     leads: [],
     deals: [],
@@ -539,6 +655,8 @@ async function main() {
     seoProjectGroupId: seoGroup.id,
     users,
     tasks,
+    comments,
+    results,
     crm,
     errors,
   });

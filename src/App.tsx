@@ -195,6 +195,11 @@ const managedResourceTabLabels: Record<ManagedResourceTab, string> = {
   audit: 'Аудит',
 };
 
+const SEO_PLANNING_CHECKLIST_URL =
+  'https://docs.google.com/document/d/1waAgTlkXKntLTkYruIVXEtprteaJhcq4ZiOe1XPqio8/edit?tab=t.emcoqoq3hai5#heading=h.9ocmnxqz6u8e';
+const PROMTEH_FORECAST_REPORT_URL =
+  'https://docs.google.com/document/d/1UTVNP4WnpKGrwbBAylhyxPbOSvlyyRBxw_SQVrKMK1E/edit?usp=sharing';
+
 const initialProjects: Project[] = [
   { id: 'project-ash', name: 'АШ', color: '#6D72FF' },
   { id: 'project-lombard', name: 'Ломбард', color: '#4DB8FF' },
@@ -260,6 +265,18 @@ const initialPaymentRows: PaymentRow[] = [
   },
 ];
 
+const requiredManagedResourceSeeds: ManagedResource[] = [
+  {
+    id: 'resource-report-promteh-forecast-2026-08-31',
+    projectId: 'project-promteh',
+    tab: 'report',
+    title: 'Прогноз по Промтеху в отчете',
+    url: PROMTEH_FORECAST_REPORT_URL,
+    dateLabel: '31.08',
+    note: 'Прогноз роста до трех заявок в день в течение трех месяцев.',
+  },
+];
+
 function findInitialProjectId(projectName: string) {
   return initialProjects.find((project) => normalizeProjectName(project.name) === normalizeProjectName(projectName))?.id;
 }
@@ -317,7 +334,9 @@ function buildInitialManagedResources(): ManagedResource[] {
   return resources;
 }
 
-const initialManagedResources = buildInitialManagedResources();
+const initialManagedResources = [...buildInitialManagedResources(), ...requiredManagedResourceSeeds];
+const requiredManagedResourceSeedsById = new Map(requiredManagedResourceSeeds.map((resource) => [resource.id, resource]));
+const managedResourceSeedVersion = 'managed-resources-2026-08-31-v1';
 
 const legacyPersonIdMap: Record<string, string> = {
   'person-vlad': 'person-aleksey',
@@ -332,7 +351,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'client-statuses-2026-08-31-v1';
+const taskSeedVersion = 'planning-2026-08-31-v2';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -481,7 +500,9 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-promteh-forecast-ahrefs',
     projectId: 'project-promteh',
     title: 'Прогноз по Промтеху для отчета',
-    description: 'На 31.08: прогноз и новый формат отчета закрыты в отчетной неделе.',
+    description: 'По планерке 25.08: прогноз сделан и добавлен в отчет.',
+    sourceLabel: 'отчет с прогнозом',
+    sourceUrl: PROMTEH_FORECAST_REPORT_URL,
     status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-17',
@@ -532,11 +553,11 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-promteh-new-quarter-plan',
     projectId: 'project-promteh',
     title: 'Новый план работ на 3 месяца',
-    description: 'На 24.08: в работе новый план работ на 3 месяца.',
+    description: 'По планерке 25.08: план работ на следующий период остается в работе; прогноз закрыт отдельно.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-24',
-    deadline: '',
+    deadline: '2026-08-31',
     timelineEnabled: false,
     timeline: [],
   },
@@ -576,6 +597,78 @@ const requiredTaskSeeds: Task[] = [
     deadline: '',
     timelineEnabled: false,
     timeline: [],
+  },
+  {
+    id: 'planning-smartstroy-client-call-2026-08-25',
+    projectId: 'project-smart',
+    title: 'Созвон с клиентом по проектам, калькулятору и заявкам',
+    description: 'По планерке 25.08: созвона не было, ждем обратную связь в чате.',
+    sourceLabel: 'чек-лист 25.08',
+    sourceUrl: SEO_PLANNING_CHECKLIST_URL,
+    status: 'active',
+    ownerIds: ['person-alina'],
+    createdAt: '2026-08-31',
+    deadline: '',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-smartstroy-client-call-feedback',
+        title: 'Дождаться обратной связи в чате',
+        ownerId: 'person-alina',
+        status: 'active',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-smartstroy-show-projects-calculator',
+        title: 'На созвоне показать проекты, планировки и обсудить калькулятор',
+        ownerId: 'person-alina',
+        status: 'planned',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-smartstroy-requests-analytics',
+        title: 'После доступа к Битриксу подготовить срез по заявкам',
+        ownerId: 'person-alina',
+        status: 'planned',
+        dueDate: '',
+      },
+    ],
+  },
+  {
+    id: 'planning-smartstroy-cottage-locations-2026-08-25',
+    projectId: 'project-smart',
+    title: 'Коттеджные поселки и локации',
+    description: 'По планерке 25.08: задача в работе у отдела маркетинга.',
+    sourceLabel: 'чек-лист 25.08',
+    sourceUrl: SEO_PLANNING_CHECKLIST_URL,
+    status: 'active',
+    ownerIds: ['person-marketing'],
+    createdAt: '2026-08-31',
+    deadline: '',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-smartstroy-locations-yandex-maps',
+        title: 'Собрать поселки и локации через Яндекс Карты',
+        ownerId: 'person-marketing',
+        status: 'active',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-smartstroy-locations-competitors',
+        title: 'Собрать локации через статьи, подборки и сайты конкурентов',
+        ownerId: 'person-marketing',
+        status: 'active',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-smartstroy-locations-bitrix',
+        title: 'Проверить возможность парсинга в Битриксе',
+        ownerId: 'person-marketing',
+        status: 'planned',
+        dueDate: '',
+      },
+    ],
   },
   {
     id: 'current-aquaguard-service-content-plan',
@@ -619,7 +712,9 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-aquaguard-feeds-yandex-support',
     projectId: 'project-aquaguard',
     title: 'Листы, фиды и индексация товаров',
-    description: 'На 17.08: листы и фиды готовы, товары на индексации.',
+    description: 'По планерке 25.08: фиды на модерации, товары и фиды контролируем до подтверждения.',
+    sourceLabel: 'чек-лист 25.08',
+    sourceUrl: SEO_PLANNING_CHECKLIST_URL,
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-10',
@@ -645,6 +740,13 @@ const requiredTaskSeeds: Task[] = [
       {
         id: 'timeline-aquaguard-products-indexing',
         title: 'Дождаться индексации товаров',
+        ownerId: 'person-aleksey',
+        status: 'active',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-aquaguard-feeds-moderation',
+        title: 'Проконтролировать модерацию фидов',
         ownerId: 'person-aleksey',
         status: 'active',
         dueDate: '',
@@ -723,13 +825,31 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-balt-content-feeds',
     projectId: 'project-balt-pallet',
     title: 'Контент план по товарам и фиды',
-    description: 'На 24.08: в работе контент план по товарам и фиды.',
+    description: 'По планерке 25.08: основные задачи сделали, сейчас все на подтверждении.',
+    sourceLabel: 'чек-лист 25.08',
+    sourceUrl: SEO_PLANNING_CHECKLIST_URL,
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-10',
     deadline: '',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-balt-content-feeds-work-done',
+        title: 'Закрыть работы по контенту, товарным страницам и фидам',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '',
+        completedAt: '2026-08-30',
+      },
+      {
+        id: 'timeline-balt-content-feeds-confirmation',
+        title: 'Дождаться подтверждения по выполненным работам',
+        ownerId: 'person-kristina',
+        status: 'active',
+        dueDate: '',
+      },
+    ],
   },
   {
     id: 'current-balt-site-usability-fixes',
@@ -764,13 +884,31 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-balt-domain',
     projectId: 'project-balt-pallet',
     title: 'Покупка домена',
-    description: 'Актуальная задача по Балт-паллет.',
-    status: 'planned',
-    ownerIds: ['person-kirill'],
+    description: 'По планерке 25.08: сделали, сейчас на подтверждении.',
+    sourceLabel: 'чек-лист 25.08',
+    sourceUrl: SEO_PLANNING_CHECKLIST_URL,
+    status: 'active',
+    ownerIds: ['person-kristina'],
     createdAt: '2026-08-10',
     deadline: '',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-balt-domain-done',
+        title: 'Подтвердить домен вместе с клиентом',
+        ownerId: 'person-kristina',
+        status: 'done',
+        dueDate: '2026-08-27',
+        completedAt: '2026-08-30',
+      },
+      {
+        id: 'timeline-balt-domain-confirmation',
+        title: 'Получить финальное подтверждение клиента',
+        ownerId: 'person-kristina',
+        status: 'active',
+        dueDate: '',
+      },
+    ],
   },
   {
     id: 'current-watch-tag-pages-feeds-schema',
@@ -780,6 +918,114 @@ const requiredTaskSeeds: Task[] = [
     status: 'active',
     ownerIds: ['person-outsource'],
     createdAt: '2026-08-10',
+    deadline: '',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'planning-watch-domain-access-payments-2026-08-25',
+    projectId: 'project-watch',
+    title: 'Часы: домен, доступы и учет разработки',
+    description: 'Из чек-листа планерки 25.08. Без комментариев по прогрессу - не начинали.',
+    sourceLabel: 'чек-лист 25.08',
+    sourceUrl: SEO_PLANNING_CHECKLIST_URL,
+    status: 'planned',
+    ownerIds: ['person-alina'],
+    createdAt: '2026-08-31',
+    deadline: '',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-watch-domain-confirmation',
+        title: 'Организовать подтверждение домена',
+        ownerId: 'person-alina',
+        status: 'planned',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-watch-mail-access',
+        title: 'Выдать доступ к почте, на которую поступают заявки',
+        ownerId: 'person-alina',
+        status: 'planned',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-watch-dev-payment-row',
+        title: 'Создать отдельную строку для разработки по проекту Часы',
+        ownerId: 'person-alina',
+        status: 'planned',
+        dueDate: '',
+      },
+    ],
+  },
+  {
+    id: 'planning-lombard-expenses-minimal-mode-2026-08-25',
+    projectId: 'project-lombard',
+    title: 'Ломбард: расходы и минимальный режим работ',
+    description: 'Из чек-листа планерки 25.08. Без комментариев по прогрессу - не начинали.',
+    sourceLabel: 'чек-лист 25.08',
+    sourceUrl: SEO_PLANNING_CHECKLIST_URL,
+    status: 'planned',
+    ownerIds: ['person-alina'],
+    createdAt: '2026-08-31',
+    deadline: '',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-lombard-expenses-count',
+        title: 'Подсчитать уже понесенные расходы по проекту',
+        ownerId: 'person-alina',
+        status: 'planned',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-lombard-minimal-mode',
+        title: 'Вести проект в минимальном режиме без дополнительного бюджета',
+        ownerId: 'person-alina',
+        status: 'planned',
+        dueDate: '',
+      },
+    ],
+  },
+  {
+    id: 'planning-dashboard-payment-cycle-2026-08-25',
+    projectId: 'project-ash',
+    title: 'Дашборд: цикл оплат и учет разработки',
+    description: 'Из чек-листа планерки 25.08. Без комментариев по прогрессу - не начинали.',
+    sourceLabel: 'чек-лист 25.08',
+    sourceUrl: SEO_PLANNING_CHECKLIST_URL,
+    status: 'planned',
+    ownerIds: ['person-alina'],
+    createdAt: '2026-08-31',
+    deadline: '',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-dashboard-payment-cycle',
+        title: 'Зафиксировать цикл оплаты: отчет 25-го, контроль поступления с 25-го по 30-е',
+        ownerId: 'person-alina',
+        status: 'planned',
+        dueDate: '',
+      },
+      {
+        id: 'timeline-dashboard-dev-accounting',
+        title: 'Сделать отдельный учет разработки, если она оплачивается вне SEO-услуги',
+        ownerId: 'person-alina',
+        status: 'planned',
+        dueDate: '',
+      },
+    ],
+  },
+  {
+    id: 'planning-seo-stage-transition-2026-08-25',
+    projectId: 'project-ash',
+    title: 'Зафиксировать переход от базового SEO к точечной работе',
+    description: 'Из чек-листа планерки 25.08. Без комментариев по прогрессу - не начинали.',
+    sourceLabel: 'чек-лист 25.08',
+    sourceUrl: SEO_PLANNING_CHECKLIST_URL,
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-08-31',
     deadline: '',
     timelineEnabled: false,
     timeline: [],
@@ -851,6 +1097,14 @@ const requiredTaskSeeds: Task[] = [
       {
         id: 'timeline-promteh-new-report-format-31-08',
         title: 'Создать новый формат отчета',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-08-31',
+        completedAt: '2026-08-31',
+      },
+      {
+        id: 'timeline-promteh-forecast-report-31-08',
+        title: 'Оформить прогноз роста и приложить его к клиентскому отчету',
         ownerId: 'person-aleksey',
         status: 'done',
         dueDate: '2026-08-31',
@@ -1485,6 +1739,33 @@ function App() {
 
     localStorage.setItem('task-seo-task-seed-version', taskSeedVersion);
   }, [setTasks]);
+
+  useEffect(() => {
+    if (localStorage.getItem('task-seo-managed-resource-seed-version') === managedResourceSeedVersion) return;
+
+    setManagedResources((current) => {
+      let changed = false;
+      const next = current.map((resource) => {
+        const required = requiredManagedResourceSeedsById.get(resource.id);
+        if (!required) return resource;
+        changed = true;
+        return required;
+      });
+      const resourceIds = new Set(next.map((resource) => resource.id));
+
+      requiredManagedResourceSeeds.forEach((resource) => {
+        if (!resourceIds.has(resource.id)) {
+          next.push(resource);
+          resourceIds.add(resource.id);
+          changed = true;
+        }
+      });
+
+      return changed ? next : current;
+    });
+
+    localStorage.setItem('task-seo-managed-resource-seed-version', managedResourceSeedVersion);
+  }, [setManagedResources]);
 
   const loadLinkRows = useCallback(async () => {
     setLinkLoadStatus('loading');
@@ -4216,8 +4497,16 @@ function Bitrix24DashboardPanel({ snapshot }: { snapshot: Bitrix24Snapshot }) {
     .sort((left, right) => (right.createdDate || '').localeCompare(left.createdDate || ''))
     .slice(0, 5);
   const latestDeals = snapshot.crm.deals.slice(0, 4);
+  const latestComments = [...snapshot.comments]
+    .sort((left, right) => (right.postDate || '').localeCompare(left.postDate || ''))
+    .slice(0, 5);
+  const latestResults = [...snapshot.results]
+    .sort((left, right) => (right.createdAt || '').localeCompare(left.createdAt || ''))
+    .slice(0, 5);
   const crmHasRows = clientCount > 0 || snapshot.crm.deals.length > 0 || customFieldCount > 0;
-  const hasSnapshot = Boolean(snapshot.updatedAt || snapshot.tasks.length || crmHasRows || snapshot.errors.length);
+  const hasSnapshot = Boolean(
+    snapshot.updatedAt || snapshot.tasks.length || latestComments.length || latestResults.length || crmHasRows || snapshot.errors.length,
+  );
 
   return (
     <section className="panel bitrix-panel">
@@ -4238,6 +4527,8 @@ function Bitrix24DashboardPanel({ snapshot }: { snapshot: Bitrix24Snapshot }) {
         <Metric label="Сделки" value={String(snapshot.crm.deals.length)} compact />
         <Metric label="SEO-задачи" value={String(snapshot.tasks.length)} compact />
         <Metric label="Выполнено" value={String(doneTasks)} compact tone={doneTasks ? 'success' : undefined} />
+        <Metric label="Комментарии" value={String(snapshot.comments.length)} compact />
+        <Metric label="Результаты" value={String(snapshot.results.length)} compact />
         <Metric label="Поля CRM" value={String(customFieldCount)} compact />
       </div>
 
@@ -4336,6 +4627,62 @@ function Bitrix24DashboardPanel({ snapshot }: { snapshot: Bitrix24Snapshot }) {
                 <em key={`${field.entityType}-${field.code}`}>{field.title}</em>
               ))}
             </div>
+          )}
+        </div>
+
+        <div className="bitrix-block bitrix-comments-block">
+          <div className="bitrix-block-head">
+            <h3>Комментарии задач</h3>
+            <span>{latestComments.length ? 'новые сверху' : 'пока пусто'}</span>
+          </div>
+          {latestComments.length > 0 ? (
+            <div className="bitrix-comment-list">
+              {latestComments.map((comment) => (
+                <article className="bitrix-comment-row" key={`${comment.taskId}-${comment.id}`}>
+                  <div>
+                    <span>
+                      #{comment.taskId} · {formatDateTime(comment.postDate)}
+                    </span>
+                    <strong>{comment.taskTitle}</strong>
+                  </div>
+                  {comment.message ? <p>{comment.message}</p> : <p>Комментарий без текста.</p>}
+                  <em>
+                    {comment.authorName}
+                    {comment.attachmentsCount > 0 ? ` · вложений: ${comment.attachmentsCount}` : ''}
+                  </em>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-row">Комментарии появятся после успешной выгрузки из Bitrix24.</div>
+          )}
+        </div>
+
+        <div className="bitrix-block bitrix-results-block">
+          <div className="bitrix-block-head">
+            <h3>Результаты задач</h3>
+            <span>{latestResults.length ? 'отчетные отметки' : 'пока пусто'}</span>
+          </div>
+          {latestResults.length > 0 ? (
+            <div className="bitrix-comment-list">
+              {latestResults.map((result) => (
+                <article className="bitrix-comment-row" key={`${result.taskId}-${result.id}`}>
+                  <div>
+                    <span>
+                      #{result.taskId} · {formatDateTime(result.createdAt)}
+                    </span>
+                    <strong>{result.taskTitle}</strong>
+                  </div>
+                  {result.text ? <p>{result.text}</p> : <p>Результат без текста.</p>}
+                  <em>
+                    {result.createdByName}
+                    {result.filesCount > 0 ? ` · файлов: ${result.filesCount}` : ''}
+                  </em>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-row">Результаты задач появятся после успешной выгрузки из Bitrix24.</div>
           )}
         </div>
       </div>

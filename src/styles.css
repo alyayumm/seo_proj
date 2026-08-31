@@ -2246,7 +2246,7 @@ p {
 
 .bitrix-metrics {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
   gap: 10px;
 }
 
@@ -2259,6 +2259,11 @@ p {
   grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
   gap: 14px;
   align-items: start;
+}
+
+.bitrix-comments-block,
+.bitrix-results-block {
+  grid-column: 1 / -1;
 }
 
 .bitrix-block {
@@ -2303,12 +2308,14 @@ p {
 
 .bitrix-task-list,
 .bitrix-deal-list,
+.bitrix-comment-list,
 .bitrix-error-list {
   display: grid;
   gap: 9px;
 }
 
 .bitrix-task-row,
+.bitrix-comment-row,
 .bitrix-deal-list div {
   display: grid;
   gap: 10px;
@@ -2324,7 +2331,13 @@ p {
   min-width: 0;
 }
 
+.bitrix-comment-row > div {
+  display: grid;
+  gap: 4px;
+}
+
 .bitrix-task-row strong,
+.bitrix-comment-row strong,
 .bitrix-deal-list strong {
   color: var(--ink);
   font-size: 13px;
@@ -2335,6 +2348,21 @@ p {
 .bitrix-task-row p {
   margin: 0;
   line-height: 1.45;
+}
+
+.bitrix-comment-row p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.bitrix-comment-row em {
+  color: var(--accent-soft);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
 }
 
 .bitrix-task-row dl {

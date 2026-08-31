@@ -22,6 +22,31 @@ export type Bitrix24Task = {
   groupName: string;
 };
 
+export type Bitrix24TaskComment = {
+  id: string;
+  taskId: string;
+  taskTitle: string;
+  authorId: string;
+  authorName: string;
+  postDate: string;
+  message: string;
+  attachmentsCount: number;
+};
+
+export type Bitrix24TaskResult = {
+  id: string;
+  taskId: string;
+  taskTitle: string;
+  commentId: string;
+  createdById: string;
+  createdByName: string;
+  createdAt: string;
+  updatedAt: string;
+  status: string;
+  text: string;
+  filesCount: number;
+};
+
 export type Bitrix24CrmEntityType = 'lead' | 'deal' | 'contact' | 'company';
 
 export type Bitrix24CrmItem = {
@@ -56,6 +81,8 @@ export type Bitrix24Snapshot = {
   seoProjectGroupId: string;
   users: Bitrix24User[];
   tasks: Bitrix24Task[];
+  comments: Bitrix24TaskComment[];
+  results: Bitrix24TaskResult[];
   crm: {
     leads: Bitrix24CrmItem[];
     deals: Bitrix24CrmItem[];
@@ -74,6 +101,8 @@ export const EMPTY_BITRIX24_SNAPSHOT: Bitrix24Snapshot = {
   seoProjectGroupId: '',
   users: [],
   tasks: [],
+  comments: [],
+  results: [],
   crm: {
     leads: [],
     deals: [],
@@ -139,6 +168,45 @@ function normalizeTask(value: unknown): Bitrix24Task | null {
   };
 }
 
+function normalizeTaskComment(value: unknown): Bitrix24TaskComment | null {
+  const source = normalizeRecord(value);
+  const id = toStringValue(source.id);
+  const taskId = toStringValue(source.taskId);
+  if (!id || !taskId) return null;
+
+  return {
+    id,
+    taskId,
+    taskTitle: toStringValue(source.taskTitle) || `Задача #${taskId}`,
+    authorId: toStringValue(source.authorId),
+    authorName: toStringValue(source.authorName) || 'Без автора',
+    postDate: toStringValue(source.postDate),
+    message: toStringValue(source.message),
+    attachmentsCount: Number(source.attachmentsCount) || 0,
+  };
+}
+
+function normalizeTaskResult(value: unknown): Bitrix24TaskResult | null {
+  const source = normalizeRecord(value);
+  const id = toStringValue(source.id);
+  const taskId = toStringValue(source.taskId);
+  if (!id || !taskId) return null;
+
+  return {
+    id,
+    taskId,
+    taskTitle: toStringValue(source.taskTitle) || `Задача #${taskId}`,
+    commentId: toStringValue(source.commentId),
+    createdById: toStringValue(source.createdById),
+    createdByName: toStringValue(source.createdByName) || 'Без автора',
+    createdAt: toStringValue(source.createdAt),
+    updatedAt: toStringValue(source.updatedAt),
+    status: toStringValue(source.status),
+    text: toStringValue(source.text),
+    filesCount: Number(source.filesCount) || 0,
+  };
+}
+
 function normalizeCrmItem(value: unknown): Bitrix24CrmItem | null {
   const source = normalizeRecord(value);
   const id = toStringValue(source.id);
@@ -191,6 +259,16 @@ export function normalizeBitrix24Snapshot(value: unknown): Bitrix24Snapshot {
       : [],
     tasks: Array.isArray(source.tasks)
       ? source.tasks.map((task) => normalizeTask(task)).filter((task): task is Bitrix24Task => Boolean(task))
+      : [],
+    comments: Array.isArray(source.comments)
+      ? source.comments
+          .map((comment) => normalizeTaskComment(comment))
+          .filter((comment): comment is Bitrix24TaskComment => Boolean(comment))
+      : [],
+    results: Array.isArray(source.results)
+      ? source.results
+          .map((result) => normalizeTaskResult(result))
+          .filter((result): result is Bitrix24TaskResult => Boolean(result))
       : [],
     crm: {
       leads: Array.isArray(crm.leads)
