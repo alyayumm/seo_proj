@@ -70,8 +70,12 @@ function normalizeWebhookBase(rawValue) {
     throw new Error('Для Bitrix24 разрешены только официальные портальные домены.');
   }
 
+  const pathname = url.pathname.replace(/\/?$/, '/');
+  const apiPathname = pathname.includes('/rest/api/') ? pathname : pathname.replace(/^\/rest\//, '/rest/api/');
+
   return {
-    baseUrl: `${url.origin}${url.pathname.replace(/\/?$/, '/')}`,
+    baseUrl: `${url.origin}${pathname}`,
+    apiBaseUrl: `${url.origin}${apiPathname}`,
     portalHost: host,
   };
 }
@@ -391,14 +395,15 @@ async function fetchTaskComments(baseUrl, tasks, userMap, errors) {
     .slice(0, TASK_COMMENT_TASK_LIMIT * TASK_COMMENTS_PER_TASK_LIMIT);
 }
 
-async function fetchTaskResults(baseUrl, tasks, userMap, errors) {
+async function fetchTaskResults(apiBaseUrl, tasks, userMap, errors) {
   const results = [];
   const resultTasks = tasks.slice(0, TASK_RESULT_TASK_LIMIT);
 
   for (const task of resultTasks) {
     try {
-      const payload = await callBitrix(baseUrl, 'tasks.task.result.list', {
-        taskId: Number(task.id) || task.id,
+      const payload = await callBitrix(apiBaseUrl, 'tasks.task.result.list', {
+        order: { createdAt: 'DESC' },
+        filter: [['taskId', Number(task.id) || task.id]],
       });
       const taskResults = resultArray(payload.result, ['results', 'items'])
         .map((result) => normalizeTaskResult(result, task, userMap))
@@ -573,10 +578,12 @@ async function main() {
   }
 
   let baseUrl;
+  let apiBaseUrl;
   let portalHost;
   try {
     const normalized = normalizeWebhookBase(rawWebhook);
     baseUrl = normalized.baseUrl;
+    apiBaseUrl = normalized.apiBaseUrl;
     portalHost = normalized.portalHost;
   } catch (error) {
     await writePayload(emptyPayload('', [safeErrorLabel('config', error)]));
@@ -618,7 +625,7 @@ async function main() {
 
   let results = [];
   if (tasks.length > 0) {
-    results = await fetchTaskResults(baseUrl, tasks, userMap, errors);
+    results = await fetchTaskResults(apiBaseUrl, tasks, userMap, errors);
     console.log(`Bitrix24 SEO task results: ${results.length}`);
   }
 
