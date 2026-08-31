@@ -44,6 +44,12 @@ import {
   type LinkPurchaseSummary,
 } from './linkPurchases';
 import {
+  fetchPaymentCashflowRows,
+  PAYMENT_CASHFLOW_SPREADSHEET_URL,
+  summarizePaymentCashflowRows,
+  type PaymentCashflowRow,
+} from './paymentCashflow';
+import {
   EMPTY_METRIKA_STATS,
   mergePromotionSourcesWithMetrika,
   normalizeMetrikaStatsPayload,
@@ -1361,6 +1367,10 @@ function App() {
   const [contentLoadStatus, setContentLoadStatus] = useState<LinkLoadStatus>('idle');
   const [contentError, setContentError] = useState('');
   const [contentUpdatedAt, setContentUpdatedAt] = useState('');
+  const [paymentCashflowRows, setPaymentCashflowRows] = useState<PaymentCashflowRow[]>([]);
+  const [paymentCashflowLoadStatus, setPaymentCashflowLoadStatus] = useState<LinkLoadStatus>('idle');
+  const [paymentCashflowError, setPaymentCashflowError] = useState('');
+  const [paymentCashflowUpdatedAt, setPaymentCashflowUpdatedAt] = useState('');
 
   const [taskDraft, setTaskDraft] = useState({
     title: '',
@@ -1506,6 +1516,21 @@ function App() {
     }
   }, []);
 
+  const loadPaymentCashflowRows = useCallback(async () => {
+    setPaymentCashflowLoadStatus('loading');
+    setPaymentCashflowError('');
+
+    try {
+      const rows = await fetchPaymentCashflowRows();
+      setPaymentCashflowRows(rows);
+      setPaymentCashflowUpdatedAt(new Date().toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }));
+      setPaymentCashflowLoadStatus('ready');
+    } catch (error) {
+      setPaymentCashflowError(error instanceof Error ? error.message : 'Не удалось загрузить приход/расход');
+      setPaymentCashflowLoadStatus('error');
+    }
+  }, []);
+
   useEffect(() => {
     void loadLinkRows();
   }, [loadLinkRows]);
@@ -1513,6 +1538,10 @@ function App() {
   useEffect(() => {
     void loadContentTopics();
   }, [loadContentTopics]);
+
+  useEffect(() => {
+    void loadPaymentCashflowRows();
+  }, [loadPaymentCashflowRows]);
 
   const groupedTasks = useMemo(
     () =>
@@ -1956,7 +1985,7 @@ function App() {
             <Metric compact label="контент" value={`${contentTopics.length}`} />
             <Metric compact label="планов" value={`${WORK_PLAN_SOURCES.length}`} />
             <Metric compact label="аудитов" value={`${CLIENT_AUDIT_SOURCES.length}`} />
-            <Metric compact label="оплат" value={`${paymentRows.length}`} />
+            <Metric compact label="оплат" value={`${paymentRows.length + paymentCashflowRows.length}`} />
           </div>
         </header>
 
@@ -2095,6 +2124,7 @@ function App() {
             auditSourcesByProject={auditSourcesByProject}
             managedResourcesByProject={managedResourcesByProject}
             paymentRows={paymentRows}
+            paymentCashflowRows={paymentCashflowRows}
             paymentDraft={paymentDraft}
             promotionSources={promotionSources}
             selectedProjectId={seoProjectId}
@@ -2105,8 +2135,12 @@ function App() {
             contentLoadStatus={contentLoadStatus}
             contentError={contentError}
             contentUpdatedAt={contentUpdatedAt}
+            paymentCashflowLoadStatus={paymentCashflowLoadStatus}
+            paymentCashflowError={paymentCashflowError}
+            paymentCashflowUpdatedAt={paymentCashflowUpdatedAt}
             onReloadLinks={loadLinkRows}
             onReloadContent={loadContentTopics}
+            onReloadPaymentCashflow={loadPaymentCashflowRows}
             onPaymentDraftChange={setPaymentDraft}
             onPaymentAdd={addPaymentRow}
             onPaymentUpdate={updatePaymentRow}
@@ -2118,8 +2152,13 @@ function App() {
           <PaymentsView
             projects={projects}
             paymentRows={paymentRows}
+            paymentCashflowRows={paymentCashflowRows}
             paymentDraft={paymentDraft}
             linkRows={linkRows}
+            paymentCashflowLoadStatus={paymentCashflowLoadStatus}
+            paymentCashflowError={paymentCashflowError}
+            paymentCashflowUpdatedAt={paymentCashflowUpdatedAt}
+            onReloadPaymentCashflow={loadPaymentCashflowRows}
             onPaymentDraftChange={setPaymentDraft}
             onPaymentAdd={addPaymentRow}
             onPaymentUpdate={updatePaymentRow}
@@ -4859,6 +4898,7 @@ function SeoProjectsView({
   auditSourcesByProject,
   managedResourcesByProject,
   paymentRows,
+  paymentCashflowRows,
   paymentDraft,
   promotionSources,
   selectedProjectId,
@@ -4869,8 +4909,12 @@ function SeoProjectsView({
   contentLoadStatus,
   contentError,
   contentUpdatedAt,
+  paymentCashflowLoadStatus,
+  paymentCashflowError,
+  paymentCashflowUpdatedAt,
   onReloadLinks,
   onReloadContent,
+  onReloadPaymentCashflow,
   onPaymentDraftChange,
   onPaymentAdd,
   onPaymentUpdate,
@@ -4888,6 +4932,7 @@ function SeoProjectsView({
   auditSourcesByProject: Map<string, ClientAuditSource[]>;
   managedResourcesByProject: Map<string, ManagedResource[]>;
   paymentRows: PaymentRow[];
+  paymentCashflowRows: PaymentCashflowRow[];
   paymentDraft: PaymentDraft;
   promotionSources: PromotionResultSource[];
   selectedProjectId: string;
@@ -4898,8 +4943,12 @@ function SeoProjectsView({
   contentLoadStatus: LinkLoadStatus;
   contentError: string;
   contentUpdatedAt: string;
+  paymentCashflowLoadStatus: LinkLoadStatus;
+  paymentCashflowError: string;
+  paymentCashflowUpdatedAt: string;
   onReloadLinks: () => void;
   onReloadContent: () => void;
+  onReloadPaymentCashflow: () => void;
   onPaymentDraftChange: Dispatch<SetStateAction<PaymentDraft>>;
   onPaymentAdd: (projectIdOverride?: string) => void;
   onPaymentUpdate: (rowId: string, patch: Partial<PaymentRow>) => void;
@@ -4917,6 +4966,9 @@ function SeoProjectsView({
   const selectedAuditSources = auditSourcesByProject.get(selectedKey) ?? [];
   const selectedResources = managedResourcesByProject.get(selectedProject?.id ?? '') ?? [];
   const selectedPaymentRows = selectedProject ? paymentRows.filter((row) => row.projectId === selectedProject.id) : [];
+  const selectedPaymentCashflowRows = paymentCashflowRows.filter(
+    (row) => normalizeProjectName(row.projectName) === selectedKey,
+  );
   const selectedSources = promotionSources.filter((source) => normalizeProjectName(source.projectName) === selectedKey);
   const selectedTasks = selectedProject ? tasks.filter((task) => task.projectId === selectedProject.id) : [];
   const activeTasks = selectedTasks.filter((task) => task.status !== 'done').length;
@@ -4931,7 +4983,7 @@ function SeoProjectsView({
       label: 'Отчеты',
       count: selectedResources.filter((resource) => resource.tab === 'report' || resource.tab === 'site').length,
     },
-    { id: 'payments', label: 'Оплаты', count: selectedPaymentRows.length },
+    { id: 'payments', label: 'Оплаты', count: selectedPaymentRows.length + selectedPaymentCashflowRows.length },
   ];
 
   return (
@@ -5059,17 +5111,27 @@ function SeoProjectsView({
             )}
 
             {activeTab === 'payments' && (
-              <PaymentRowsEditor
-                projects={projects}
-                rows={selectedPaymentRows}
-                draft={paymentDraft}
-                linkRows={selectedLinkRows}
-                fixedProjectId={selectedProject.id}
-                onDraftChange={onPaymentDraftChange}
-                onAdd={onPaymentAdd}
-                onUpdate={onPaymentUpdate}
-                onDelete={onPaymentDelete}
-              />
+              <div className="seo-payment-stack">
+                <PaymentCashflowPanel
+                  project={selectedProject}
+                  rows={selectedPaymentCashflowRows}
+                  loadStatus={paymentCashflowLoadStatus}
+                  error={paymentCashflowError}
+                  updatedAt={paymentCashflowUpdatedAt}
+                  onReload={onReloadPaymentCashflow}
+                />
+                <PaymentRowsEditor
+                  projects={projects}
+                  rows={selectedPaymentRows}
+                  draft={paymentDraft}
+                  linkRows={selectedLinkRows}
+                  fixedProjectId={selectedProject.id}
+                  onDraftChange={onPaymentDraftChange}
+                  onAdd={onPaymentAdd}
+                  onUpdate={onPaymentUpdate}
+                  onDelete={onPaymentDelete}
+                />
+              </div>
             )}
           </div>
           <SeoProjectTaskPanel project={selectedProject} tasks={selectedTasks} peopleById={peopleById} />
@@ -5371,11 +5433,147 @@ function SeoProjectReportsPanel({
   );
 }
 
+function PaymentCashflowPanel({
+  project,
+  rows,
+  loadStatus,
+  error,
+  updatedAt,
+  onReload,
+}: {
+  project?: Project;
+  rows: PaymentCashflowRow[];
+  loadStatus: LinkLoadStatus;
+  error: string;
+  updatedAt: string;
+  onReload: () => void;
+}) {
+  const summary = useMemo(() => summarizePaymentCashflowRows(rows), [rows]);
+  const sortedRows = useMemo(
+    () =>
+      [...rows].sort(
+        (left, right) =>
+          right.monthNo - left.monthNo ||
+          left.projectName.localeCompare(right.projectName, 'ru') ||
+          left.client.localeCompare(right.client, 'ru'),
+      ),
+    [rows],
+  );
+
+  return (
+    <section className="panel payment-cashflow-panel">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>{project ? `Приход/расход: ${project.name}` : 'Приход/расход из Google Sheets'}</h2>
+          <p>Автоматическая выгрузка из вкладки SEo сайта: приход клиентов и расходы по SEO, разработке и прочему.</p>
+        </div>
+        <div className="link-actions">
+          <a href={PAYMENT_CASHFLOW_SPREADSHEET_URL} target="_blank" rel="noreferrer">
+            <ExternalLink size={16} />
+            Таблица
+          </a>
+          <button type="button" onClick={onReload} disabled={loadStatus === 'loading'}>
+            <RefreshCw className={loadStatus === 'loading' ? 'spin' : undefined} size={16} />
+            Обновить
+          </button>
+        </div>
+      </div>
+
+      {loadStatus === 'loading' && (
+        <div className="sync-state">
+          <RefreshCw className="spin" size={16} />
+          Загружаю приход/расход из SEo сайта...
+        </div>
+      )}
+      {loadStatus === 'error' && (
+        <div className="sync-state is-error">
+          <AlertTriangle size={16} />
+          {error}
+        </div>
+      )}
+      {loadStatus === 'ready' && updatedAt && (
+        <div className="sync-state">Данные из SEo сайта · обновлено {updatedAt}</div>
+      )}
+
+      <div className="payment-cashflow-grid">
+        <div>
+          <span>Приход</span>
+          <strong>{formatMoney(summary.incomeAmount)}</strong>
+        </div>
+        <div>
+          <span>Расходы всего</span>
+          <strong>{formatMoney(summary.totalExpenseAmount)}</strong>
+        </div>
+        <div>
+          <span>SEO</span>
+          <strong>{formatMoney(summary.seoExpenseAmount)}</strong>
+        </div>
+        <div>
+          <span>Разработка</span>
+          <strong>{formatMoney(summary.developerExpenseAmount)}</strong>
+        </div>
+        <div>
+          <span>Другое</span>
+          <strong>{formatMoney(summary.otherExpenseAmount)}</strong>
+        </div>
+        <div>
+          <span>Остаток</span>
+          <strong className={summary.netAmount < 0 ? 'payment-negative' : 'payment-positive'}>
+            {formatMoney(summary.netAmount)}
+          </strong>
+        </div>
+      </div>
+
+      {sortedRows.length === 0 && loadStatus !== 'loading' ? (
+        <div className="empty-row">
+          {project ? 'По этому проекту в SEo сайта пока нет строк прихода/расхода.' : 'Во вкладке SEo сайта пока нет строк прихода/расхода.'}
+        </div>
+      ) : (
+        <div className="payment-cashflow-table">
+          <div className="payment-cashflow-row payment-cashflow-head">
+            <span>Клиент / месяц</span>
+            <span>Приход</span>
+            <span>SEO</span>
+            <span>Разработка</span>
+            <span>Другое</span>
+            <span>Расходы</span>
+            <span>Остаток</span>
+          </div>
+          {sortedRows.map((row) => (
+            <div className="payment-cashflow-row" key={row.id}>
+              <div>
+                <strong>{project ? row.periodLabel : `${row.projectName} · ${row.periodLabel}`}</strong>
+                <span>
+                  {row.client}
+                  {row.legalEntity ? ` · ${row.legalEntity}` : ''}
+                </span>
+              </div>
+              <span>{formatMoney(row.incomeAmount)}</span>
+              <span>{formatMoney(row.seoExpenseAmount)}</span>
+              <span>{formatMoney(row.developerExpenseAmount)}</span>
+              <span>{formatMoney(row.otherExpenseAmount)}</span>
+              <span>{formatMoney(row.totalExpenseAmount)}</span>
+              <strong className={row.netAmount < 0 ? 'payment-negative' : 'payment-positive'}>
+                {formatMoney(row.netAmount)}
+              </strong>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function PaymentsView({
   projects,
   paymentRows,
+  paymentCashflowRows,
   paymentDraft,
   linkRows,
+  paymentCashflowLoadStatus,
+  paymentCashflowError,
+  paymentCashflowUpdatedAt,
+  onReloadPaymentCashflow,
   onPaymentDraftChange,
   onPaymentAdd,
   onPaymentUpdate,
@@ -5383,14 +5581,19 @@ function PaymentsView({
 }: {
   projects: Project[];
   paymentRows: PaymentRow[];
+  paymentCashflowRows: PaymentCashflowRow[];
   paymentDraft: PaymentDraft;
   linkRows: LinkPurchase[];
+  paymentCashflowLoadStatus: LinkLoadStatus;
+  paymentCashflowError: string;
+  paymentCashflowUpdatedAt: string;
+  onReloadPaymentCashflow: () => void;
   onPaymentDraftChange: Dispatch<SetStateAction<PaymentDraft>>;
   onPaymentAdd: (projectIdOverride?: string) => void;
   onPaymentUpdate: (rowId: string, patch: Partial<PaymentRow>) => void;
   onPaymentDelete: (rowId: string) => void;
 }) {
-  const summary = getPaymentSummary(paymentRows, linkRows, projects);
+  const summary = getPaymentSummary(paymentRows, linkRows, paymentCashflowRows);
 
   return (
     <section className="payments-view">
@@ -5400,12 +5603,19 @@ function PaymentsView({
           <p>Отдельная вкладка по оплатам клиентов, аутсорсу и фактическим затратам на закуп ссылок.</p>
         </div>
         <div className="hero-metrics">
-          <Metric label="К оплате" value={formatMoney(summary.clientAmount)} />
-          <Metric label="Аутсорс" value={formatMoney(summary.outsourceAmount)} />
+          <Metric label="Приход" value={formatMoney(summary.clientAmount)} />
+          <Metric label="Расходы" value={formatMoney(summary.outsourceAmount)} />
           <Metric label="Закуп ссылок" value={formatMoney(summary.linkFact)} />
           <Metric label="Остаток" value={formatMoney(summary.margin)} tone={summary.margin < 0 ? 'danger' : 'success'} />
         </div>
       </div>
+      <PaymentCashflowPanel
+        rows={paymentCashflowRows}
+        loadStatus={paymentCashflowLoadStatus}
+        error={paymentCashflowError}
+        updatedAt={paymentCashflowUpdatedAt}
+        onReload={onReloadPaymentCashflow}
+      />
       <PaymentRowsEditor
         projects={projects}
         rows={paymentRows}
@@ -5618,27 +5828,31 @@ function PaymentRowsEditor({
   );
 }
 
-function getPaymentSummary(rows: PaymentRow[], linkRows: LinkPurchase[], projects: Project[]) {
-  const linkFactByProject = new Map<string, number>();
-  linkRows.forEach((row) => {
-    const key = normalizeProjectName(row.projectName);
-    linkFactByProject.set(key, (linkFactByProject.get(key) ?? 0) + row.factCost);
-  });
-
-  return rows.reduce(
+function getPaymentSummary(
+  rows: PaymentRow[],
+  linkRows: LinkPurchase[],
+  cashflowRows: PaymentCashflowRow[] = [],
+) {
+  const manualSummary = rows.reduce(
     (summary, row) => {
-      const project = projects.find((item) => item.id === row.projectId);
-      const linkFact = linkFactByProject.get(normalizeProjectName(project?.name ?? '')) ?? 0;
       const outsourceCost = row.kind === 'outsource' ? row.outsourceAmount : 0;
       return {
         clientAmount: summary.clientAmount + row.clientAmount,
         outsourceAmount: summary.outsourceAmount + outsourceCost,
-        linkFact: summary.linkFact + linkFact,
-        margin: summary.margin + row.clientAmount - outsourceCost - linkFact,
+        margin: summary.margin + row.clientAmount - outsourceCost,
       };
     },
-    { clientAmount: 0, outsourceAmount: 0, linkFact: 0, margin: 0 },
+    { clientAmount: 0, outsourceAmount: 0, margin: 0 },
   );
+  const cashflowSummary = summarizePaymentCashflowRows(cashflowRows);
+  const linkFact = summarizeLinkPurchases(linkRows).factCost;
+
+  return {
+    clientAmount: manualSummary.clientAmount + cashflowSummary.incomeAmount,
+    outsourceAmount: manualSummary.outsourceAmount + cashflowSummary.totalExpenseAmount,
+    linkFact,
+    margin: manualSummary.margin + cashflowSummary.netAmount - linkFact,
+  };
 }
 
 function TaskChronologyPanel({

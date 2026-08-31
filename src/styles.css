@@ -2004,6 +2004,102 @@ p {
     linear-gradient(145deg, rgba(7, 64, 73, 0.9), rgba(7, 22, 24, 0.76));
 }
 
+.seo-payment-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.payment-cashflow-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.payment-cashflow-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.payment-cashflow-grid > div {
+  display: grid;
+  gap: 8px;
+  min-height: 82px;
+  align-content: space-between;
+  padding: 13px;
+  border: 1px solid rgba(216, 238, 243, 0.14);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(216, 238, 243, 0.18), transparent 38%),
+    rgba(216, 238, 243, 0.075);
+}
+
+.payment-cashflow-grid span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.payment-cashflow-grid strong {
+  color: var(--ink);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(24px, 2.3vw, 34px);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.payment-cashflow-table {
+  display: grid;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.payment-cashflow-row {
+  display: grid;
+  grid-template-columns: minmax(230px, 1.35fr) repeat(6, minmax(106px, 1fr));
+  gap: 8px;
+  align-items: center;
+  min-width: 980px;
+  min-height: 54px;
+  padding: 10px;
+  border: 1px solid rgba(216, 238, 243, 0.13);
+  border-radius: 14px;
+  background: rgba(216, 238, 243, 0.065);
+}
+
+.payment-cashflow-head {
+  min-height: 36px;
+  color: var(--muted);
+  background: rgba(255, 225, 211, 0.09);
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.payment-cashflow-row > div:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.payment-cashflow-row strong,
+.payment-cashflow-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.payment-cashflow-row strong {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.payment-cashflow-row span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
 .payment-editor {
   display: grid;
   gap: 14px;
@@ -4250,6 +4346,8 @@ p {
 :root[data-theme='light'] .seo-project-task,
 :root[data-theme='light'] .external-detail-card,
 :root[data-theme='light'] .payment-row,
+:root[data-theme='light'] .payment-cashflow-grid > div,
+:root[data-theme='light'] .payment-cashflow-row,
 :root[data-theme='light'] .managed-resource-card,
 :root[data-theme='light'] .report-row,
 :root[data-theme='light'] .work-plan-row,
@@ -4370,6 +4468,10 @@ p {
   }
 
   .payment-add-form {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .payment-cashflow-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -4543,6 +4645,7 @@ p {
   .analytics-tile-grid,
   .weekly-report-columns,
   .payment-add-form,
+  .payment-cashflow-grid,
   .managed-resource-grid,
   .content-plan-stats,
   .promotion-result-grid,
@@ -4560,7 +4663,8 @@ p {
     overflow-x: auto;
   }
 
-  .link-table-row {
+  .link-table-row,
+  .payment-cashflow-row {
     min-width: 760px;
   }
 
@@ -4607,7 +4711,8 @@ p {
   .external-add-form,
   .external-asset-form,
   .external-week-form,
-  .payment-add-form {
+  .payment-add-form,
+  .payment-cashflow-grid {
     grid-template-columns: 1fr;
   }
 
