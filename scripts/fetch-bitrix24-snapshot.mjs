@@ -395,16 +395,25 @@ async function fetchTaskComments(baseUrl, tasks, userMap, errors) {
     .slice(0, TASK_COMMENT_TASK_LIMIT * TASK_COMMENTS_PER_TASK_LIMIT);
 }
 
-async function fetchTaskResults(apiBaseUrl, tasks, userMap, errors) {
+async function fetchTaskResults(baseUrl, apiBaseUrl, tasks, userMap, errors) {
   const results = [];
   const resultTasks = tasks.slice(0, TASK_RESULT_TASK_LIMIT);
 
   for (const task of resultTasks) {
     try {
-      const payload = await callBitrix(apiBaseUrl, 'tasks.task.result.list', {
-        order: { createdAt: 'DESC' },
-        filter: [['taskId', Number(task.id) || task.id]],
-      });
+      let payload;
+      try {
+        payload = await callBitrix(apiBaseUrl, 'tasks.task.result.list', {
+          order: { createdAt: 'DESC' },
+          filter: [['taskId', Number(task.id) || task.id]],
+          pagination: { limit: TASK_RESULTS_PER_TASK_LIMIT, offset: 0 },
+        });
+      } catch {
+        payload = await callBitrix(baseUrl, 'tasks.task.result.list', {
+          taskId: Number(task.id) || task.id,
+          start: 0,
+        });
+      }
       const taskResults = resultArray(payload.result, ['results', 'items'])
         .map((result) => normalizeTaskResult(result, task, userMap))
         .filter(Boolean)
@@ -625,7 +634,7 @@ async function main() {
 
   let results = [];
   if (tasks.length > 0) {
-    results = await fetchTaskResults(apiBaseUrl, tasks, userMap, errors);
+    results = await fetchTaskResults(baseUrl, apiBaseUrl, tasks, userMap, errors);
     console.log(`Bitrix24 SEO task results: ${results.length}`);
   }
 
