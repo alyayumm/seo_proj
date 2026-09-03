@@ -4182,18 +4182,23 @@ function TaskRow({
   onToggleExpanded,
   onToggleTimeline,
   onStatusChange,
-  onTimelineStatusChange,
   onTaskUpdate,
 }: TaskRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [draft, setDraft] = useState<TaskEditDraft>(() => makeTaskEditDraft(task));
+  const [timelineDraft, setTimelineDraft] = useState<TimelineItem[]>(() => task.timeline);
+  const [timelineDraftDirty, setTimelineDraftDirty] = useState(false);
   const owners = task.ownerIds.map((id) => peopleById.get(id)).filter(Boolean) as Person[];
   const isOverdue = task.status !== 'done' && Boolean(task.deadline) && task.deadline < todayIso();
 
   useEffect(() => {
     if (!isEditing) setDraft(makeTaskEditDraft(task));
   }, [isEditing, task]);
+
+  useEffect(() => {
+    if (!timelineDraftDirty) setTimelineDraft(task.timeline);
+  }, [task.timeline, timelineDraftDirty]);
 
   const saveTaskEdit = () => {
     const title = draft.title.trim();
@@ -4233,7 +4238,68 @@ function TaskRow({
       }),
       'Редактирование задачи',
     );
+    setTimelineDraft(timeline);
+    setTimelineDraftDirty(false);
     setIsEditing(false);
+  };
+
+  const updateTimelineDraft = (updater: (current: TimelineItem[]) => TimelineItem[]) => {
+    setTimelineDraft((current) => updater(current));
+    setTimelineDraftDirty(true);
+  };
+
+  const updateTimelineDraftItem = (itemId: string, updater: (item: TimelineItem) => TimelineItem) => {
+    updateTimelineDraft((current) => current.map((item) => (item.id === itemId ? updater(item) : item)));
+  };
+
+  const addTimelineDraftItem = () => {
+    const ownerId = task.ownerIds[0] ?? people[0]?.id ?? '';
+    const dueDate = task.deadline || getDefaultTaskDeadline(task.createdAt || todayIso());
+    updateTimelineDraft((current) => [
+      ...current,
+      {
+        id: uid('timeline'),
+        title: `Новый пункт ${current.length + 1}`,
+        ownerId,
+        status: 'planned',
+        dueDate,
+      },
+    ]);
+  };
+
+  const removeTimelineDraftItem = (itemId: string) => {
+    updateTimelineDraft((current) => current.filter((item) => item.id !== itemId));
+  };
+
+  const resetTimelineDraft = () => {
+    setTimelineDraft(task.timeline);
+    setTimelineDraftDirty(false);
+  };
+
+  const saveTimelineDraft = () => {
+    const createdAt = task.createdAt || todayIso();
+    const deadline = task.deadline || getDefaultTaskDeadline(createdAt);
+    const fallbackOwnerId = task.ownerIds[0] ?? people[0]?.id ?? '';
+    const timeline = timelineDraft.map((item, index) => ({
+      ...item,
+      id: item.id || uid('timeline'),
+      title: item.title.trim() || `Пункт ${index + 1}`,
+      ownerId: item.ownerId || fallbackOwnerId,
+      dueDate: item.dueDate || deadline,
+      completedAt: item.status === 'done' ? item.completedAt ?? todayIso() : undefined,
+    }));
+
+    onTaskUpdate(
+      task.id,
+      (current) => ({
+        ...current,
+        timelineEnabled: true,
+        timeline,
+      }),
+      'Редактирование хронологии',
+    );
+    setTimelineDraft(timeline);
+    setTimelineDraftDirty(false);
   };
 
   return (
@@ -4346,27 +4412,104 @@ function TaskRow({
 
       {task.timelineEnabled && expanded && (
         <div className="timeline-list">
-          {task.timeline.map((item) => {
+          <div className="timeline-toolbar">
+            <div>
+              <strong>Пункты хронологии</strong>
+              <span>{timelineDraft.length}</span>
+            </div>
+            <div className="timeline-toolbar-actions">
+              <button className="task-action-button" type="button" onClick={addTimelineDraftItem}>
+                <Plus size={14} />
+                Добавить пункт
+              </button>
+              <button
+                className="task-action-button"
+                type="button"
+                onClick={saveTimelineDraft}
+                disabled={!timelineDraftDirty}
+              >
+                <Save size={14} />
+                Сохранить
+              </button>
+              <button
+                className="task-action-button"
+                type="button"
+                onClick={resetTimelineDraft}
+                disabled={!timelineDraftDirty}
+              >
+                <X size={14} />
+                Отмена
+              </button>
+            </div>
+          </div>
+          {timelineDraft.length === 0 && <div className="empty-row">Пунктов пока нет.</div>}
+          {timelineDraft.map((item, index) => {
             const owner = peopleById.get(item.ownerId);
             return (
-              <div key={item.id} className="timeline-item">
+              <div key={item.id} className="timeline-item editable">
                 <span className="timeline-rail" />
-                <div>
-                  <strong>{item.title}</strong>
-                  <p>
-                    {owner?.name ?? 'Без ответственного'} · дедлайн {formatDate(item.dueDate)}
-                  </p>
-                </div>
-                <select
-                  value={item.status}
-                  onChange={(event) => onTimelineStatusChange(task.id, item.id, event.target.value as Status)}
+                <label className="timeline-inline-field timeline-title-field">
+                  <span>Пункт</span>
+                  <input
+                    value={item.title}
+                    onChange={(event) =>
+                      updateTimelineDraftItem(item.id, (current) => ({ ...current, title: event.target.value }))
+                    }
+                    placeholder={`Пункт ${index + 1}`}
+                  />
+                </label>
+                <label className="timeline-inline-field">
+                  <span>Ответственный</span>
+                  <select
+                    value={item.ownerId}
+                    onChange={(event) =>
+                      updateTimelineDraftItem(item.id, (current) => ({ ...current, ownerId: event.target.value }))
+                    }
+                  >
+                    <option value="">Без ответственного</option>
+                    {people.map((person) => (
+                      <option key={person.id} value={person.id}>
+                        {person.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="timeline-inline-field">
+                  <span>Дедлайн</span>
+                  <input
+                    type="date"
+                    value={item.dueDate}
+                    onChange={(event) =>
+                      updateTimelineDraftItem(item.id, (current) => ({ ...current, dueDate: event.target.value }))
+                    }
+                  />
+                </label>
+                <label className="timeline-inline-field">
+                  <span>Статус</span>
+                  <select
+                    value={item.status}
+                    onChange={(event) =>
+                      updateTimelineDraftItem(item.id, (current) => ({ ...current, status: event.target.value as Status }))
+                    }
+                  >
+                    {statusOrder.map((status) => (
+                      <option key={status} value={status}>
+                        {statusLabels[status]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  className="task-icon-button"
+                  type="button"
+                  aria-label={`Удалить пункт ${index + 1}`}
+                  onClick={() => removeTimelineDraftItem(item.id)}
                 >
-                  {statusOrder.map((status) => (
-                    <option key={status} value={status}>
-                      {statusLabels[status]}
-                    </option>
-                  ))}
-                </select>
+                  <Trash2 size={15} />
+                </button>
+                <p className="timeline-inline-summary">
+                  {owner?.name ?? 'Без ответственного'} · дедлайн {formatDate(item.dueDate)}
+                </p>
               </div>
             );
           })}
