@@ -582,7 +582,12 @@ async function writePayload(payload) {
 async function main() {
   const rawWebhook = process.env.BITRIX24_WEBHOOK_URL;
   if (!rawWebhook) {
-    console.log('BITRIX24_WEBHOOK_URL не задан. Bitrix24 snapshot оставлен пустым.');
+    await writePayload(
+      emptyPayload('', [
+        'BITRIX24_WEBHOOK_URL не задан в GitHub Secrets. Frontend читает только безопасный snapshot; webhook не передается в браузер.',
+      ]),
+    );
+    console.log('BITRIX24_WEBHOOK_URL is not set. Empty snapshot with diagnostic was written.');
     return;
   }
 
@@ -596,7 +601,6 @@ async function main() {
     portalHost = normalized.portalHost;
   } catch (error) {
     await writePayload(emptyPayload('', [safeErrorLabel('config', error)]));
-    process.exitCode = 1;
     return;
   }
 

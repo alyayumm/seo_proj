@@ -5449,9 +5449,18 @@ function Bitrix24DashboardPanel({ snapshot }: { snapshot: Bitrix24Snapshot }) {
     .sort((left, right) => (right.createdAt || '').localeCompare(left.createdAt || ''))
     .slice(0, 5);
   const crmHasRows = clientCount > 0 || snapshot.crm.deals.length > 0 || customFieldCount > 0;
+  const hasLoadedRows = Boolean(snapshot.tasks.length || latestComments.length || latestResults.length || crmHasRows);
   const hasSnapshot = Boolean(
     snapshot.updatedAt || snapshot.tasks.length || latestComments.length || latestResults.length || crmHasRows || snapshot.errors.length,
   );
+  const bitrixHealthTitle = hasLoadedRows
+    ? 'Bitrix24 выгружен'
+    : snapshot.errors.length
+      ? 'Bitrix24 ждет настройки на GitHub'
+      : 'Bitrix24 подключен, но snapshot пустой';
+  const bitrixHealthText = hasLoadedRows
+    ? 'Задачи проекта SEO, CRM, комментарии и результаты читаются из безопасного snapshot.'
+    : 'На GitHub Pages webhook не попадает в браузер. Данные появятся после успешного запуска backend-выгрузки в GitHub Actions.';
 
   return (
     <section className="panel bitrix-panel">
@@ -5465,6 +5474,20 @@ function Bitrix24DashboardPanel({ snapshot }: { snapshot: Bitrix24Snapshot }) {
           </p>
         </div>
         <Layers3 size={20} />
+      </div>
+
+      <div className={`bitrix-health ${hasLoadedRows ? 'is-ready' : 'is-empty'}`} role="status">
+        {hasLoadedRows ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
+        <div>
+          <strong>{bitrixHealthTitle}</strong>
+          <p>{bitrixHealthText}</p>
+          {!hasLoadedRows && (
+            <span>
+              Сейчас файл выгрузки Bitrix24 не содержит задач, CRM и времени обновления.
+              {snapshot.errors[0] ? ` Последняя причина: ${snapshot.errors[0]}` : ''}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="bitrix-metrics">
