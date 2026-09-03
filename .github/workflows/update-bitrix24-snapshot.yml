@@ -2,11 +2,18 @@ name: Update Bitrix24 snapshot
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-bitrix24-snapshot.yml'
+      - 'scripts/fetch-bitrix24-snapshot.mjs'
   schedule:
     - cron: '25 5 * * *'
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: bitrix24-snapshot
@@ -14,6 +21,9 @@ concurrency:
 
 jobs:
   update:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,6 +33,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Fetch Bitrix24 snapshot
         run: node scripts/fetch-bitrix24-snapshot.mjs
@@ -48,3 +59,18 @@ jobs:
           git add public/data/bitrix24-snapshot.json
           git commit -m "chore: update bitrix24 snapshot"
           git push
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
