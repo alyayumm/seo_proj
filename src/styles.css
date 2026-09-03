@@ -378,6 +378,8 @@ p {
 .person-chip,
 .expand-button,
 .timeline-toggle,
+.task-action-button,
+.task-icon-button,
 .nav-item {
   -webkit-tap-highlight-color: transparent;
 }
@@ -431,6 +433,7 @@ p {
 
 .field input,
 .field select,
+.field textarea,
 .task-meta select,
 .timeline-item select {
   width: 100%;
@@ -445,8 +448,15 @@ p {
   outline: none;
 }
 
+.field textarea {
+  min-height: 86px;
+  padding-top: 10px;
+  resize: vertical;
+}
+
 .field input:focus,
 .field select:focus,
+.field textarea:focus,
 .task-meta select:focus,
 .timeline-item select:focus {
   border-color: rgba(126, 231, 241, 0.74);
@@ -893,6 +903,189 @@ p {
 
 .timeline-toggle {
   justify-content: flex-end;
+}
+
+.task-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.task-action-button,
+.task-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border: 1px solid rgba(216, 238, 243, 0.16);
+  color: var(--ink);
+  background: rgba(216, 238, 243, 0.08);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.task-action-button {
+  gap: 6px;
+  border-radius: 999px;
+  padding: 0 10px;
+}
+
+.task-action-button:hover,
+.task-action-button:focus-visible,
+.task-action-button.is-active,
+.task-icon-button:hover,
+.task-icon-button:focus-visible {
+  border-color: rgba(126, 231, 241, 0.46);
+  color: var(--sky);
+  background: rgba(216, 238, 243, 0.15);
+  outline: none;
+}
+
+.task-icon-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+
+.task-edit-panel,
+.task-history-panel {
+  display: grid;
+  gap: 14px;
+  margin: 0 14px 14px 58px;
+  padding: 14px;
+  border: 1px solid rgba(216, 238, 243, 0.14);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 94% 10%, rgba(255, 225, 211, 0.1), transparent 32%),
+    rgba(216, 238, 243, 0.07);
+}
+
+.task-edit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(130px, 0.42fr) minmax(130px, 0.42fr);
+  gap: 12px;
+}
+
+.task-edit-grid .field.wide {
+  grid-column: span 2;
+}
+
+.task-edit-block {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(216, 238, 243, 0.12);
+  border-radius: 14px;
+  background: rgba(216, 238, 243, 0.05);
+}
+
+.task-edit-block-head,
+.task-edit-actions,
+.task-history-head,
+.task-history-entry > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.task-edit-block-head strong,
+.task-history-head strong,
+.task-history-entry strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.task-edit-stage-list,
+.task-history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.task-edit-stage {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(130px, 0.42fr) minmax(120px, 0.36fr) minmax(138px, 0.42fr) 38px;
+  gap: 9px;
+  align-items: end;
+  padding: 10px;
+  border: 1px solid rgba(216, 238, 243, 0.1);
+  border-radius: 13px;
+  background: rgba(7, 22, 24, 0.2);
+}
+
+.task-edit-actions {
+  justify-content: flex-start;
+}
+
+.task-history-head span {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  color: #061111;
+  background: var(--sky);
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.task-history-entry {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(216, 238, 243, 0.12);
+  border-radius: 14px;
+  background: rgba(216, 238, 243, 0.06);
+}
+
+.task-history-entry time,
+.task-history-entry p,
+.task-history-entry dt,
+.task-history-entry dd {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.task-history-entry p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.task-history-entry dl {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+}
+
+.task-history-entry dl div {
+  display: grid;
+  gap: 4px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(216, 238, 243, 0.1);
+}
+
+.task-history-entry dt,
+.task-history-entry dd {
+  margin: 0;
+}
+
+.task-history-entry dd {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--ink);
+}
+
+.task-history-entry dd em {
+  color: var(--sky);
+  font-style: normal;
 }
 
 .timeline-list {
@@ -4270,6 +4463,8 @@ p {
 .work-plan-row a,
 .link-actions a,
 .ghost-button,
+.task-action-button,
+.task-icon-button,
 .external-back-button {
   border-color: rgba(216, 238, 243, 0.16);
   color: var(--ink);
@@ -4279,6 +4474,10 @@ p {
 .work-plan-row a:hover,
 .link-actions a:hover,
 .ghost-button:hover,
+.task-action-button:hover,
+.task-action-button:focus-visible,
+.task-icon-button:hover,
+.task-icon-button:focus-visible,
 .external-back-button:hover {
   color: var(--sky);
   background: rgba(216, 238, 243, 0.15);
@@ -4348,6 +4547,7 @@ p {
 
 :root[data-theme='light'] .field input,
 :root[data-theme='light'] .field select,
+:root[data-theme='light'] .field textarea,
 :root[data-theme='light'] .task-meta select,
 :root[data-theme='light'] .timeline-item select,
 :root[data-theme='light'] .external-add-form input,
@@ -4360,6 +4560,11 @@ p {
 
 :root[data-theme='light'] .project-group,
 :root[data-theme='light'] .task-row,
+:root[data-theme='light'] .task-edit-panel,
+:root[data-theme='light'] .task-history-panel,
+:root[data-theme='light'] .task-edit-block,
+:root[data-theme='light'] .task-edit-stage,
+:root[data-theme='light'] .task-history-entry,
 :root[data-theme='light'] .admin-row,
 :root[data-theme='light'] .dashboard-card,
 :root[data-theme='light'] .bitrix-block,
@@ -4588,6 +4793,8 @@ p {
   }
 
   .form-grid,
+  .task-edit-grid,
+  .task-edit-stage,
   .admin-layout {
     grid-template-columns: 1fr;
   }
@@ -4603,7 +4810,7 @@ p {
   }
 
   .task-meta,
-  .timeline-toggle {
+  .task-controls {
     grid-column: 2;
   }
 
@@ -4615,8 +4822,17 @@ p {
     grid-column: 1 / -1;
   }
 
-  .timeline-toggle {
+  .task-controls {
     justify-content: flex-start;
+  }
+
+  .task-edit-panel,
+  .task-history-panel {
+    margin-left: 14px;
+  }
+
+  .task-edit-grid .field.wide {
+    grid-column: auto;
   }
 
   .timeline-list {

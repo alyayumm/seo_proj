@@ -11,15 +11,20 @@ import {
   ExternalLink,
   FileSpreadsheet,
   FileText,
+  History,
   LayoutList,
   Layers3,
   Moon,
+  Pencil,
   Plus,
   RefreshCw,
+  Save,
   SlidersHorizontal,
   Sun,
   Target,
+  Trash2,
   Users,
+  X,
 } from 'lucide-react';
 import {
   CLIENT_AUDIT_SOURCES,
@@ -104,6 +109,20 @@ type TimelineItem = {
   completedAt?: string;
 };
 
+type TaskHistoryChange = {
+  field: string;
+  before: string;
+  after: string;
+};
+
+type TaskHistoryEntry = {
+  id: string;
+  changedAt: string;
+  action: string;
+  summary: string;
+  changes: TaskHistoryChange[];
+};
+
 type Task = {
   id: string;
   projectId: string;
@@ -118,6 +137,7 @@ type Task = {
   completedAt?: string;
   timelineEnabled: boolean;
   timeline: TimelineItem[];
+  history?: TaskHistoryEntry[];
 };
 
 type PaymentRow = {
@@ -351,7 +371,8 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'planning-2026-08-31-v2';
+const taskSeedVersion = 'task-edit-history-deadlines-2026-09-03-v1';
+const taskDefaultDeadlineVersion = 'default-deadlines-2026-09-03-v1';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
 const requiredTaskSeeds: Task[] = [
@@ -1349,7 +1370,7 @@ const requiredTaskSeeds: Task[] = [
 
 const requiredTaskSeedById = new Map(requiredTaskSeeds.map((task) => [task.id, task]));
 
-const initialTasks: Task[] = requiredTaskSeeds;
+const initialTasks: Task[] = requiredTaskSeeds.map((task) => ensureTaskDefaults(task));
 
 const navItems = [
   { id: 'tasks' as const, label: 'Список задач', icon: LayoutList },
@@ -1513,6 +1534,24 @@ function addDaysToIso(value: string, days: number) {
   return toLocalIso(date);
 }
 
+function addBusinessDaysToIso(value: string, businessDays: number) {
+  const date = new Date(`${value || todayIso()}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return '';
+  let added = 0;
+
+  while (added < businessDays) {
+    date.setDate(date.getDate() + 1);
+    const weekday = date.getDay();
+    if (weekday !== 0 && weekday !== 6) added += 1;
+  }
+
+  return toLocalIso(date);
+}
+
+function getDefaultTaskDeadline(createdAt: string) {
+  return addBusinessDaysToIso(createdAt || todayIso(), 7);
+}
+
 function getWeekWindowFromIso(startIso: string): WeekWindow {
   return {
     start: startIso,
@@ -1592,6 +1631,121 @@ function buildTimeline(taskTitle: string, ownerIds: string[], deadline: string):
   }));
 }
 
+function makeTaskHistoryEntry(action: string, summary: string, changes: TaskHistoryChange[] = []): TaskHistoryEntry {
+  return {
+    id: uid('history'),
+    changedAt: new Date().toISOString(),
+    action,
+    summary,
+    changes,
+  };
+}
+
+function getTaskHistory(task: Task): TaskHistoryEntry[] {
+  return Array.isArray(task.history) ? task.history : [];
+}
+
+function addTaskHistory(task: Task, action: string, summary: string, changes: TaskHistoryChange[]) {
+  if (changes.length === 0) return task;
+  return {
+    ...task,
+    history: [makeTaskHistoryEntry(action, summary, changes), ...getTaskHistory(task)].slice(0, 80),
+  };
+}
+
+function ensureTaskDefaults(task: Task): Task {
+  const autoDeadline = task.deadline || getDefaultTaskDeadline(task.createdAt);
+  const changes: TaskHistoryChange[] = [];
+
+  if (!task.deadline && autoDeadline) {
+    changes.push({
+      field: 'Дедлайн',
+      before: 'без даты',
+      after: formatDate(autoDeadline),
+    });
+  }
+
+  const timeline = task.timeline.map((item, index) => {
+    if (item.dueDate || !autoDeadline) return item;
+    changes.push({
+      field: `Хронология: ${item.title || `этап ${index + 1}`}`,
+      before: 'без даты',
+      after: formatDate(autoDeadline),
+    });
+    return { ...item, dueDate: autoDeadline };
+  });
+
+  const normalized: Task = {
+    ...task,
+    deadline: autoDeadline,
+    timeline,
+    history: getTaskHistory(task),
+  };
+
+  return changes.length
+    ? addTaskHistory(normalized, 'Автодедлайн', 'Поставлен дедлайн через 7 рабочих дней после даты постановки.', changes)
+    : normalized;
+}
+
+function formatHistoryValue(value: string | undefined, fallback = 'пусто') {
+  return value ? value : fallback;
+}
+
+function ownerNames(ownerIds: string[], peopleById: Map<string, Person>) {
+  return ownerIds.map((ownerId) => peopleById.get(ownerId)?.name ?? ownerId).join(', ') || 'без ответственного';
+}
+
+function timelineSummary(timeline: TimelineItem[], peopleById: Map<string, Person>) {
+  if (timeline.length === 0) return 'нет этапов';
+  return timeline
+    .map((item) => {
+      const owner = peopleById.get(item.ownerId)?.name ?? item.ownerId;
+      return `${item.title} / ${statusLabels[item.status]} / ${owner} / ${formatDate(item.dueDate)}`;
+    })
+    .join('; ');
+}
+
+function compactHistoryText(value: string) {
+  return value.length > 220 ? `${value.slice(0, 219).trim()}...` : value;
+}
+
+function describeTaskChanges(
+  before: Task,
+  after: Task,
+  projectsById: Map<string, Project>,
+  peopleById: Map<string, Person>,
+) {
+  const changes: TaskHistoryChange[] = [];
+  const addChange = (field: string, beforeValue: string, afterValue: string) => {
+    if (beforeValue !== afterValue) {
+      changes.push({
+        field,
+        before: compactHistoryText(beforeValue),
+        after: compactHistoryText(afterValue),
+      });
+    }
+  };
+
+  addChange('Название', before.title, after.title);
+  addChange('Описание', formatHistoryValue(before.description), formatHistoryValue(after.description));
+  addChange('Проект', projectsById.get(before.projectId)?.name ?? before.projectId, projectsById.get(after.projectId)?.name ?? after.projectId);
+  addChange('Статус', statusLabels[before.status], statusLabels[after.status]);
+  addChange('Ответственные', ownerNames(before.ownerIds, peopleById), ownerNames(after.ownerIds, peopleById));
+  addChange('Дата постановки', formatDate(before.createdAt), formatDate(after.createdAt));
+  addChange('Дедлайн', formatDate(before.deadline), formatDate(after.deadline));
+  addChange('Дата закрытия', formatDate(before.completedAt ?? ''), formatDate(after.completedAt ?? ''));
+  addChange('Кнопка источника', formatHistoryValue(before.sourceLabel), formatHistoryValue(after.sourceLabel));
+  addChange('Ссылка источника', formatHistoryValue(before.sourceUrl), formatHistoryValue(after.sourceUrl));
+  addChange('Хронология включена', before.timelineEnabled ? 'да' : 'нет', after.timelineEnabled ? 'да' : 'нет');
+  addChange('Этапы хронологии', timelineSummary(before.timeline, peopleById), timelineSummary(after.timeline, peopleById));
+
+  return changes;
+}
+
+function taskChangeSummary(changes: TaskHistoryChange[]) {
+  return `Изменено: ${changes.map((change) => change.field.toLowerCase()).join(', ')}.`;
+}
+
 function App() {
   const [projects, setProjects] = useStoredState<Project[]>('task-seo-projects', initialProjects);
   const [people, setPeople] = useStoredState<Person[]>('task-seo-people', initialPeople);
@@ -1630,7 +1784,7 @@ function App() {
     title: '',
     description: '',
     projectId: initialProjects[0].id,
-    deadline: addDaysIso(3),
+    deadline: getDefaultTaskDeadline(todayIso()),
     ownerIds: [initialPeople[0].id],
     multi: false,
   });
@@ -1653,6 +1807,7 @@ function App() {
   });
 
   const peopleById = useMemo(() => new Map(people.map((person) => [person.id, person])), [people]);
+  const projectsById = useMemo(() => new Map(projects.map((project) => [project.id, project])), [projects]);
   const days = useMemo(() => getDays(14), []);
 
   useEffect(() => {
@@ -1720,15 +1875,15 @@ function App() {
       let changed = withoutDemo.length !== current.length;
       const next = withoutDemo.map((task) => {
         const required = requiredTaskSeedById.get(task.id);
-        if (!required) return task;
+        if (!required) return ensureTaskDefaults(task);
         changed = true;
-        return required;
+        return ensureTaskDefaults(required);
       });
       const taskIds = new Set(next.map((task) => task.id));
 
       requiredTaskSeeds.forEach((task) => {
         if (!taskIds.has(task.id)) {
-          next.push(task);
+          next.push(ensureTaskDefaults(task));
           taskIds.add(task.id);
           changed = true;
         }
@@ -1738,6 +1893,29 @@ function App() {
     });
 
     localStorage.setItem('task-seo-task-seed-version', taskSeedVersion);
+  }, [setTasks]);
+
+  useEffect(() => {
+    if (localStorage.getItem('task-seo-default-deadline-version') === taskDefaultDeadlineVersion) return;
+
+    setTasks((current) => {
+      let changed = false;
+      const next = current.map((task) => {
+        const normalized = ensureTaskDefaults(task);
+        if (
+          normalized.deadline !== task.deadline ||
+          normalized.timeline.some((item, index) => item.dueDate !== task.timeline[index]?.dueDate) ||
+          getTaskHistory(normalized).length !== getTaskHistory(task).length
+        ) {
+          changed = true;
+        }
+        return normalized;
+      });
+
+      return changed ? next : current;
+    });
+
+    localStorage.setItem('task-seo-default-deadline-version', taskDefaultDeadlineVersion);
   }, [setTasks]);
 
   useEffect(() => {
@@ -2033,34 +2211,42 @@ function App() {
     [tasks],
   );
 
-  const setTaskStatus = (taskId: string, status: Status) => {
+  const updateTask = (taskId: string, updater: (task: Task) => Task, action = 'Редактирование задачи') => {
     setTasks((current) =>
-      current.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              status,
-              completedAt: status === 'done' ? task.completedAt ?? todayIso() : undefined,
-            }
-          : task,
-      ),
+      current.map((task) => {
+        if (task.id !== taskId) return task;
+        const before = ensureTaskDefaults(task);
+        const after = ensureTaskDefaults(updater(before));
+        const changes = describeTaskChanges(before, after, projectsById, peopleById);
+        return changes.length ? addTaskHistory(after, action, taskChangeSummary(changes), changes) : before;
+      }),
+    );
+  };
+
+  const setTaskStatus = (taskId: string, status: Status) => {
+    updateTask(
+      taskId,
+      (task) => ({
+        ...task,
+        status,
+        completedAt: status === 'done' ? task.completedAt ?? todayIso() : undefined,
+      }),
+      'Изменение статуса',
     );
   };
 
   const toggleTimeline = (taskId: string, checked: boolean) => {
-    setTasks((current) =>
-      current.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              timelineEnabled: checked,
-              timeline:
-                checked && task.timeline.length === 0
-                  ? buildTimeline(task.title, task.ownerIds, task.deadline)
-                  : task.timeline,
-            }
-          : task,
-      ),
+    updateTask(
+      taskId,
+      (task) => ({
+        ...task,
+        timelineEnabled: checked,
+        timeline:
+          checked && task.timeline.length === 0
+            ? buildTimeline(task.title, task.ownerIds, task.deadline || getDefaultTaskDeadline(task.createdAt))
+            : task.timeline,
+      }),
+      checked ? 'Хронология включена' : 'Хронология выключена',
     );
 
     setExpanded((current) => {
@@ -2087,23 +2273,21 @@ function App() {
   };
 
   const setTimelineStatus = (taskId: string, itemId: string, status: Status) => {
-    setTasks((current) =>
-      current.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              timeline: task.timeline.map((item) =>
-                item.id === itemId
-                  ? {
-                      ...item,
-                      status,
-                      completedAt: status === 'done' ? item.completedAt ?? todayIso() : undefined,
-                    }
-                  : item,
-              ),
-            }
-          : task,
-      ),
+    updateTask(
+      taskId,
+      (task) => ({
+        ...task,
+        timeline: task.timeline.map((item) =>
+          item.id === itemId
+            ? {
+                ...item,
+                status,
+                completedAt: status === 'done' ? item.completedAt ?? todayIso() : undefined,
+              }
+            : item,
+        ),
+      }),
+      'Изменение этапа хронологии',
     );
   };
 
@@ -2111,6 +2295,8 @@ function App() {
     const title = taskDraft.title.trim();
     if (!title || taskDraft.ownerIds.length === 0) return;
 
+    const createdAt = todayIso();
+    const deadline = taskDraft.deadline || getDefaultTaskDeadline(createdAt);
     const timelineEnabled = taskDraft.ownerIds.length > 1;
     const nextTask: Task = {
       id: uid('task'),
@@ -2119,13 +2305,19 @@ function App() {
       description: taskDraft.description.trim(),
       status: 'planned',
       ownerIds: taskDraft.ownerIds,
-      createdAt: todayIso(),
-      deadline: taskDraft.deadline,
+      createdAt,
+      deadline,
       timelineEnabled,
-      timeline: timelineEnabled ? buildTimeline(title, taskDraft.ownerIds, taskDraft.deadline) : [],
+      timeline: timelineEnabled ? buildTimeline(title, taskDraft.ownerIds, deadline) : [],
+      history: [
+        makeTaskHistoryEntry('Создание задачи', `Задача создана с дедлайном ${formatDate(deadline)}.`, [
+          { field: 'Название', before: 'не было', after: title },
+          { field: 'Дедлайн', before: 'не было', after: formatDate(deadline) },
+        ]),
+      ],
     };
 
-    setTasks((current) => [nextTask, ...current]);
+    setTasks((current) => [ensureTaskDefaults(nextTask), ...current]);
     setExpanded((current) => {
       const next = new Set(current);
       if (timelineEnabled) next.add(nextTask.id);
@@ -2135,7 +2327,7 @@ function App() {
       title: '',
       description: '',
       projectId: projects[0]?.id ?? '',
-      deadline: addDaysIso(3),
+      deadline: getDefaultTaskDeadline(todayIso()),
       ownerIds: people[0] ? [people[0].id] : [],
       multi: false,
     });
@@ -2296,6 +2488,7 @@ function App() {
                     <ProjectGroup
                       key={project.id}
                       project={project}
+                      projects={projects}
                       tasks={projectTasks}
                       linkRows={linkRowsByProject.get(normalizeProjectName(project.name)) ?? []}
                       linkSummary={linkSummaries.get(normalizeProjectName(project.name))}
@@ -2314,6 +2507,7 @@ function App() {
                       contentUpdatedAt={contentUpdatedAt}
                       activeTab={projectTabs[project.id] ?? 'tasks'}
                       collapsed={collapsedProjectIds.has(project.id)}
+                      people={people}
                       peopleById={peopleById}
                       expanded={expanded}
                       onTabChange={(tab) => setProjectTabs((current) => ({ ...current, [project.id]: tab }))}
@@ -2324,6 +2518,7 @@ function App() {
                       onToggleTimeline={toggleTimeline}
                       onStatusChange={setTaskStatus}
                       onTimelineStatusChange={setTimelineStatus}
+                      onTaskUpdate={updateTask}
                     />
                   ))}
                 </div>
@@ -2982,7 +3177,7 @@ function TaskComposer({
       <div className="composer-title">
         <div>
           <h2>Новая задача</h2>
-          <p>Дата постановки появится автоматически сегодня.</p>
+          <p>Дата постановки появится автоматически, а пустой дедлайн станет +7 рабочих дней.</p>
         </div>
         <button className="primary-button" type="button" onClick={onCreate}>
           <Plus size={17} />
@@ -3065,6 +3260,7 @@ function TaskComposer({
 
 type ProjectGroupProps = {
   project: Project;
+  projects: Project[];
   tasks: Task[];
   linkRows: LinkPurchase[];
   linkSummary?: LinkPurchaseSummary;
@@ -3083,6 +3279,7 @@ type ProjectGroupProps = {
   contentUpdatedAt: string;
   activeTab: ProjectTab;
   collapsed: boolean;
+  people: Person[];
   peopleById: Map<string, Person>;
   expanded: Set<string>;
   onTabChange: (tab: ProjectTab) => void;
@@ -3093,10 +3290,12 @@ type ProjectGroupProps = {
   onToggleTimeline: (taskId: string, checked: boolean) => void;
   onStatusChange: (taskId: string, status: Status) => void;
   onTimelineStatusChange: (taskId: string, itemId: string, status: Status) => void;
+  onTaskUpdate: (taskId: string, updater: (task: Task) => Task, action?: string) => void;
 };
 
 function ProjectGroup({
   project,
+  projects,
   tasks,
   linkRows,
   linkSummary,
@@ -3115,6 +3314,7 @@ function ProjectGroup({
   contentUpdatedAt,
   activeTab,
   collapsed,
+  people,
   peopleById,
   expanded,
   onTabChange,
@@ -3125,6 +3325,7 @@ function ProjectGroup({
   onToggleTimeline,
   onStatusChange,
   onTimelineStatusChange,
+  onTaskUpdate,
 }: ProjectGroupProps) {
   const panelId = `project-panel-${project.id}`;
   const projectSummary = [
@@ -3223,12 +3424,15 @@ function ProjectGroup({
                     key={task.id}
                     task={task}
                     project={project}
+                    projects={projects}
+                    people={people}
                     peopleById={peopleById}
                     expanded={expanded.has(task.id)}
                     onToggleExpanded={onToggleExpanded}
                     onToggleTimeline={onToggleTimeline}
                     onStatusChange={onStatusChange}
                     onTimelineStatusChange={onTimelineStatusChange}
+                    onTaskUpdate={onTaskUpdate}
                   />
                 ))}
               </div>
@@ -3758,26 +3962,110 @@ function AuditPanel({ project, sources }: { project: Project; sources: ClientAud
 type TaskRowProps = {
   task: Task;
   project: Project;
+  projects: Project[];
+  people: Person[];
   peopleById: Map<string, Person>;
   expanded: boolean;
   onToggleExpanded: (taskId: string) => void;
   onToggleTimeline: (taskId: string, checked: boolean) => void;
   onStatusChange: (taskId: string, status: Status) => void;
   onTimelineStatusChange: (taskId: string, itemId: string, status: Status) => void;
+  onTaskUpdate: (taskId: string, updater: (task: Task) => Task, action?: string) => void;
 };
+
+type TaskEditDraft = {
+  projectId: string;
+  title: string;
+  description: string;
+  sourceLabel: string;
+  sourceUrl: string;
+  status: Status;
+  ownerIds: string[];
+  createdAt: string;
+  deadline: string;
+  timelineEnabled: boolean;
+  timeline: TimelineItem[];
+};
+
+function makeTaskEditDraft(task: Task): TaskEditDraft {
+  return {
+    projectId: task.projectId,
+    title: task.title,
+    description: task.description,
+    sourceLabel: task.sourceLabel ?? '',
+    sourceUrl: task.sourceUrl ?? '',
+    status: task.status,
+    ownerIds: task.ownerIds,
+    createdAt: task.createdAt,
+    deadline: task.deadline,
+    timelineEnabled: task.timelineEnabled,
+    timeline: task.timeline,
+  };
+}
 
 function TaskRow({
   task,
   project,
+  projects,
+  people,
   peopleById,
   expanded,
   onToggleExpanded,
   onToggleTimeline,
   onStatusChange,
   onTimelineStatusChange,
+  onTaskUpdate,
 }: TaskRowProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [draft, setDraft] = useState<TaskEditDraft>(() => makeTaskEditDraft(task));
   const owners = task.ownerIds.map((id) => peopleById.get(id)).filter(Boolean) as Person[];
   const isOverdue = task.status !== 'done' && Boolean(task.deadline) && task.deadline < todayIso();
+
+  useEffect(() => {
+    if (!isEditing) setDraft(makeTaskEditDraft(task));
+  }, [isEditing, task]);
+
+  const saveTaskEdit = () => {
+    const title = draft.title.trim();
+    if (!title) return;
+
+    const createdAt = draft.createdAt || task.createdAt || todayIso();
+    const deadline = draft.deadline || getDefaultTaskDeadline(createdAt);
+    const ownerIds = draft.ownerIds.length ? draft.ownerIds : task.ownerIds;
+    const fallbackOwnerId = ownerIds[0] ?? people[0]?.id ?? '';
+    const timeline = draft.timelineEnabled
+      ? draft.timeline.map((item, index) => ({
+          ...item,
+          id: item.id || uid('timeline'),
+          title: item.title.trim() || `Этап ${index + 1}`,
+          ownerId: item.ownerId || fallbackOwnerId,
+          dueDate: item.dueDate || deadline,
+          completedAt: item.status === 'done' ? item.completedAt ?? todayIso() : undefined,
+        }))
+      : [];
+
+    onTaskUpdate(
+      task.id,
+      (current) => ({
+        ...current,
+        projectId: draft.projectId || current.projectId,
+        title,
+        description: draft.description.trim(),
+        sourceLabel: draft.sourceLabel.trim() || undefined,
+        sourceUrl: draft.sourceUrl.trim() || undefined,
+        status: draft.status,
+        ownerIds,
+        createdAt,
+        deadline,
+        completedAt: draft.status === 'done' ? current.completedAt ?? todayIso() : undefined,
+        timelineEnabled: draft.timelineEnabled,
+        timeline,
+      }),
+      'Редактирование задачи',
+    );
+    setIsEditing(false);
+  };
 
   return (
     <div className={`task-row ${task.status}`}>
@@ -3847,15 +4135,45 @@ function TaskRow({
           </div>
         </div>
 
-        <label className="timeline-toggle">
-          <input
-            type="checkbox"
-            checked={task.timelineEnabled}
-            onChange={(event) => onToggleTimeline(task.id, event.target.checked)}
-          />
-          <span>Хронология</span>
-        </label>
+        <div className="task-controls">
+          <label className="timeline-toggle">
+            <input
+              type="checkbox"
+              checked={task.timelineEnabled}
+              onChange={(event) => onToggleTimeline(task.id, event.target.checked)}
+            />
+            <span>Хронология</span>
+          </label>
+          <button className="task-action-button" type="button" onClick={() => setIsEditing((value) => !value)}>
+            <Pencil size={14} />
+            {isEditing ? 'Закрыть' : 'Редактировать'}
+          </button>
+          <button
+            className={`task-action-button ${showHistory ? 'is-active' : ''}`}
+            type="button"
+            onClick={() => setShowHistory((value) => !value)}
+          >
+            <History size={14} />
+            История
+          </button>
+        </div>
       </div>
+
+      {isEditing && (
+        <TaskEditPanel
+          draft={draft}
+          projects={projects}
+          people={people}
+          onDraftChange={setDraft}
+          onSave={saveTaskEdit}
+          onCancel={() => {
+            setDraft(makeTaskEditDraft(task));
+            setIsEditing(false);
+          }}
+        />
+      )}
+
+      {showHistory && <TaskHistoryPanel task={task} />}
 
       {task.timelineEnabled && expanded && (
         <div className="timeline-list">
@@ -3883,6 +4201,321 @@ function TaskRow({
               </div>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TaskEditPanel({
+  draft,
+  projects,
+  people,
+  onDraftChange,
+  onSave,
+  onCancel,
+}: {
+  draft: TaskEditDraft;
+  projects: Project[];
+  people: Person[];
+  onDraftChange: Dispatch<SetStateAction<TaskEditDraft>>;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const setTimelineItem = (itemId: string, updater: (item: TimelineItem) => TimelineItem) => {
+    onDraftChange((current) => ({
+      ...current,
+      timeline: current.timeline.map((item) => (item.id === itemId ? updater(item) : item)),
+    }));
+  };
+
+  const toggleOwner = (ownerId: string) => {
+    onDraftChange((current) => {
+      const exists = current.ownerIds.includes(ownerId);
+      const ownerIds = exists
+        ? current.ownerIds.filter((id) => id !== ownerId)
+        : [...current.ownerIds, ownerId];
+      return { ...current, ownerIds: ownerIds.length ? ownerIds : current.ownerIds };
+    });
+  };
+
+  const addTimelineItem = () => {
+    onDraftChange((current) => {
+      const ownerId = current.ownerIds[0] ?? people[0]?.id ?? '';
+      const dueDate = current.deadline || getDefaultTaskDeadline(current.createdAt || todayIso());
+      return {
+        ...current,
+        timelineEnabled: true,
+        timeline: [
+          ...current.timeline,
+          {
+            id: uid('timeline'),
+            title: 'Новый этап',
+            ownerId,
+            status: 'planned',
+            dueDate,
+          },
+        ],
+      };
+    });
+  };
+
+  return (
+    <div className="task-edit-panel">
+      <div className="task-edit-grid">
+        <label className="field wide">
+          <span>Название</span>
+          <input
+            value={draft.title}
+            onChange={(event) => onDraftChange((current) => ({ ...current, title: event.target.value }))}
+          />
+        </label>
+        <label className="field">
+          <span>Проект</span>
+          <select
+            value={draft.projectId}
+            onChange={(event) => onDraftChange((current) => ({ ...current, projectId: event.target.value }))}
+          >
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>Статус</span>
+          <select
+            value={draft.status}
+            onChange={(event) => onDraftChange((current) => ({ ...current, status: event.target.value as Status }))}
+          >
+            {statusOrder.map((status) => (
+              <option key={status} value={status}>
+                {statusLabels[status]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>Дата постановки</span>
+          <input
+            type="date"
+            value={draft.createdAt}
+            onChange={(event) =>
+              onDraftChange((current) => ({
+                ...current,
+                createdAt: event.target.value,
+                deadline: current.deadline || getDefaultTaskDeadline(event.target.value),
+              }))
+            }
+          />
+        </label>
+        <label className="field">
+          <span>Дедлайн</span>
+          <input
+            type="date"
+            value={draft.deadline}
+            onChange={(event) => onDraftChange((current) => ({ ...current, deadline: event.target.value }))}
+          />
+        </label>
+        <label className="field wide">
+          <span>Описание</span>
+          <textarea
+            value={draft.description}
+            onChange={(event) => onDraftChange((current) => ({ ...current, description: event.target.value }))}
+            rows={3}
+          />
+        </label>
+        <label className="field">
+          <span>Текст кнопки источника</span>
+          <input
+            value={draft.sourceLabel}
+            onChange={(event) => onDraftChange((current) => ({ ...current, sourceLabel: event.target.value }))}
+            placeholder="например: отчет"
+          />
+        </label>
+        <label className="field wide">
+          <span>Ссылка источника</span>
+          <input
+            value={draft.sourceUrl}
+            onChange={(event) => onDraftChange((current) => ({ ...current, sourceUrl: event.target.value }))}
+            placeholder="https://..."
+          />
+        </label>
+      </div>
+
+      <div className="task-edit-block">
+        <div className="task-edit-block-head">
+          <strong>Ответственные</strong>
+        </div>
+        <div className="chip-row" role="group" aria-label="Ответственные задачи">
+          {people.map((person) => (
+            <button
+              key={person.id}
+              type="button"
+              className={`person-chip ${draft.ownerIds.includes(person.id) ? 'is-picked' : ''}`}
+              onClick={() => toggleOwner(person.id)}
+            >
+              <span>{person.name.slice(0, 1)}</span>
+              {person.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="task-edit-block">
+        <div className="task-edit-block-head">
+          <label className="toggle-line">
+            <input
+              type="checkbox"
+              checked={draft.timelineEnabled}
+              onChange={(event) =>
+                onDraftChange((current) => ({
+                  ...current,
+                  timelineEnabled: event.target.checked,
+                  timeline:
+                    event.target.checked && current.timeline.length === 0
+                      ? buildTimeline(
+                          current.title || 'Задача',
+                          current.ownerIds,
+                          current.deadline || getDefaultTaskDeadline(current.createdAt),
+                        )
+                      : current.timeline,
+                }))
+              }
+            />
+            <span>Хронология</span>
+          </label>
+          <button className="task-action-button" type="button" onClick={addTimelineItem}>
+            <Plus size={14} />
+            Добавить этап
+          </button>
+        </div>
+
+        {draft.timelineEnabled && (
+          <div className="task-edit-stage-list">
+            {draft.timeline.map((item, index) => (
+              <div className="task-edit-stage" key={item.id}>
+                <label className="field">
+                  <span>Этап</span>
+                  <input
+                    value={item.title}
+                    onChange={(event) =>
+                      setTimelineItem(item.id, (current) => ({ ...current, title: event.target.value }))
+                    }
+                    placeholder={`Этап ${index + 1}`}
+                  />
+                </label>
+                <label className="field">
+                  <span>Ответственный</span>
+                  <select
+                    value={item.ownerId}
+                    onChange={(event) =>
+                      setTimelineItem(item.id, (current) => ({ ...current, ownerId: event.target.value }))
+                    }
+                  >
+                    {people.map((person) => (
+                      <option key={person.id} value={person.id}>
+                        {person.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Статус</span>
+                  <select
+                    value={item.status}
+                    onChange={(event) =>
+                      setTimelineItem(item.id, (current) => ({ ...current, status: event.target.value as Status }))
+                    }
+                  >
+                    {statusOrder.map((status) => (
+                      <option key={status} value={status}>
+                        {statusLabels[status]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Дедлайн этапа</span>
+                  <input
+                    type="date"
+                    value={item.dueDate}
+                    onChange={(event) =>
+                      setTimelineItem(item.id, (current) => ({ ...current, dueDate: event.target.value }))
+                    }
+                  />
+                </label>
+                <button
+                  className="task-icon-button"
+                  type="button"
+                  aria-label={`Удалить этап ${index + 1}`}
+                  onClick={() =>
+                    onDraftChange((current) => ({
+                      ...current,
+                      timeline: current.timeline.filter((timelineItem) => timelineItem.id !== item.id),
+                    }))
+                  }
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            ))}
+            {draft.timeline.length === 0 && <div className="empty-row">Этапы пока не добавлены.</div>}
+          </div>
+        )}
+      </div>
+
+      <div className="task-edit-actions">
+        <button className="primary-button" type="button" onClick={onSave}>
+          <Save size={15} />
+          Сохранить
+        </button>
+        <button className="task-action-button" type="button" onClick={onCancel}>
+          <X size={15} />
+          Отмена
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TaskHistoryPanel({ task }: { task: Task }) {
+  const history = getTaskHistory(task);
+
+  return (
+    <div className="task-history-panel">
+      <div className="task-history-head">
+        <strong>История изменений</strong>
+        <span>{history.length}</span>
+      </div>
+      {history.length === 0 ? (
+        <div className="empty-row">Изменений по этой задаче пока нет.</div>
+      ) : (
+        <div className="task-history-list">
+          {history.map((entry) => (
+            <article className="task-history-entry" key={entry.id}>
+              <div>
+                <strong>{entry.action}</strong>
+                <time dateTime={entry.changedAt}>{formatDateTime(entry.changedAt)}</time>
+              </div>
+              <p>{entry.summary}</p>
+              {entry.changes.length > 0 && (
+                <dl>
+                  {entry.changes.map((change, index) => (
+                    <div key={`${entry.id}-${change.field}-${index}`}>
+                      <dt>{change.field}</dt>
+                      <dd>
+                        <span>{change.before}</span>
+                        <em>→</em>
+                        <span>{change.after}</span>
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </article>
+          ))}
         </div>
       )}
     </div>
