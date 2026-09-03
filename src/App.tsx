@@ -161,6 +161,21 @@ type PaymentDraft = {
   clientAmount: string;
 };
 
+type PaymentMonthlySummary = {
+  key: string;
+  label: string;
+  planIncome: number;
+  factIncome: number;
+  serviceExpenseAmount: number;
+  linkExpenseAmount: number;
+  totalExpenseAmount: number;
+  netAmount: number;
+  paymentCount: number;
+  factRowCount: number;
+  linkCount: number;
+  projectNames: Set<string>;
+};
+
 type ManagedResourceTab = 'site' | 'report' | 'links' | 'plans' | 'content' | 'results' | 'audit';
 
 type ManagedResource = {
@@ -204,6 +219,21 @@ const paymentKindLabels: Record<PaymentKind, string> = {
   service: 'Наши услуги',
   outsource: 'Услуги аутсорс',
 };
+
+const ruMonthNames = [
+  'январь',
+  'февраль',
+  'март',
+  'апрель',
+  'май',
+  'июнь',
+  'июль',
+  'август',
+  'сентябрь',
+  'октябрь',
+  'ноябрь',
+  'декабрь',
+];
 
 const managedResourceTabLabels: Record<ManagedResourceTab, string> = {
   site: 'Сайт',
@@ -1602,6 +1632,145 @@ function parseShortRuDateLabel(value: string) {
   const day = Number(match[1]);
   if (!day || !month || month > 12) return '';
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function getMonthKeyFromParts(year: number, monthNo: number) {
+  if (!year || !monthNo || monthNo < 1 || monthNo > 12) return '';
+  return `${year}-${String(monthNo).padStart(2, '0')}`;
+}
+
+function getRelativeMonthKey(offset = 0) {
+  const date = new Date();
+  date.setDate(1);
+  date.setMonth(date.getMonth() + offset);
+  return getMonthKeyFromParts(date.getFullYear(), date.getMonth() + 1);
+}
+
+function getMonthLabelFromKey(key: string) {
+  const [year, month] = key.split('-').map(Number);
+  if (!year || !month) return 'без месяца';
+  return `${ruMonthNames[month - 1] ?? 'месяц'} ${year}`.replace(/^./, (letter) => letter.toUpperCase());
+}
+
+function parseMonthKeyFromLabel(value: string) {
+  const normalized = value.trim().toLowerCase().replace(/ё/g, 'е');
+  if (!normalized) return '';
+
+  const isoMatch = normalized.match(/(20\d{2})-(\d{1,2})/);
+  if (isoMatch) return getMonthKeyFromParts(Number(isoMatch[1]), Number(isoMatch[2]));
+
+  const shortDate = parseShortRuDateLabel(normalized);
+  if (shortDate) return shortDate.slice(0, 7);
+
+  const yearMatch = normalized.match(/(20\d{2})/);
+  const year = yearMatch ? Number(yearMatch[1]) : new Date().getFullYear();
+  const monthIndex = ruMonthNames.findIndex((month) => normalized.includes(month.replace(/ё/g, 'е')));
+  return monthIndex >= 0 ? getMonthKeyFromParts(year, monthIndex + 1) : '';
+}
+
+function getPaymentRowMonthKey(row: PaymentRow) {
+  if (row.dueDate) return row.dueDate.slice(0, 7);
+  return parseMonthKeyFromLabel(row.periodLabel);
+}
+
+function getPaymentCashflowMonthKey(row: PaymentCashflowRow) {
+  return parseMonthKeyFromLabel(row.periodLabel) || getMonthKeyFromParts(new Date().getFullYear(), row.monthNo);
+}
+
+function getLinkPurchaseMonthKey(row: LinkPurchase) {
+  const purchaseDate = parseShortRuDateLabel(row.purchaseDate);
+  if (purchaseDate) return purchaseDate.slice(0, 7);
+  const deadline = parseShortRuDateLabel(row.deadline);
+  if (deadline) return deadline.slice(0, 7);
+  return getMonthKeyFromParts(new Date().getFullYear(), row.monthNo) || parseMonthKeyFromLabel(row.month);
+}
+
+function createPaymentMonthlySummary(key: string): PaymentMonthlySummary {
+  return {
+    key,
+    label: getMonthLabelFromKey(key),
+    planIncome: 0,
+    factIncome: 0,
+    serviceExpenseAmount: 0,
+    linkExpenseAmount: 0,
+    totalExpenseAmount: 0,
+    netAmount: 0,
+    paymentCount: 0,
+    factRowCount: 0,
+    linkCount: 0,
+    projectNames: new Set(),
+  };
+}
+
+function getPaymentMonthlyEntry(map: Map<string, PaymentMonthlySummary>, key: string) {
+  if (!map.has(key)) map.set(key, createPaymentMonthlySummary(key));
+  return map.get(key);
+}
+
+function buildPaymentMonthlySummaries(
+  paymentRows: PaymentRow[],
+  cashflowRows: PaymentCashflowRow[],
+  linkRows: LinkPurchase[],
+  projects: Project[],
+) {
+  const projectNameById = new Map(projects.map((project) => [project.id, project.name]));
+  const map = new Map<string, PaymentMonthlySummary>();
+  const cashflowProjectMonths = new Set<string>();
+
+  cashflowRows.forEach((row) => {
+    const key = getPaymentCashflowMonthKey(row);
+    if (!key) return;
+    const entry = getPaymentMonthlyEntry(map, key);
+    if (!entry) return;
+    const projectName = row.projectName || row.client;
+    cashflowProjectMonths.add(`${key}:${normalizeProjectName(projectName)}`);
+    entry.factIncome += row.incomeAmount;
+    entry.serviceExpenseAmount += row.totalExpenseAmount;
+    entry.factRowCount += 1;
+    entry.projectNames.add(projectName);
+  });
+
+  paymentRows.forEach((row) => {
+    const key = getPaymentRowMonthKey(row);
+    if (!key) return;
+    const entry = getPaymentMonthlyEntry(map, key);
+    if (!entry) return;
+    const projectName = projectNameById.get(row.projectId) ?? row.projectId;
+    const hasCashflowFact = cashflowProjectMonths.has(`${key}:${normalizeProjectName(projectName)}`);
+    entry.planIncome += row.clientAmount;
+    entry.paymentCount += 1;
+    entry.projectNames.add(projectName);
+
+    if (row.status === 'paid' && !hasCashflowFact) {
+      entry.factIncome += row.clientAmount;
+    }
+
+    if (row.kind === 'outsource' && !hasCashflowFact) {
+      entry.serviceExpenseAmount += row.outsourceAmount;
+    }
+  });
+
+  linkRows.forEach((row) => {
+    const key = getLinkPurchaseMonthKey(row);
+    if (!key || row.factCost === 0) return;
+    const entry = getPaymentMonthlyEntry(map, key);
+    if (!entry) return;
+    entry.linkExpenseAmount += row.factCost;
+    entry.linkCount += 1;
+    entry.projectNames.add(row.projectName);
+  });
+
+  return Array.from(map.values())
+    .map((entry) => ({
+      ...entry,
+      totalExpenseAmount: entry.serviceExpenseAmount + entry.linkExpenseAmount,
+      netAmount: entry.factIncome - entry.serviceExpenseAmount - entry.linkExpenseAmount,
+    }))
+    .sort((left, right) => right.key.localeCompare(left.key));
+}
+
+function ensureMonthSummary(months: PaymentMonthlySummary[], key: string) {
+  return months.find((month) => month.key === key) ?? createPaymentMonthlySummary(key);
 }
 
 function useStoredState<T>(key: string, initialValue: T) {
@@ -6095,6 +6264,9 @@ function SeoProjectsView({
                 <PaymentCashflowPanel
                   project={selectedProject}
                   rows={selectedPaymentCashflowRows}
+                  paymentRows={selectedPaymentRows}
+                  linkRows={selectedLinkRows}
+                  projects={projects}
                   loadStatus={paymentCashflowLoadStatus}
                   error={paymentCashflowError}
                   updatedAt={paymentCashflowUpdatedAt}
@@ -6413,9 +6585,115 @@ function SeoProjectReportsPanel({
   );
 }
 
+function PaymentMonthlyOverview({
+  months,
+  nextMonth,
+}: {
+  months: PaymentMonthlySummary[];
+  nextMonth: PaymentMonthlySummary;
+}) {
+  const currentMonthKey = getRelativeMonthKey(0);
+  const maxIncome = Math.max(...months.map((month) => Math.max(month.planIncome, month.factIncome)), 1);
+  const nextProgress = nextMonth.planIncome > 0 ? Math.round((nextMonth.factIncome / nextMonth.planIncome) * 100) : 0;
+  const nextProgressLabel = nextMonth.planIncome > 0 ? `${nextProgress}% от плана` : 'План еще не внесен';
+  const nextDelta = nextMonth.factIncome - nextMonth.planIncome;
+  const barWidth = (value: number) => (value > 0 ? `${Math.max(5, Math.round((value / maxIncome) * 100))}%` : '0%');
+
+  return (
+    <div className="payment-monthly-overview">
+      <article className="payment-next-month-card">
+        <div className="payment-monthly-card-head">
+          <span>Следующий месяц</span>
+          <strong>{nextMonth.label}</strong>
+        </div>
+        <div className="payment-next-month-values">
+          <div>
+            <span>План дохода</span>
+            <strong>{formatMoney(nextMonth.planIncome)}</strong>
+          </div>
+          <div>
+            <span>Факт</span>
+            <strong className={nextMonth.factIncome >= nextMonth.planIncome ? 'payment-positive' : ''}>
+              {formatMoney(nextMonth.factIncome)}
+            </strong>
+          </div>
+        </div>
+        <div className="payment-monthly-meter" aria-hidden="true">
+          <span style={{ width: `${Math.min(Math.max(nextProgress, 0), 100)}%` }} />
+        </div>
+        <p>
+          {nextProgressLabel}
+          {nextMonth.planIncome > 0 && (
+            <em className={nextDelta < 0 ? 'payment-negative' : 'payment-positive'}>
+              {nextDelta < 0 ? ` · осталось ${formatMoney(Math.abs(nextDelta))}` : ` · +${formatMoney(nextDelta)}`}
+            </em>
+          )}
+        </p>
+      </article>
+
+      <section className="payment-monthly-history">
+        <div className="tile-heading">
+          <Clock3 size={18} />
+          <h3>Помесячная хронология</h3>
+        </div>
+        <div className="payment-monthly-list">
+          {months.length === 0 ? (
+            <div className="empty-row">Пока нет месяцев с планом или фактом.</div>
+          ) : (
+            months.slice(0, 12).map((month) => (
+              <article className={`payment-monthly-row ${month.key === currentMonthKey ? 'is-current' : ''}`} key={month.key}>
+                <header>
+                  <div>
+                    <strong>{month.label}</strong>
+                    <span>
+                      {month.projectNames.size || 0} проектов · {month.paymentCount + month.factRowCount} строк
+                    </span>
+                  </div>
+                  {month.key === currentMonthKey && <em>текущий</em>}
+                </header>
+                <div className="payment-monthly-bars" aria-hidden="true">
+                  <span className="plan" style={{ width: barWidth(month.planIncome) }} />
+                  <span className="fact" style={{ width: barWidth(month.factIncome) }} />
+                </div>
+                <div className="payment-monthly-values">
+                  <div>
+                    <span>План</span>
+                    <strong>{formatMoney(month.planIncome)}</strong>
+                  </div>
+                  <div>
+                    <span>Факт</span>
+                    <strong>{formatMoney(month.factIncome)}</strong>
+                  </div>
+                  <div>
+                    <span>Расходы</span>
+                    <strong>{formatMoney(month.serviceExpenseAmount)}</strong>
+                  </div>
+                  <div>
+                    <span>Ссылки</span>
+                    <strong>{formatMoney(month.linkExpenseAmount)}</strong>
+                  </div>
+                  <div>
+                    <span>Остаток</span>
+                    <strong className={month.netAmount < 0 ? 'payment-negative' : 'payment-positive'}>
+                      {formatMoney(month.netAmount)}
+                    </strong>
+                  </div>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function PaymentCashflowPanel({
   project,
   rows,
+  paymentRows,
+  linkRows,
+  projects,
   loadStatus,
   error,
   updatedAt,
@@ -6423,12 +6701,24 @@ function PaymentCashflowPanel({
 }: {
   project?: Project;
   rows: PaymentCashflowRow[];
+  paymentRows: PaymentRow[];
+  linkRows: LinkPurchase[];
+  projects: Project[];
   loadStatus: LinkLoadStatus;
   error: string;
   updatedAt: string;
   onReload: () => void;
 }) {
   const summary = useMemo(() => summarizePaymentCashflowRows(rows), [rows]);
+  const monthlySummaries = useMemo(
+    () => buildPaymentMonthlySummaries(paymentRows, rows, linkRows, projects),
+    [paymentRows, rows, linkRows, projects],
+  );
+  const nextMonthKey = getRelativeMonthKey(1);
+  const nextMonthSummary = ensureMonthSummary(monthlySummaries, nextMonthKey);
+  const monthsWithNext = monthlySummaries.some((month) => month.key === nextMonthKey)
+    ? monthlySummaries
+    : [nextMonthSummary, ...monthlySummaries].sort((left, right) => right.key.localeCompare(left.key));
   const sortedRows = useMemo(
     () =>
       [...rows].sort(
@@ -6503,6 +6793,8 @@ function PaymentCashflowPanel({
           </strong>
         </div>
       </div>
+
+      <PaymentMonthlyOverview months={monthsWithNext} nextMonth={nextMonthSummary} />
 
       {sortedRows.length === 0 && loadStatus !== 'loading' ? (
         <div className="empty-row">
@@ -6591,6 +6883,9 @@ function PaymentsView({
       </div>
       <PaymentCashflowPanel
         rows={paymentCashflowRows}
+        paymentRows={paymentRows}
+        linkRows={linkRows}
+        projects={projects}
         loadStatus={paymentCashflowLoadStatus}
         error={paymentCashflowError}
         updatedAt={paymentCashflowUpdatedAt}
