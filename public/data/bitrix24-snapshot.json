@@ -15,5 +15,7 @@
     "companies": [],
     "fields": []
   },
-  "errors": []
+  "errors": [
+    "BITRIX24_WEBHOOK_URL не задан в GitHub Secrets. Frontend читает только безопасный snapshot; webhook не передается в браузер."
+  ]
 }
