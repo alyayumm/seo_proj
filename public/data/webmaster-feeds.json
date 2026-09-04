@@ -1,7 +1,28 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "",
-  "userId": "",
-  "projects": [],
+  "updatedAt": "2026-09-04T14:34:19.171Z",
+  "userId": "1130000067636656",
+  "projects": [
+    {
+      "projectName": "Аквагард",
+      "clientName": "Аквагард",
+      "siteUrl": "https://аквагард.рф",
+      "hostId": "https:xn--80aaaggh1b2c.xn--p1ai:443",
+      "hostDisplayName": "аквагард.рф",
+      "verified": true,
+      "hostDataStatus": "OK",
+      "summary": {
+        "count": 0,
+        "byStatus": {},
+        "feedErrorsCount": 0,
+        "feedWarningsCount": 0,
+        "hostErrorsCount": 0,
+        "hostWarningsCount": 0,
+        "moderationRejectedOffersCount": 0
+      },
+      "feeds": [],
+      "errors": []
+    }
+  ],
   "errors": []
 }
