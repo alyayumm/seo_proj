@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "fetch:bitrix24": "node scripts/fetch-bitrix24-snapshot.mjs",
+    "fetch:webmaster-feeds": "node scripts/fetch-webmaster-feeds.mjs",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
