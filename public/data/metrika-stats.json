@@ -1,8 +1,653 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "",
-  "date1": "",
-  "date2": "",
-  "periodLabel": "",
-  "projects": []
+  "updatedAt": "2026-09-05T09:07:45.397Z",
+  "date1": "2026-04-01",
+  "date2": "2026-09-05",
+  "periodLabel": "01.04.26 - 05.09.26",
+  "projects": [
+    {
+      "projectName": "Часы",
+      "clientName": "WatchStore",
+      "counterId": 95877415,
+      "counterName": "watchstoree",
+      "siteUrl": "https://watchstoree.ru",
+      "periodLabel": "01.04.26 - 05.09.26",
+      "visits": 220,
+      "users": 129,
+      "goalCount": 0,
+      "uniqueQueries": 105,
+      "goalRows": 0,
+      "sampleQueries": [
+        "tudor clair de rose ref. m35500-0004",
+        "дешёвые туры 2026",
+        "watch store"
+      ],
+      "topQueries": [
+        {
+          "query": "tudor clair de rose ref. m35500-0004",
+          "visits": 79,
+          "goals": 0
+        },
+        {
+          "query": "дешёвые туры 2026",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "query": "watch store",
+          "visits": 11,
+          "goals": 0
+        },
+        {
+          "query": "watchstore",
+          "visits": 4,
+          "goals": 0
+        },
+        {
+          "query": "atmos infinite",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "query": "montblanc 1858 geosphere automatic titanium 42mm 125565",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "query": "ватч стор",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "query": "онлайн оценка швейцарских часов",
+          "visits": 2,
+          "goals": 0
+        }
+      ],
+      "monthly": [
+        {
+          "month": "апр",
+          "visits": 1652,
+          "goals": 0
+        },
+        {
+          "month": "май",
+          "visits": 5589,
+          "goals": 0
+        },
+        {
+          "month": "июнь",
+          "visits": 3614,
+          "goals": 0
+        },
+        {
+          "month": "июль",
+          "visits": 13758,
+          "goals": 0
+        },
+        {
+          "month": "авг",
+          "visits": 11577,
+          "goals": 0
+        },
+        {
+          "month": "сент",
+          "visits": 2479,
+          "goals": 0
+        }
+      ]
+    },
+    {
+      "projectName": "Свич",
+      "clientName": "Свитч",
+      "counterId": 99951775,
+      "counterName": "Switch-Eng Metrika",
+      "siteUrl": "https://switch-eng.ru",
+      "periodLabel": "01.04.26 - 05.09.26",
+      "visits": 347,
+      "users": 328,
+      "goalCount": 0,
+      "uniqueQueries": 181,
+      "goalRows": 0,
+      "sampleQueries": [
+        "когда празднуется рождество в британии",
+        "как выучить английский за 3 месяца",
+        "как выучить английский с нуля самому"
+      ],
+      "topQueries": [
+        {
+          "query": "когда празднуется рождество в британии",
+          "visits": 22,
+          "goals": 0
+        },
+        {
+          "query": "как выучить английский за 3 месяца",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "query": "как выучить английский с нуля самому",
+          "visits": 12,
+          "goals": 0
+        },
+        {
+          "query": "английский для детей онлайн",
+          "visits": 7,
+          "goals": 0
+        },
+        {
+          "query": "когда рождество в англии",
+          "visits": 7,
+          "goals": 0
+        },
+        {
+          "query": "курсы английского языка",
+          "visits": 6,
+          "goals": 0
+        },
+        {
+          "query": "уроки английского онлайн",
+          "visits": 6,
+          "goals": 0
+        },
+        {
+          "query": "репетитор по английскому",
+          "visits": 5,
+          "goals": 0
+        }
+      ],
+      "monthly": [
+        {
+          "month": "апр",
+          "visits": 11708,
+          "goals": 0
+        },
+        {
+          "month": "май",
+          "visits": 8148,
+          "goals": 0
+        },
+        {
+          "month": "июнь",
+          "visits": 969,
+          "goals": 0
+        },
+        {
+          "month": "июль",
+          "visits": 85,
+          "goals": 0
+        },
+        {
+          "month": "авг",
+          "visits": 112,
+          "goals": 0
+        },
+        {
+          "month": "сент",
+          "visits": 11,
+          "goals": 0
+        }
+      ]
+    },
+    {
+      "projectName": "Аквагард",
+      "clientName": "Аквагард",
+      "counterId": 103419904,
+      "counterName": "Аквагард",
+      "siteUrl": "https://аквагард.рф",
+      "periodLabel": "01.04.26 - 05.09.26",
+      "visits": 965,
+      "users": 770,
+      "goalCount": 0,
+      "uniqueQueries": 611,
+      "goalRows": 0,
+      "sampleQueries": [
+        "аквагард",
+        "сооружение водоподготовки",
+        "очистные сооружения под ключ для предприятий"
+      ],
+      "topQueries": [
+        {
+          "query": "аквагард",
+          "visits": 126,
+          "goals": 0
+        },
+        {
+          "query": "сооружение водоподготовки",
+          "visits": 15,
+          "goals": 0
+        },
+        {
+          "query": "очистные сооружения под ключ для предприятий",
+          "visits": 14,
+          "goals": 0
+        },
+        {
+          "query": "производство локальных очистных сооружений",
+          "visits": 12,
+          "goals": 0
+        },
+        {
+          "query": "контейнер водоподготовки",
+          "visits": 11,
+          "goals": 0
+        },
+        {
+          "query": "контейнер водоподготовки azud-russia.ru",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "query": "аквагард рф",
+          "visits": 8,
+          "goals": 0
+        },
+        {
+          "query": "очистных и противопожарных сооружений",
+          "visits": 8,
+          "goals": 0
+        }
+      ],
+      "monthly": [
+        {
+          "month": "апр",
+          "visits": 990,
+          "goals": 0
+        },
+        {
+          "month": "май",
+          "visits": 1103,
+          "goals": 0
+        },
+        {
+          "month": "июнь",
+          "visits": 1782,
+          "goals": 0
+        },
+        {
+          "month": "июль",
+          "visits": 1949,
+          "goals": 0
+        },
+        {
+          "month": "авг",
+          "visits": 1152,
+          "goals": 0
+        },
+        {
+          "month": "сент",
+          "visits": 275,
+          "goals": 0
+        }
+      ]
+    },
+    {
+      "projectName": "Промтех",
+      "clientName": "Макулатура",
+      "counterId": 99590873,
+      "counterName": "promtehmakulatura.ru",
+      "siteUrl": "https://promtehmakulatura.ru",
+      "periodLabel": "01.04.26 - 05.09.26",
+      "visits": 2255,
+      "users": 2082,
+      "goalCount": 0,
+      "uniqueQueries": 1232,
+      "goalRows": 0,
+      "sampleQueries": [
+        "промтехмакулатура",
+        "утилизация пленки в спб и ло",
+        "прием макулатуры"
+      ],
+      "topQueries": [
+        {
+          "query": "промтехмакулатура",
+          "visits": 49,
+          "goals": 0
+        },
+        {
+          "query": "утилизация пленки в спб и ло",
+          "visits": 37,
+          "goals": 0
+        },
+        {
+          "query": "прием макулатуры",
+          "visits": 32,
+          "goals": 0
+        },
+        {
+          "query": "тренды в экологичной мебели",
+          "visits": 30,
+          "goals": 0
+        },
+        {
+          "query": "hdpe 2 что означает на канистре",
+          "visits": 21,
+          "goals": 0
+        },
+        {
+          "query": "сколько видов пластика можно сдать на переработку в россии",
+          "visits": 21,
+          "goals": 0
+        },
+        {
+          "query": "пункт вторсырья",
+          "visits": 20,
+          "goals": 0
+        },
+        {
+          "query": "адреса макулатуры",
+          "visits": 19,
+          "goals": 0
+        }
+      ],
+      "monthly": [
+        {
+          "month": "апр",
+          "visits": 848,
+          "goals": 0
+        },
+        {
+          "month": "май",
+          "visits": 914,
+          "goals": 0
+        },
+        {
+          "month": "июнь",
+          "visits": 673,
+          "goals": 0
+        },
+        {
+          "month": "июль",
+          "visits": 1044,
+          "goals": 0
+        },
+        {
+          "month": "авг",
+          "visits": 1902,
+          "goals": 0
+        },
+        {
+          "month": "сент",
+          "visits": 430,
+          "goals": 0
+        }
+      ]
+    },
+    {
+      "projectName": "Смартстрой",
+      "clientName": "СмартСтрой",
+      "counterId": 107615431,
+      "counterName": "smart-spb.pro",
+      "siteUrl": "https://smart-spb.pro",
+      "periodLabel": "01.04.26 - 05.09.26",
+      "visits": 1003,
+      "users": 759,
+      "goalCount": 0,
+      "uniqueQueries": 601,
+      "goalRows": 0,
+      "sampleQueries": [
+        "смартстрой",
+        "смартстрой спб",
+        "smart-spb.pro."
+      ],
+      "topQueries": [
+        {
+          "query": "смартстрой",
+          "visits": 116,
+          "goals": 0
+        },
+        {
+          "query": "смартстрой спб",
+          "visits": 62,
+          "goals": 0
+        },
+        {
+          "query": "smart-spb.pro.",
+          "visits": 29,
+          "goals": 0
+        },
+        {
+          "query": "смарт строй спб",
+          "visits": 29,
+          "goals": 0
+        },
+        {
+          "query": "смарт строй",
+          "visits": 26,
+          "goals": 0
+        },
+        {
+          "query": "смартстрой официальный сайт",
+          "visits": 25,
+          "goals": 0
+        },
+        {
+          "query": "smart-spb.pro",
+          "visits": 17,
+          "goals": 0
+        },
+        {
+          "query": "смарт строй строительство домов",
+          "visits": 8,
+          "goals": 0
+        }
+      ],
+      "monthly": [
+        {
+          "month": "апр",
+          "visits": 4340,
+          "goals": 0
+        },
+        {
+          "month": "май",
+          "visits": 1958,
+          "goals": 0
+        },
+        {
+          "month": "июнь",
+          "visits": 1251,
+          "goals": 0
+        },
+        {
+          "month": "июль",
+          "visits": 1433,
+          "goals": 0
+        },
+        {
+          "month": "авг",
+          "visits": 1378,
+          "goals": 0
+        },
+        {
+          "month": "сент",
+          "visits": 269,
+          "goals": 0
+        }
+      ]
+    },
+    {
+      "projectName": "Балт-паллет",
+      "clientName": "Паллет",
+      "counterId": 99163159,
+      "counterName": "balt-pallet",
+      "siteUrl": "https://balt-pallet.ru",
+      "periodLabel": "01.04.26 - 05.09.26",
+      "visits": 180,
+      "users": 163,
+      "goalCount": 0,
+      "uniqueQueries": 91,
+      "goalRows": 0,
+      "sampleQueries": [
+        "балт паллет",
+        "дешёвые туры 2026",
+        "санкт-петербург набережная обводного канала 118аж балт-паллет"
+      ],
+      "topQueries": [
+        {
+          "query": "балт паллет",
+          "visits": 31,
+          "goals": 0
+        },
+        {
+          "query": "дешёвые туры 2026",
+          "visits": 20,
+          "goals": 0
+        },
+        {
+          "query": "санкт-петербург набережная обводного канала 118аж балт-паллет",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "query": "поддоны деревянные купить в спб",
+          "visits": 7,
+          "goals": 0
+        },
+        {
+          "query": "balt-pallet.ru",
+          "visits": 6,
+          "goals": 0
+        },
+        {
+          "query": "купить паллеты оптом",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "query": "{\"text\":\"поддоны, паллеты\",\"what\":[{\"attr_name\":\"category_id\",\"attr_values\":[\"221017346686\"]}]}",
+          "visits": 4,
+          "goals": 0
+        },
+        {
+          "query": "балтпалет",
+          "visits": 4,
+          "goals": 0
+        }
+      ],
+      "monthly": [
+        {
+          "month": "апр",
+          "visits": 11704,
+          "goals": 0
+        },
+        {
+          "month": "май",
+          "visits": 15051,
+          "goals": 0
+        },
+        {
+          "month": "июнь",
+          "visits": 10268,
+          "goals": 0
+        },
+        {
+          "month": "июль",
+          "visits": 2347,
+          "goals": 0
+        },
+        {
+          "month": "авг",
+          "visits": 24966,
+          "goals": 0
+        },
+        {
+          "month": "сент",
+          "visits": 3783,
+          "goals": 0
+        }
+      ]
+    },
+    {
+      "projectName": "Ломбард",
+      "clientName": "ЛомбардБанка",
+      "counterId": 109615906,
+      "counterName": "lombard-banka",
+      "siteUrl": "https://lombard-banka.ru",
+      "periodLabel": "01.04.26 - 05.09.26",
+      "visits": 417,
+      "users": 397,
+      "goalCount": 0,
+      "uniqueQueries": 289,
+      "goalRows": 0,
+      "sampleQueries": [
+        "ломбард музыкальных инструментов саксофон",
+        "велосипед в ломбард",
+        "ломбард банка"
+      ],
+      "topQueries": [
+        {
+          "query": "ломбард музыкальных инструментов саксофон",
+          "visits": 41,
+          "goals": 0
+        },
+        {
+          "query": "велосипед в ломбард",
+          "visits": 22,
+          "goals": 0
+        },
+        {
+          "query": "ломбард банка",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "query": "сдать велосипед в ломбард",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "query": "по чем принимают телефоны в ломбарде",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "query": "под залог музыкальных инструментов",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "query": "сдать камеру в ломбард",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "query": "сдать монеты в ломбард",
+          "visits": 5,
+          "goals": 0
+        }
+      ],
+      "monthly": [
+        {
+          "month": "апр",
+          "visits": 0,
+          "goals": 0
+        },
+        {
+          "month": "май",
+          "visits": 0,
+          "goals": 0
+        },
+        {
+          "month": "июнь",
+          "visits": 160,
+          "goals": 0
+        },
+        {
+          "month": "июль",
+          "visits": 369,
+          "goals": 0
+        },
+        {
+          "month": "авг",
+          "visits": 657,
+          "goals": 0
+        },
+        {
+          "month": "сент",
+          "visits": 143,
+          "goals": 0
+        }
+      ]
+    }
+  ]
 }
