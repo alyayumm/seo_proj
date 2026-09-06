@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-05T09:07:45.397Z",
+  "updatedAt": "2026-09-06T09:28:03.831Z",
   "date1": "2026-04-01",
-  "date2": "2026-09-05",
-  "periodLabel": "01.04.26 - 05.09.26",
+  "date2": "2026-09-06",
+  "periodLabel": "01.04.26 - 06.09.26",
   "projects": [
     {
       "projectName": "Часы",
@@ -11,11 +11,11 @@
       "counterId": 95877415,
       "counterName": "watchstoree",
       "siteUrl": "https://watchstoree.ru",
-      "periodLabel": "01.04.26 - 05.09.26",
-      "visits": 220,
-      "users": 129,
+      "periodLabel": "01.04.26 - 06.09.26",
+      "visits": 222,
+      "users": 131,
       "goalCount": 0,
-      "uniqueQueries": 105,
+      "uniqueQueries": 107,
       "goalRows": 0,
       "sampleQueries": [
         "tudor clair de rose ref. m35500-0004",
@@ -92,7 +92,7 @@
         },
         {
           "month": "сент",
-          "visits": 2479,
+          "visits": 3099,
           "goals": 0
         }
       ]
@@ -103,7 +103,7 @@
       "counterId": 99951775,
       "counterName": "Switch-Eng Metrika",
       "siteUrl": "https://switch-eng.ru",
-      "periodLabel": "01.04.26 - 05.09.26",
+      "periodLabel": "01.04.26 - 06.09.26",
       "visits": 347,
       "users": 328,
       "goalCount": 0,
@@ -184,7 +184,7 @@
         },
         {
           "month": "сент",
-          "visits": 11,
+          "visits": 12,
           "goals": 0
         }
       ]
@@ -195,11 +195,11 @@
       "counterId": 103419904,
       "counterName": "Аквагард",
       "siteUrl": "https://аквагард.рф",
-      "periodLabel": "01.04.26 - 05.09.26",
-      "visits": 965,
-      "users": 770,
+      "periodLabel": "01.04.26 - 06.09.26",
+      "visits": 1001,
+      "users": 805,
       "goalCount": 0,
-      "uniqueQueries": 611,
+      "uniqueQueries": 647,
       "goalRows": 0,
       "sampleQueries": [
         "аквагард",
@@ -276,7 +276,7 @@
         },
         {
           "month": "сент",
-          "visits": 275,
+          "visits": 330,
           "goals": 0
         }
       ]
@@ -287,11 +287,11 @@
       "counterId": 99590873,
       "counterName": "promtehmakulatura.ru",
       "siteUrl": "https://promtehmakulatura.ru",
-      "periodLabel": "01.04.26 - 05.09.26",
-      "visits": 2255,
-      "users": 2082,
+      "periodLabel": "01.04.26 - 06.09.26",
+      "visits": 2310,
+      "users": 2136,
       "goalCount": 0,
-      "uniqueQueries": 1232,
+      "uniqueQueries": 1277,
       "goalRows": 0,
       "sampleQueries": [
         "промтехмакулатура",
@@ -301,7 +301,7 @@
       "topQueries": [
         {
           "query": "промтехмакулатура",
-          "visits": 49,
+          "visits": 50,
           "goals": 0
         },
         {
@@ -321,12 +321,12 @@
         },
         {
           "query": "hdpe 2 что означает на канистре",
-          "visits": 21,
+          "visits": 23,
           "goals": 0
         },
         {
           "query": "сколько видов пластика можно сдать на переработку в россии",
-          "visits": 21,
+          "visits": 22,
           "goals": 0
         },
         {
@@ -368,7 +368,7 @@
         },
         {
           "month": "сент",
-          "visits": 430,
+          "visits": 521,
           "goals": 0
         }
       ]
@@ -379,11 +379,11 @@
       "counterId": 107615431,
       "counterName": "smart-spb.pro",
       "siteUrl": "https://smart-spb.pro",
-      "periodLabel": "01.04.26 - 05.09.26",
-      "visits": 1003,
-      "users": 759,
+      "periodLabel": "01.04.26 - 06.09.26",
+      "visits": 1032,
+      "users": 786,
       "goalCount": 0,
-      "uniqueQueries": 601,
+      "uniqueQueries": 623,
       "goalRows": 0,
       "sampleQueries": [
         "смартстрой",
@@ -460,7 +460,7 @@
         },
         {
           "month": "сент",
-          "visits": 269,
+          "visits": 319,
           "goals": 0
         }
       ]
@@ -471,11 +471,11 @@
       "counterId": 99163159,
       "counterName": "balt-pallet",
       "siteUrl": "https://balt-pallet.ru",
-      "periodLabel": "01.04.26 - 05.09.26",
-      "visits": 180,
-      "users": 163,
+      "periodLabel": "01.04.26 - 06.09.26",
+      "visits": 182,
+      "users": 165,
       "goalCount": 0,
-      "uniqueQueries": 91,
+      "uniqueQueries": 92,
       "goalRows": 0,
       "sampleQueries": [
         "балт паллет",
@@ -552,7 +552,7 @@
         },
         {
           "month": "сент",
-          "visits": 3783,
+          "visits": 4524,
           "goals": 0
         }
       ]
@@ -563,21 +563,21 @@
       "counterId": 109615906,
       "counterName": "lombard-banka",
       "siteUrl": "https://lombard-banka.ru",
-      "periodLabel": "01.04.26 - 05.09.26",
-      "visits": 417,
-      "users": 397,
+      "periodLabel": "01.04.26 - 06.09.26",
+      "visits": 444,
+      "users": 424,
       "goalCount": 0,
-      "uniqueQueries": 289,
+      "uniqueQueries": 304,
       "goalRows": 0,
       "sampleQueries": [
         "ломбард музыкальных инструментов саксофон",
         "велосипед в ломбард",
-        "ломбард банка"
+        "сдать велосипед в ломбард"
       ],
       "topQueries": [
         {
           "query": "ломбард музыкальных инструментов саксофон",
-          "visits": 41,
+          "visits": 46,
           "goals": 0
         },
         {
@@ -586,13 +586,23 @@
           "goals": 0
         },
         {
+          "query": "сдать велосипед в ломбард",
+          "visits": 11,
+          "goals": 0
+        },
+        {
           "query": "ломбард банка",
           "visits": 10,
           "goals": 0
         },
         {
-          "query": "сдать велосипед в ломбард",
-          "visits": 10,
+          "query": "сдать монеты в ломбард",
+          "visits": 7,
+          "goals": 0
+        },
+        {
+          "query": "сдать камеру в ломбард",
+          "visits": 6,
           "goals": 0
         },
         {
@@ -602,16 +612,6 @@
         },
         {
           "query": "под залог музыкальных инструментов",
-          "visits": 5,
-          "goals": 0
-        },
-        {
-          "query": "сдать камеру в ломбард",
-          "visits": 5,
-          "goals": 0
-        },
-        {
-          "query": "сдать монеты в ломбард",
           "visits": 5,
           "goals": 0
         }
@@ -644,7 +644,7 @@
         },
         {
           "month": "сент",
-          "visits": 143,
+          "visits": 190,
           "goals": 0
         }
       ]
