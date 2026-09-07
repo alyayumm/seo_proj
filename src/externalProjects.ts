@@ -71,7 +71,7 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
   collaborator: 'Отдел маркетинга',
   updatedLabel: 'по документу от 10.08.26, апдейту 04.09.26 и отчету 07.09.26',
   url: 'https://docs.google.com/document/d/1hec-2lJGGsjDsmmbXHTk4YbFgwJV82avNA-EIT1ryEo/edit?tab=t.k4dzyo6kfkhb',
-  sections: [
+  sections: ([
     {
       id: 'dental-clinic-seo-launch',
       title: 'Стоматологическая клиника',
@@ -593,12 +593,84 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
       title: 'ИИ-бот в Telegram',
       status: 'active',
       items: [
-        'Смена базы под SEO готова',
-        'АШ СПБ: тест откручен, база заменена',
-        'АШ МСК: запуск',
-        'SEO: запуск',
-        'Ректоп: повторный запуск Telegram через ИИ утром 08.09',
         'MAX: подрядчик найден, ждем КП',
+      ],
+      note:
+        'На 24.08 закрыты смена базы под SEO, АШ СПБ, АШ МСК и SEO-запуск. В текущей работе остался MAX.',
+      people: ['Отдел маркетинга', 'Подрядчик ИИ'],
+      timeline: [
+        {
+          id: 'telegram-ai-bot-seo-base-switch',
+          title: 'Смена базы под SEO готова',
+          status: 'done',
+          dateLabel: '24.08.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'telegram-ai-bot-ash-spb-test-base',
+          title: 'АШ СПБ: тест откручен, база заменена',
+          status: 'done',
+          dateLabel: '24.08.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'telegram-ai-bot-ash-msk-launch',
+          title: 'АШ МСК: запуск',
+          status: 'done',
+          dateLabel: '24.08.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'telegram-ai-bot-seo-launch',
+          title: 'SEO: запуск',
+          status: 'done',
+          dateLabel: '24.08.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'telegram-ai-bot-max-contractor',
+          title: 'MAX: подрядчик найден, ждем КП',
+          status: 'waiting',
+          dateLabel: '07.09.26',
+          ownerLabel: 'Подрядчик ИИ',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'telegram-ai-bot-week-24-08-26',
+          weekLabel: '24.08.26',
+          dateLabel: 'отчет 31.08.26',
+          items: [
+            {
+              id: 'telegram-ai-bot-seo-base-switch-24-08',
+              title: 'Смена базы под SEO готова',
+              status: 'done',
+              dateLabel: '24.08.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+            {
+              id: 'telegram-ai-bot-ash-spb-test-base-24-08',
+              title: 'АШ СПБ: тест откручен, база заменена',
+              status: 'done',
+              dateLabel: '24.08.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+            {
+              id: 'telegram-ai-bot-ash-msk-launch-24-08',
+              title: 'АШ МСК: запуск',
+              status: 'done',
+              dateLabel: '24.08.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+            {
+              id: 'telegram-ai-bot-seo-launch-24-08',
+              title: 'SEO: запуск',
+              status: 'done',
+              dateLabel: '24.08.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+          ],
+        },
       ],
     },
     {
@@ -738,13 +810,21 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
         {
           id: 'rustore-reviews-week-24-08-26',
           weekLabel: '24.08.26',
-          dateLabel: 'прошлая неделя',
+          dateLabel: 'отчет 31.08.26',
           items: [
             {
-              id: 'rustore-reviews-done-24-08',
-              title: 'Отзывы РуСтор по Профскиллс закрыты',
+              id: 'rustore-reviews-positive-24-08',
+              title: 'Написать положительные отзывы',
               status: 'done',
               dateLabel: '24.08.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+            {
+              id: 'rustore-reviews-negative-replies-24-08',
+              title: 'Ответить на негативные отзывы',
+              status: 'done',
+              dateLabel: '24.08.26',
+              ownerLabel: 'Отдел маркетинга',
             },
           ],
         },
@@ -756,12 +836,12 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
       status: 'active',
       items: [
         'ТЗ по правкам составлено',
-        'Разработчик должен закончить правки к концу недели',
-        'Перенести сайт на домен',
+        'Сайт перенесен на домен',
+        'Внесение правок согласно ТЗ',
         'Переверстать первый блок на главной',
       ],
       note:
-        'Отчет 07.09: ТЗ по правкам составлено, разработчик должен закончить к концу недели. Ректоп и сайт Ректоп - один проект.',
+        'Отчет 07.09: ТЗ по правкам составлено, сайт перенесен на домен до 06.09. Дальше в работе внесение правок согласно ТЗ.',
       goal: 'Довести сайт Ректоп до готовности: закрыть правки, перенести на домен и обновить первый блок главной.',
       people: ['Аутсорс', 'Разработчик', 'Отдел маркетинга'],
       assets: [
@@ -788,7 +868,7 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
         },
         {
           id: 'rectop-site-dev-finish-week',
-          title: 'Разработчик должен закончить правки к концу недели',
+          title: 'Внесение правок согласно ТЗ',
           status: 'active',
           dateLabel: '13.09.26',
           ownerLabel: 'Разработчик',
@@ -796,8 +876,8 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
         {
           id: 'rectop-site-domain-transfer',
           title: 'Перенести сайт на домен',
-          status: 'active',
-          dateLabel: '13.09.26',
+          status: 'done',
+          dateLabel: '06.09.26',
           ownerLabel: 'Разработчик',
         },
         {
@@ -821,6 +901,13 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
               dateLabel: '07.09.26',
               ownerLabel: 'Отдел маркетинга',
             },
+            {
+              id: 'rectop-site-domain-transfer-06-09',
+              title: 'Сайт Ректоп перенесен на домен',
+              status: 'done',
+              dateLabel: '06.09.26',
+              ownerLabel: 'Разработчик',
+            },
           ],
         },
       ],
@@ -829,19 +916,70 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
       id: 'education-test-site',
       title: 'Сайт для теста образовательных услуг',
       status: 'active',
-      items: ['Ориентировочный дедлайн: 20.08'],
+      items: ['Ориентировочный дедлайн: 20.09'],
+      timeline: [
+        {
+          id: 'education-test-site-deadline',
+          title: 'Ориентировочный дедлайн: 20.09',
+          status: 'active',
+          dateLabel: '20.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+      ],
     },
     {
       id: 'rectop-team',
       title: 'Ректоп штат',
       status: 'active',
-      items: ['Разработчик: закрыть вакансию'],
+      items: ['Разработчик вышел в тест на прошлой неделе'],
+      note: 'На неделе 31.08-06.09 разработчик вышел в тест.',
+      people: ['Отдел маркетинга', 'Разработчик'],
+      timeline: [
+        {
+          id: 'rectop-team-developer-test-start',
+          title: 'Разработчик вышел в тест',
+          status: 'done',
+          dateLabel: '05.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'rectop-team-week-31-08-26',
+          weekLabel: '31.08.26',
+          dateLabel: 'отчет 07.09.26',
+          items: [
+            {
+              id: 'rectop-team-developer-test-start-05-09',
+              title: 'Разработчик вышел в тест',
+              status: 'done',
+              dateLabel: '05.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+          ],
+        },
+      ],
     },
     {
       id: 'referral',
       title: 'Рефералка',
-      status: 'next',
-      items: ['Разобраться с механикой', 'Мониторить кабинет на ПС', 'Сайт-визитка с рефералкой'],
+      status: 'active',
+      items: [
+        'ЛК веб-мастеров в работе у IT',
+        'Разобраться с механикой',
+        'Мониторить кабинет на ПС',
+        'Сайт-визитка с рефералкой',
+      ],
+      people: ['IT-отдел', 'Отдел маркетинга'],
+      timeline: [
+        {
+          id: 'referral-webmaster-account-it',
+          title: 'ЛК веб-мастеров в работе у IT',
+          status: 'active',
+          dateLabel: '13.09.26',
+          ownerLabel: 'IT-отдел',
+        },
+      ],
     },
-  ],
+  ] satisfies ExternalProjectSection[]).filter((section) => section.id !== 'rectop-site'),
 };

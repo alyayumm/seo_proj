@@ -442,9 +442,16 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'task-updates-2026-09-07-v2';
+const taskSeedVersion = 'task-updates-2026-09-07-v6';
 const taskDefaultDeadlineVersion = 'default-deadlines-2026-09-03-v1';
-const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
+const legacyDemoTaskIds = new Set([
+  'task-1',
+  'task-2',
+  'task-3',
+  'task-4',
+  'current-ash-new-quarter-plan',
+  'current-rectop-new-quarter-plan',
+]);
 
 const requiredTaskSeeds: Task[] = [
   {
@@ -786,14 +793,14 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'planning-smartstroy-cottage-locations-2026-08-25',
     projectId: 'project-smart',
-    title: 'Коттеджные поселки и локации',
-    description: 'На 04.09: топонимы собраны и отданы SEO на исполнение.',
+    title: 'Расширение по топонимам',
+    description: 'План на неделю 07.09-13.09: расширить SEO-структуру по топонимам. На 04.09 топонимы собраны и отданы SEO.',
     sourceLabel: 'чек-лист 25.08',
     sourceUrl: SEO_PLANNING_CHECKLIST_URL,
     status: 'active',
     ownerIds: ['person-marketing', 'person-aleksey'],
     createdAt: '2026-08-31',
-    deadline: '',
+    deadline: '2026-09-13',
     timelineEnabled: true,
     timeline: [
       {
@@ -830,10 +837,10 @@ const requiredTaskSeeds: Task[] = [
       },
       {
         id: 'timeline-smartstroy-locations-seo-implementation-04-09',
-        title: 'Внедрить топонимы в SEO-структуру страниц',
+        title: 'Расширить SEO-структуру страниц по топонимам',
         ownerId: 'person-aleksey',
         status: 'active',
-        dueDate: '2026-09-15',
+        dueDate: '2026-09-13',
       },
     ],
   },
@@ -860,6 +867,18 @@ const requiredTaskSeeds: Task[] = [
     createdAt: '2026-08-10',
     deadline: '',
     completedAt: '2026-08-31',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'current-aquaguard-catalog-filling-2026-09-07',
+    projectId: 'project-aquaguard',
+    title: 'Наполнение каталога',
+    description: 'План на неделю 07.09-13.09: продолжить наполнение каталога после правок по карточкам и товарке.',
+    status: 'active',
+    ownerIds: ['person-olga'],
+    createdAt: '2026-09-07',
+    deadline: '2026-09-13',
     timelineEnabled: false,
     timeline: [],
   },
@@ -1195,11 +1214,11 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'planning-watch-domain-access-payments-2026-08-25',
     projectId: 'project-watch',
-    title: 'Часы: домен, доступы и учет разработки',
-    description: 'Из чек-листа планерки 25.08. Без комментариев по прогрессу - не начинали.',
+    title: 'Часы: домен и доступы',
+    description: 'На 07.09 организовано подтверждение домена; доступ к почте остается в плане.',
     sourceLabel: 'чек-лист 25.08',
     sourceUrl: SEO_PLANNING_CHECKLIST_URL,
-    status: 'planned',
+    status: 'active',
     ownerIds: ['person-alina'],
     createdAt: '2026-08-31',
     deadline: '',
@@ -1209,19 +1228,13 @@ const requiredTaskSeeds: Task[] = [
         id: 'timeline-watch-domain-confirmation',
         title: 'Организовать подтверждение домена',
         ownerId: 'person-alina',
-        status: 'planned',
-        dueDate: '',
+        status: 'done',
+        dueDate: '2026-09-07',
+        completedAt: '2026-09-07',
       },
       {
         id: 'timeline-watch-mail-access',
         title: 'Выдать доступ к почте, на которую поступают заявки',
-        ownerId: 'person-alina',
-        status: 'planned',
-        dueDate: '',
-      },
-      {
-        id: 'timeline-watch-dev-payment-row',
-        title: 'Создать отдельную строку для разработки по проекту Часы',
         ownerId: 'person-alina',
         status: 'planned',
         dueDate: '',
@@ -1303,9 +1316,9 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'current-rectop-layout-templates',
     projectId: 'project-rectop',
-    title: 'Ректоп: перенос на домен и первый блок главной',
+    title: 'Ректоп: правки по ТЗ и первый блок главной',
     description:
-      'Отчет 07.09: ТЗ по правкам составлено, разработчик должен закончить к концу недели. Ректоп и сайт Ректоп - один проект.',
+      'Отчет 07.09: сайт перенесен на домен до 06.09; дальше в работе внесение правок согласно ТЗ и первый блок главной.',
     sourceLabel: 'ТЗ правки',
     sourceUrl: RECTOP_CORRECTIONS_BRIEF_URL,
     status: 'active',
@@ -1334,8 +1347,9 @@ const requiredTaskSeeds: Task[] = [
         id: 'timeline-rectop-domain-transfer',
         title: 'Перенести сайт на домен',
         ownerId: 'person-outsource',
-        status: 'active',
-        dueDate: '2026-09-13',
+        status: 'done',
+        dueDate: '2026-09-06',
+        completedAt: '2026-09-06',
       },
       {
         id: 'timeline-rectop-first-block-home',
@@ -1346,36 +1360,12 @@ const requiredTaskSeeds: Task[] = [
       },
       {
         id: 'timeline-rectop-dev-finish-week',
-        title: 'Разработчик должен закончить правки к концу недели',
+        title: 'Внесение правок согласно ТЗ',
         ownerId: 'person-outsource',
         status: 'active',
         dueDate: '2026-09-13',
       },
     ],
-  },
-  {
-    id: 'current-rectop-new-quarter-plan',
-    projectId: 'project-rectop',
-    title: 'Новый план работ на 3 месяца',
-    description: 'План на неделю 07.09-13.09: подготовить новый план работ на 3 месяца по проекту.',
-    status: 'active',
-    ownerIds: ['person-aleksey'],
-    createdAt: '2026-09-07',
-    deadline: '2026-09-13',
-    timelineEnabled: false,
-    timeline: [],
-  },
-  {
-    id: 'current-ash-new-quarter-plan',
-    projectId: 'project-ash',
-    title: 'Новый план работ на 3 месяца',
-    description: 'План на неделю 07.09-13.09: подготовить новый план работ на 3 месяца по проекту.',
-    status: 'active',
-    ownerIds: ['person-aleksey'],
-    createdAt: '2026-09-07',
-    deadline: '2026-09-13',
-    timelineEnabled: false,
-    timeline: [],
   },
   {
     id: 'weekly-promteh-report-2026-08-31',
