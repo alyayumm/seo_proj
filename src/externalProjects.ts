@@ -63,6 +63,7 @@ const RECTOP_FAQ_URL =
   'https://docs.google.com/document/d/1pytSVh4lxSb5BDV9C9CM9gOgwxdm8Wnb2gR2mgrRpWg/edit?tab=t.0#heading=h.mlgh27lmuw4v';
 const AUTOPRAVO_FIGMA_URL =
   'https://www.figma.com/design/BrReyqlaV4p15QX0bekG2X/%D0%90%D0%B2%D1%82%D0%BE%D0%BF%D1%80%D0%B0%D0%B2%D0%BE?node-id=519-8247&t=RXaNEtFVQQizrAjv-1';
+const ASH_CRM_PAPER_URL = 'https://app.paper.design/file/01M1KJPTM17HGZX3HXKXVVG69A/1-0';
 
 export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
   title: 'Сторонние проекты',
@@ -668,6 +669,73 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
               status: 'done',
               dateLabel: '24.08.26',
               ownerLabel: 'Отдел маркетинга',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'ash-new-crm',
+      title: 'Новая CRM для АШ',
+      status: 'active',
+      link: ASH_CRM_PAPER_URL,
+      items: [
+        'Скелет CRM сделан',
+        'Расписать ТЗ по дашборду',
+      ],
+      note: 'Проект запущен с IT-отделом 02.09. На текущую неделю задача - расписать ТЗ по дашборду.',
+      goal: 'Собрать новую CRM для АШ с понятным дашбордом, задачами и рабочей структурой для команды.',
+      people: ['Алина', 'IT-отдел'],
+      assets: [
+        {
+          id: 'ash-new-crm-paper',
+          title: 'Скелет CRM в Paper',
+          url: ASH_CRM_PAPER_URL,
+          kind: 'link',
+        },
+      ],
+      timeline: [
+        {
+          id: 'ash-new-crm-project-start',
+          title: 'Запустить проект с IT-отделом',
+          status: 'done',
+          dateLabel: '02.09.26',
+          ownerLabel: 'IT-отдел',
+        },
+        {
+          id: 'ash-new-crm-skeleton-ready',
+          title: 'Сделать скелет новой CRM для АШ',
+          status: 'done',
+          dateLabel: '06.09.26',
+          ownerLabel: 'IT-отдел',
+        },
+        {
+          id: 'ash-new-crm-dashboard-brief',
+          title: 'Расписать ТЗ по дашборду',
+          status: 'active',
+          dateLabel: '13.09.26',
+          ownerLabel: 'Алина',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'ash-new-crm-week-31-08-26',
+          weekLabel: '31.08.26',
+          dateLabel: 'отчет 07.09.26',
+          items: [
+            {
+              id: 'ash-new-crm-project-start-02-09',
+              title: 'С IT-отделом запущен проект "Новая CRM для АШ"',
+              status: 'done',
+              dateLabel: '02.09.26',
+              ownerLabel: 'IT-отдел',
+            },
+            {
+              id: 'ash-new-crm-skeleton-ready-06-09',
+              title: 'Сделан скелет новой CRM для АШ',
+              status: 'done',
+              dateLabel: '06.09.26',
+              ownerLabel: 'IT-отдел',
             },
           ],
         },
