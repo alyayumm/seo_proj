@@ -42,6 +42,13 @@ function formatRuMonth(value) {
     .replace('.', '');
 }
 
+function formatRuDay(value) {
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+  }).format(new Date(`${value}T12:00:00`));
+}
+
 function formatRuDate(value) {
   return new Intl.DateTimeFormat('ru-RU', {
     day: '2-digit',
@@ -173,7 +180,16 @@ async function fetchTableStats(counterId, token, includeGoals = true) {
   };
 }
 
-async function fetchMonthlyStats(counterId, token, includeGoals = true) {
+function formatTimeIntervalLabel(interval, group) {
+  const start = interval?.[0] ?? '';
+  const end = interval?.[1] ?? start;
+
+  if (group === 'month') return formatRuMonth(start);
+  if (group === 'week') return `${formatRuDay(start)}-${formatRuDay(end)}`;
+  return formatRuDay(start);
+}
+
+async function fetchTimeStats(counterId, token, group, includeGoals = true) {
   const metrics = includeGoals ? 'ym:s:visits,ym:s:goalReachesAny' : 'ym:s:visits';
   const result = await apiGet(
     '/stat/v1/data/bytime',
@@ -182,7 +198,7 @@ async function fetchMonthlyStats(counterId, token, includeGoals = true) {
       date1: DATE_1,
       date2: DATE_2,
       metrics,
-      group: 'month',
+      group,
       accuracy: 'full',
       lang: 'ru',
     },
@@ -194,7 +210,8 @@ async function fetchMonthlyStats(counterId, token, includeGoals = true) {
   const goalsByMonth = includeGoals && Array.isArray(metricRows[1]) ? metricRows[1] : [];
 
   return intervals.map((interval, index) => ({
-    month: formatRuMonth(interval[0]),
+    month: formatTimeIntervalLabel(interval, group),
+    date: interval[0],
     visits: numberValue(visitsByMonth[index]),
     goals: numberValue(goalsByMonth[index]),
   }));
@@ -202,15 +219,21 @@ async function fetchMonthlyStats(counterId, token, includeGoals = true) {
 
 async function fetchProjectStats(project, counter, token) {
   let table;
+  let daily;
+  let weekly;
   let monthly;
 
   try {
     table = await fetchTableStats(counter.id, token, true);
-    monthly = await fetchMonthlyStats(counter.id, token, true);
+    daily = await fetchTimeStats(counter.id, token, 'day', true);
+    weekly = await fetchTimeStats(counter.id, token, 'week', true);
+    monthly = await fetchTimeStats(counter.id, token, 'month', true);
   } catch (error) {
     if (!String(error.message).includes('goalReachesAny')) throw error;
     table = await fetchTableStats(counter.id, token, false);
-    monthly = await fetchMonthlyStats(counter.id, token, false);
+    daily = await fetchTimeStats(counter.id, token, 'day', false);
+    weekly = await fetchTimeStats(counter.id, token, 'week', false);
+    monthly = await fetchTimeStats(counter.id, token, 'month', false);
   }
 
   return {
@@ -227,6 +250,8 @@ async function fetchProjectStats(project, counter, token) {
     goalRows: table.goalRows,
     sampleQueries: table.sampleQueries,
     topQueries: table.topQueries,
+    daily,
+    weekly,
     monthly,
   };
 }

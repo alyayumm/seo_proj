@@ -18,10 +18,23 @@ export type MetrikaProjectStats = {
     visits: number;
     goals: number;
   }>;
+  daily?: Array<{
+    month: string;
+    visits: number;
+    goals: number;
+    date?: string;
+  }>;
+  weekly?: Array<{
+    month: string;
+    visits: number;
+    goals: number;
+    date?: string;
+  }>;
   monthly: Array<{
     month: string;
     visits: number;
     goals: number;
+    date?: string;
   }>;
 };
 
@@ -54,6 +67,19 @@ function normalizeNumber(value: unknown) {
   return Number.isFinite(numeric) ? numeric : 0;
 }
 
+function normalizeTrendPoints(value: unknown) {
+  return Array.isArray(value)
+    ? value
+        .map((item) => ({
+          month: String(item?.month ?? ''),
+          visits: normalizeNumber(item?.visits),
+          goals: normalizeNumber(item?.goals),
+          date: item?.date ? String(item.date) : undefined,
+        }))
+        .filter((item) => item.month)
+    : [];
+}
+
 function normalizeMetrikaProjectStats(value: unknown): MetrikaProjectStats | null {
   if (!value || typeof value !== 'object') return null;
   const source = value as Partial<MetrikaProjectStats>;
@@ -81,15 +107,9 @@ function normalizeMetrikaProjectStats(value: unknown): MetrikaProjectStats | nul
           }))
           .filter((item) => item.query)
       : [],
-    monthly: Array.isArray(source.monthly)
-      ? source.monthly
-          .map((item) => ({
-            month: String(item?.month ?? ''),
-            visits: normalizeNumber(item?.visits),
-            goals: normalizeNumber(item?.goals),
-          }))
-          .filter((item) => item.month)
-      : [],
+    daily: normalizeTrendPoints(source.daily),
+    weekly: normalizeTrendPoints(source.weekly),
+    monthly: normalizeTrendPoints(source.monthly),
   };
 }
 
@@ -119,6 +139,8 @@ function buildGoalAnalytics(stats: MetrikaProjectStats): PromotionGoalAnalytics 
     goalRows: stats.goalRows,
     goalCount: stats.goalCount,
     topQueries: stats.topQueries,
+    daily: stats.daily ?? [],
+    weekly: stats.weekly ?? [],
     monthly: stats.monthly,
   };
 }

@@ -69,19 +69,18 @@ import {
   type ExternalTimelineItem,
   type ExternalWeeklyUpdate,
 } from './externalProjects';
-import { PROMOTION_RESULT_SOURCES, type PromotionResultSource } from './promotionResults';
+import {
+  PROMOTION_RESULT_SOURCES,
+  type PromotionGoalAnalytics,
+  type PromotionGoalTrendPoint,
+  type PromotionResultSource,
+} from './promotionResults';
 import { WORK_PLAN_SOURCES, type WorkPlanSource } from './workPlans';
 import {
   EMPTY_BITRIX24_SNAPSHOT,
   normalizeBitrix24Snapshot,
   type Bitrix24Snapshot,
 } from './bitrix24';
-import {
-  EMPTY_WEBMASTER_FEEDS,
-  normalizeWebmasterFeedsPayload,
-  type WebmasterFeedsPayload,
-  type WebmasterProjectFeeds,
-} from './webmasterFeeds';
 
 type View = 'tasks' | 'admin' | 'dashboard' | 'seo' | 'payments' | 'report' | 'external';
 type Status = 'planned' | 'active' | 'done' | 'risk';
@@ -89,7 +88,8 @@ type CalendarMode = 'plan' | 'fact';
 type ThemeMode = 'dark' | 'light';
 type AdminTab = 'projects' | 'people' | 'tasks' | 'sources' | 'payments';
 type ProjectTab = 'tasks' | 'links' | 'plans' | 'content' | 'results' | 'audit';
-type SeoProjectTab = 'analytics' | 'links' | 'feeds' | 'content' | 'plans' | 'audit' | 'reports' | 'payments';
+type SeoProjectTab = 'analytics' | 'links' | 'content' | 'plans' | 'audit' | 'reports' | 'payments';
+type SeoTrendMode = 'daily' | 'weekly' | 'monthly';
 type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 type PaymentStatus = 'planned' | 'issued' | 'paid' | 'overdue';
 type PaymentKind = 'service' | 'outsource';
@@ -226,6 +226,18 @@ const paymentKindLabels: Record<PaymentKind, string> = {
   outsource: 'Услуги аутсорс',
 };
 
+const seoTrendModeLabels: Record<SeoTrendMode, string> = {
+  daily: 'По дням',
+  weekly: 'По неделям',
+  monthly: 'Помесячно',
+};
+
+const seoTrendModeShortLabels: Record<SeoTrendMode, string> = {
+  daily: 'дни',
+  weekly: 'недели',
+  monthly: 'месяцы',
+};
+
 const ruMonthNames = [
   'январь',
   'февраль',
@@ -274,7 +286,7 @@ const requiredPeople: Person[] = [
   { id: 'person-nikolay', name: 'Николай', role: 'Сео-специалист' },
   { id: 'person-anton', name: 'Антон', role: 'учредитель' },
   { id: 'person-outsource', name: 'Аутсорс', role: 'подрядчик' },
-  { id: 'person-marketing', name: 'Маркетинг', role: 'команда' },
+  { id: 'person-marketing', name: 'Отдел маркетинга', role: 'команда' },
   { id: 'person-kirill', name: 'Кирилл', role: 'ответственный' },
   { id: 'person-olga', name: 'Ольга', role: 'каталог и карточки' },
   { id: 'person-vlad-it', name: 'Влад', role: 'IT' },
@@ -407,7 +419,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'task-edit-history-deadlines-2026-09-03-v1';
+const taskSeedVersion = 'task-updates-2026-09-04-v1';
 const taskDefaultDeadlineVersion = 'default-deadlines-2026-09-03-v1';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
@@ -635,13 +647,36 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-smartstroy-eeat-pages',
     projectId: 'project-smart',
     title: 'Актуализация проектов',
-    description: 'На 24.08: в работе актуализация проектов.',
+    description: 'На 04.09: проекты вышлют, планировки долили; актуализация новых страниц по проектам остается в работе.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-08-10',
     deadline: '',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-smartstroy-layouts-added-04-09',
+        title: 'Долить планировки',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
+      },
+      {
+        id: 'timeline-smartstroy-client-projects-waiting-04-09',
+        title: 'Дождаться проектов от клиента',
+        ownerId: 'person-aleksey',
+        status: 'active',
+        dueDate: '2026-09-15',
+      },
+      {
+        id: 'timeline-smartstroy-project-pages-update-04-09',
+        title: 'Актуализировать новые страницы по проектам',
+        ownerId: 'person-aleksey',
+        status: 'active',
+        dueDate: '2026-09-15',
+      },
+    ],
   },
   {
     id: 'current-smartstroy-new-quarter-plan',
@@ -659,7 +694,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'planning-smartstroy-client-call-2026-08-25',
     projectId: 'project-smart',
     title: 'Созвон с клиентом по проектам, калькулятору и заявкам',
-    description: 'По планерке 25.08: созвона не было, ждем обратную связь в чате.',
+    description: 'На 04.09: калькулятор пока застопили, доступ к Битриксу выдали; по проектам ждем материалы от клиента.',
     sourceLabel: 'чек-лист 25.08',
     sourceUrl: SEO_PLANNING_CHECKLIST_URL,
     status: 'active',
@@ -670,24 +705,34 @@ const requiredTaskSeeds: Task[] = [
     timeline: [
       {
         id: 'timeline-smartstroy-client-call-feedback',
-        title: 'Дождаться обратной связи в чате',
+        title: 'Получить обратную связь в чате',
         ownerId: 'person-alina',
-        status: 'active',
-        dueDate: '',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
       },
       {
-        id: 'timeline-smartstroy-show-projects-calculator',
-        title: 'На созвоне показать проекты, планировки и обсудить калькулятор',
+        id: 'timeline-smartstroy-calculator-paused-04-09',
+        title: 'Поставить калькулятор и квиз на стоп',
         ownerId: 'person-alina',
-        status: 'planned',
-        dueDate: '',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
+      },
+      {
+        id: 'timeline-smartstroy-bitrix-access-04-09',
+        title: 'Получить доступ к Битриксу',
+        ownerId: 'person-alina',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
       },
       {
         id: 'timeline-smartstroy-requests-analytics',
         title: 'После доступа к Битриксу подготовить срез по заявкам',
         ownerId: 'person-alina',
-        status: 'planned',
-        dueDate: '',
+        status: 'active',
+        dueDate: '2026-09-15',
       },
     ],
   },
@@ -695,11 +740,11 @@ const requiredTaskSeeds: Task[] = [
     id: 'planning-smartstroy-cottage-locations-2026-08-25',
     projectId: 'project-smart',
     title: 'Коттеджные поселки и локации',
-    description: 'По планерке 25.08: задача в работе у отдела маркетинга.',
+    description: 'На 04.09: топонимы собраны и отданы SEO на исполнение.',
     sourceLabel: 'чек-лист 25.08',
     sourceUrl: SEO_PLANNING_CHECKLIST_URL,
     status: 'active',
-    ownerIds: ['person-marketing'],
+    ownerIds: ['person-marketing', 'person-aleksey'],
     createdAt: '2026-08-31',
     deadline: '',
     timelineEnabled: true,
@@ -708,22 +753,40 @@ const requiredTaskSeeds: Task[] = [
         id: 'timeline-smartstroy-locations-yandex-maps',
         title: 'Собрать поселки и локации через Яндекс Карты',
         ownerId: 'person-marketing',
-        status: 'active',
-        dueDate: '',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
       },
       {
         id: 'timeline-smartstroy-locations-competitors',
         title: 'Собрать локации через статьи, подборки и сайты конкурентов',
         ownerId: 'person-marketing',
-        status: 'active',
-        dueDate: '',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
       },
       {
         id: 'timeline-smartstroy-locations-bitrix',
         title: 'Проверить возможность парсинга в Битриксе',
         ownerId: 'person-marketing',
-        status: 'planned',
-        dueDate: '',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
+      },
+      {
+        id: 'timeline-smartstroy-locations-seo-transfer-04-09',
+        title: 'Передать собранные топонимы SEO на исполнение',
+        ownerId: 'person-marketing',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
+      },
+      {
+        id: 'timeline-smartstroy-locations-seo-implementation-04-09',
+        title: 'Внедрить топонимы в SEO-структуру страниц',
+        ownerId: 'person-aleksey',
+        status: 'active',
+        dueDate: '2026-09-15',
       },
     ],
   },
@@ -769,7 +832,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-aquaguard-feeds-yandex-support',
     projectId: 'project-aquaguard',
     title: 'Листы, фиды и индексация товаров',
-    description: 'По планерке 25.08: фиды на модерации, товары и фиды контролируем до подтверждения.',
+    description: 'На 04.09: в выдаче отражается 7 фидов из 10; товары и оставшиеся фиды контролируем до подтверждения.',
     sourceLabel: 'чек-лист 25.08',
     sourceUrl: SEO_PLANNING_CHECKLIST_URL,
     status: 'active',
@@ -802,11 +865,19 @@ const requiredTaskSeeds: Task[] = [
         dueDate: '',
       },
       {
+        id: 'timeline-aquaguard-feeds-visible-04-09',
+        title: 'Зафиксировать 7 из 10 фидов в выдаче',
+        ownerId: 'person-aleksey',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
+      },
+      {
         id: 'timeline-aquaguard-feeds-moderation',
-        title: 'Проконтролировать модерацию фидов',
+        title: 'Довести оставшиеся 3 фида до отражения в выдаче',
         ownerId: 'person-aleksey',
         status: 'active',
-        dueDate: '',
+        dueDate: '2026-09-15',
       },
     ],
   },
@@ -940,30 +1011,38 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'current-balt-domain',
     projectId: 'project-balt-pallet',
-    title: 'Покупка домена',
-    description: 'По планерке 25.08: сделали, сейчас на подтверждении.',
+    title: 'Подтверждение домена',
+    description: 'На 04.09: домен отклонили, ждем повторное подтверждение.',
     sourceLabel: 'чек-лист 25.08',
     sourceUrl: SEO_PLANNING_CHECKLIST_URL,
     status: 'active',
-    ownerIds: ['person-kristina'],
+    ownerIds: ['person-alina'],
     createdAt: '2026-08-10',
     deadline: '',
     timelineEnabled: true,
     timeline: [
       {
-        id: 'timeline-balt-domain-done',
-        title: 'Подтвердить домен вместе с клиентом',
-        ownerId: 'person-kristina',
+        id: 'timeline-balt-domain-submitted',
+        title: 'Передать домен на подтверждение вместе с клиентом',
+        ownerId: 'person-alina',
         status: 'done',
         dueDate: '2026-08-27',
         completedAt: '2026-08-30',
       },
       {
-        id: 'timeline-balt-domain-confirmation',
-        title: 'Получить финальное подтверждение клиента',
-        ownerId: 'person-kristina',
+        id: 'timeline-balt-domain-rejected-04-09',
+        title: 'Зафиксировать отклонение подтверждения домена',
+        ownerId: 'person-alina',
+        status: 'done',
+        dueDate: '2026-09-04',
+        completedAt: '2026-09-04',
+      },
+      {
+        id: 'timeline-balt-domain-repeat-confirmation-04-09',
+        title: 'Повторно подтвердить домен',
+        ownerId: 'person-alina',
         status: 'active',
-        dueDate: '',
+        dueDate: '2026-09-15',
       },
     ],
   },
@@ -1623,6 +1702,19 @@ function formatReportArchiveTitle(window: WeekWindow) {
   return `Отчет за ${formatNumericDate(window.start)}-${formatNumericDate(window.end)}`;
 }
 
+function getGoalTrendPoints(goalAnalytics: PromotionGoalAnalytics | undefined, mode: SeoTrendMode) {
+  if (!goalAnalytics) return [];
+  if (mode === 'daily') return goalAnalytics.daily ?? [];
+  if (mode === 'weekly') return goalAnalytics.weekly ?? [];
+  return goalAnalytics.monthly;
+}
+
+function getVisibleGoalTrendPoints(points: PromotionGoalTrendPoint[], mode: SeoTrendMode) {
+  if (mode === 'daily') return points.slice(-30);
+  if (mode === 'weekly') return points.slice(-12);
+  return points;
+}
+
 function isWeeklyReportTask(task: Task) {
   const title = task.title.trim().toLowerCase();
   return task.id.startsWith('weekly-') || title.startsWith('отчет на');
@@ -2003,12 +2095,14 @@ function App() {
       let changed = withoutLegacy.length !== current.length;
 
       const next = withoutLegacy.map((person) => {
-        const required = requiredPeople.find(
-          (item) => normalizeProjectName(item.name) === normalizeProjectName(person.name),
-        );
-        if (!required || person.role === required.role) return person;
+        const required =
+          requiredPeople.find((item) => item.id === person.id) ??
+          requiredPeople.find(
+            (item) => normalizeProjectName(item.name) === normalizeProjectName(person.name),
+          );
+        if (!required || (person.name === required.name && person.role === required.role)) return person;
         changed = true;
-        return { ...person, role: required.role };
+        return { ...person, name: required.name, role: required.role };
       });
 
       return changed ? next : current;
@@ -2253,31 +2347,6 @@ function App() {
     () => mergePromotionSourcesWithMetrika(PROMOTION_RESULT_SOURCES, metrikaStats),
     [metrikaStats],
   );
-
-  const [webmasterFeeds, setWebmasterFeeds] = useState<WebmasterFeedsPayload>(EMPTY_WEBMASTER_FEEDS);
-  useEffect(() => {
-    let isMounted = true;
-    void fetch('./data/webmaster-feeds.json', { cache: 'no-store' })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload) => {
-        if (isMounted && payload) setWebmasterFeeds(normalizeWebmasterFeedsPayload(payload));
-      })
-      .catch(() => {
-        if (isMounted) setWebmasterFeeds(EMPTY_WEBMASTER_FEEDS);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const webmasterFeedsByProject = useMemo(() => {
-    const map = new Map<string, WebmasterProjectFeeds>();
-    webmasterFeeds.projects.forEach((project) => {
-      map.set(normalizeProjectName(project.projectName), project);
-    });
-    return map;
-  }, [webmasterFeeds]);
 
   const [bitrix24Snapshot, setBitrix24Snapshot] = useState<Bitrix24Snapshot>(EMPTY_BITRIX24_SNAPSHOT);
   useEffect(() => {
@@ -2798,9 +2867,6 @@ function App() {
             contentSourcesByProject={contentSourcesByProject}
             workPlansByProject={workPlansByProject}
             auditSourcesByProject={auditSourcesByProject}
-            webmasterFeedsByProject={webmasterFeedsByProject}
-            webmasterFeedsUpdatedAt={webmasterFeeds.updatedAt}
-            webmasterFeedErrors={webmasterFeeds.errors}
             managedResourcesByProject={managedResourcesByProject}
             paymentRows={paymentRows}
             paymentCashflowRows={paymentCashflowRows}
@@ -6245,9 +6311,6 @@ function SeoProjectsView({
   contentSourcesByProject,
   workPlansByProject,
   auditSourcesByProject,
-  webmasterFeedsByProject,
-  webmasterFeedsUpdatedAt,
-  webmasterFeedErrors,
   managedResourcesByProject,
   paymentRows,
   paymentCashflowRows,
@@ -6282,9 +6345,6 @@ function SeoProjectsView({
   contentSourcesByProject: Map<string, ContentPlanSource>;
   workPlansByProject: Map<string, WorkPlanSource[]>;
   auditSourcesByProject: Map<string, ClientAuditSource[]>;
-  webmasterFeedsByProject: Map<string, WebmasterProjectFeeds>;
-  webmasterFeedsUpdatedAt: string;
-  webmasterFeedErrors: string[];
   managedResourcesByProject: Map<string, ManagedResource[]>;
   paymentRows: PaymentRow[];
   paymentCashflowRows: PaymentCashflowRow[];
@@ -6319,7 +6379,6 @@ function SeoProjectsView({
   const selectedContentSource = contentSourcesByProject.get(selectedKey);
   const selectedWorkPlans = workPlansByProject.get(selectedKey) ?? [];
   const selectedAuditSources = auditSourcesByProject.get(selectedKey) ?? [];
-  const selectedWebmasterFeeds = webmasterFeedsByProject.get(selectedKey);
   const selectedResources = managedResourcesByProject.get(selectedProject?.id ?? '') ?? [];
   const selectedPaymentRows = selectedProject ? paymentRows.filter((row) => row.projectId === selectedProject.id) : [];
   const selectedPaymentCashflowRows = paymentCashflowRows.filter(
@@ -6331,7 +6390,6 @@ function SeoProjectsView({
   const seoTabs: Array<{ id: SeoProjectTab; label: string; count?: number }> = [
     { id: 'analytics', label: 'Аналитика' },
     { id: 'links', label: 'Закуп ссылок', count: selectedLinkRows.length },
-    { id: 'feeds', label: 'Фиды', count: selectedWebmasterFeeds?.feeds.length ?? 0 },
     { id: 'content', label: 'Контент', count: selectedContentTopics.length },
     { id: 'plans', label: 'План работ', count: selectedWorkPlans.length },
     { id: 'audit', label: 'Аудит', count: selectedAuditSources.length + 1 },
@@ -6342,6 +6400,7 @@ function SeoProjectsView({
     },
     { id: 'payments', label: 'Оплаты', count: selectedPaymentRows.length + selectedPaymentCashflowRows.length },
   ];
+  const effectiveActiveTab = seoTabs.some((item) => item.id === activeTab) ? activeTab : 'analytics';
 
   return (
     <section className="seo-projects-view">
@@ -6386,7 +6445,7 @@ function SeoProjectsView({
             <div className="project-tabs seo-inner-tabs" role="group" aria-label={`Разделы SEO-проекта ${selectedProject.name}`}>
               {seoTabs.map((item) => (
                 <button
-                  className={activeTab === item.id ? 'is-active' : ''}
+                  className={effectiveActiveTab === item.id ? 'is-active' : ''}
                   key={item.id}
                   type="button"
                   onClick={() => setActiveTab(item.id)}
@@ -6397,7 +6456,7 @@ function SeoProjectsView({
               ))}
             </div>
 
-            {activeTab === 'analytics' && (
+            {effectiveActiveTab === 'analytics' && (
               <ProjectSeoAnalyticsTiles
                 project={selectedProject}
                 linkRows={selectedLinkRows}
@@ -6405,7 +6464,7 @@ function SeoProjectsView({
               />
             )}
 
-            {activeTab === 'links' && (
+            {effectiveActiveTab === 'links' && (
               <section className="panel seo-inner-panel">
                 <LinkPurchasePanel
                   project={selectedProject}
@@ -6419,18 +6478,7 @@ function SeoProjectsView({
               </section>
             )}
 
-            {activeTab === 'feeds' && (
-              <section className="panel seo-inner-panel">
-                <WebmasterFeedsPanel
-                  project={selectedProject}
-                  feeds={selectedWebmasterFeeds}
-                  updatedAt={webmasterFeedsUpdatedAt}
-                  globalErrors={webmasterFeedErrors}
-                />
-              </section>
-            )}
-
-            {activeTab === 'content' && (
+            {effectiveActiveTab === 'content' && (
               <section className="panel seo-inner-panel">
                 <ContentPlanPanel
                   project={selectedProject}
@@ -6449,7 +6497,7 @@ function SeoProjectsView({
               </section>
             )}
 
-            {activeTab === 'plans' && (
+            {effectiveActiveTab === 'plans' && (
               <section className="panel seo-inner-panel">
                 <WorkPlanPanel project={selectedProject} plans={selectedWorkPlans} />
                 <ManagedResourcesList
@@ -6459,7 +6507,7 @@ function SeoProjectsView({
               </section>
             )}
 
-            {activeTab === 'audit' && (
+            {effectiveActiveTab === 'audit' && (
               <section className="panel seo-inner-panel">
                 <AuditPanel project={selectedProject} sources={selectedAuditSources} />
                 <ManagedResourcesList
@@ -6469,7 +6517,7 @@ function SeoProjectsView({
               </section>
             )}
 
-            {activeTab === 'reports' && (
+            {effectiveActiveTab === 'reports' && (
               <section className="panel seo-inner-panel">
                 <SeoProjectReportsPanel
                   project={selectedProject}
@@ -6478,7 +6526,7 @@ function SeoProjectsView({
               </section>
             )}
 
-            {activeTab === 'payments' && (
+            {effectiveActiveTab === 'payments' && (
               <div className="seo-payment-stack">
                 <PaymentCashflowPanel
                   project={selectedProject}
@@ -6523,12 +6571,16 @@ function ProjectSeoAnalyticsTiles({
   linkRows: LinkPurchase[];
   promotionSources: PromotionResultSource[];
 }) {
+  const [trendMode, setTrendMode] = useStoredState<SeoTrendMode>('task-seo-analytics-trend-mode', 'monthly');
   const linkSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
   const source = promotionSources[0];
   const goalExamples = source?.goalExamples ?? [];
   const hasGoalField = Boolean(source?.fields.includes('Достижение цели'));
   const goalAnalytics = source?.goalAnalytics;
-  const goalTrendMax = Math.max(...(goalAnalytics?.monthly.map((item) => item.goals) ?? [0]), 1);
+  const allTrendPoints = getGoalTrendPoints(goalAnalytics, trendMode);
+  const visibleTrendPoints = getVisibleGoalTrendPoints(allTrendPoints, trendMode);
+  const trendVisitsMax = Math.max(...visibleTrendPoints.map((item) => item.visits), 1);
+  const goalTrendMax = Math.max(...visibleTrendPoints.map((item) => item.goals), 1);
   const linkChartItems = [
     { label: 'Всего строк', value: linkSummary.count },
     { label: 'Размещено', value: linkSummary.placed },
@@ -6539,6 +6591,25 @@ function ProjectSeoAnalyticsTiles({
 
   return (
     <section className="analytics-tile-grid" aria-label={`Аналитика SEO-проекта ${project.name}`}>
+      <div className="seo-trend-toolbar">
+        <div>
+          <span>Динамика</span>
+          <strong>{seoTrendModeLabels[trendMode]}</strong>
+        </div>
+        <div role="group" aria-label="Период динамики">
+          {(Object.keys(seoTrendModeLabels) as SeoTrendMode[]).map((mode) => (
+            <button
+              className={trendMode === mode ? 'is-active' : ''}
+              key={mode}
+              type="button"
+              onClick={() => setTrendMode(mode)}
+            >
+              {seoTrendModeShortLabels[mode]}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <article className="analytics-tile analytics-tile-large">
         <div className="analytics-tile-head">
           <div>
@@ -6579,17 +6650,29 @@ function ProjectSeoAnalyticsTiles({
           </div>
           <RefreshCw size={20} />
         </div>
-        <div className={source ? 'analytics-wave-chart' : 'analytics-placeholder-chart'} aria-hidden="true">
-          <i />
-          <i />
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
+        {visibleTrendPoints.length ? (
+          <div className="analytics-trend-chart" aria-label={`Динамика переходов: ${seoTrendModeLabels[trendMode]}`}>
+            {visibleTrendPoints.map((point) => (
+              <div key={`${point.date ?? point.month}-${point.visits}-${point.goals}`}>
+                <span style={{ height: `${Math.max(8, (point.visits / trendVisitsMax) * 100)}%` }} />
+                <em>{point.month}</em>
+                <small>{point.visits}</small>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="analytics-placeholder-chart" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
+        )}
         <p>
           {goalAnalytics
-            ? `${goalAnalytics.uniqueQueries} ключевых запросов привели переходы. Период: ${source?.periodLabel}.`
+            ? visibleTrendPoints.length
+              ? `${goalAnalytics.uniqueQueries} ключевых запросов привели переходы. Срез: ${seoTrendModeLabels[trendMode].toLowerCase()}. Период: ${source?.periodLabel}.`
+              : `${seoTrendModeLabels[trendMode]} пока не загружены. После свежей выгрузки Метрики график появится здесь.`
             : source
               ? `${source.spreadsheetTitle} · ${source.periodLabel}. Для помесячной динамики нужен периодный срез.`
             : 'источник Метрики не подключен'}
@@ -6644,16 +6727,22 @@ function ProjectSeoAnalyticsTiles({
                 <span>достижений целей</span>
               </div>
             </div>
-            <div className="goal-trend-chart" aria-label="Динамика достижений целей по месяцам">
-              {goalAnalytics.monthly.map((point) => (
-                <div key={point.month}>
-                  <strong>{point.goals}</strong>
-                  <span style={{ height: `${Math.max(10, (point.goals / goalTrendMax) * 100)}%` }} />
-                  <em>{point.month}</em>
-                  <small>{point.visits} пер.</small>
-                </div>
-              ))}
-            </div>
+            {visibleTrendPoints.length ? (
+              <div className="goal-trend-chart" aria-label={`Динамика достижений целей: ${seoTrendModeLabels[trendMode]}`}>
+                {visibleTrendPoints.map((point) => (
+                  <div key={`${point.date ?? point.month}-${point.visits}-${point.goals}`}>
+                    <strong>{point.goals}</strong>
+                    <span style={{ height: `${Math.max(10, (point.goals / goalTrendMax) * 100)}%` }} />
+                    <em>{point.month}</em>
+                    <small>{point.visits} пер.</small>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="analytics-empty">
+                {seoTrendModeLabels[trendMode]} пока не загружены из Метрики
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -6699,159 +6788,6 @@ function ProjectSeoAnalyticsTiles({
         )}
       </article>
     </section>
-  );
-}
-
-function WebmasterFeedsPanel({
-  project,
-  feeds,
-  updatedAt,
-  globalErrors,
-}: {
-  project: Project;
-  feeds?: WebmasterProjectFeeds;
-  updatedAt: string;
-  globalErrors: string[];
-}) {
-  const summary = feeds?.summary;
-  const feedRows = feeds?.feeds ?? [];
-  const errors = [...globalErrors, ...(feeds?.errors ?? [])];
-  const successCount = summary?.byStatus.SUCCESS ?? 0;
-  const inProgressCount = summary?.byStatus.IN_PROGRESS ?? 0;
-  const failedCount =
-    (summary?.byStatus.ERROR ?? 0) +
-    (summary?.byStatus.MODERATION_FAILED ?? 0) +
-    (summary?.byStatus.MODERATION_BANNED ?? 0) +
-    (summary?.byStatus.SETS_CHECK_FAILED ?? 0) +
-    (summary?.byStatus.EMPTY_FEED ?? 0) +
-    (summary?.byStatus.DOWNLOAD_FAILED ?? 0);
-  const warningCount = (summary?.feedWarningsCount ?? 0) + (summary?.hostWarningsCount ?? 0);
-  const errorCount = (summary?.feedErrorsCount ?? 0) + (summary?.hostErrorsCount ?? 0);
-
-  return (
-    <div className="webmaster-feeds-panel">
-      <div className="section-heading compact-heading">
-        <div>
-          <h2>Фиды в Яндекс.Вебмастере</h2>
-          <p>
-            {feeds
-              ? `${project.name}: ${feeds.hostDisplayName || feeds.siteUrl || 'сайт найден'} · обновлено ${formatDateTime(updatedAt)}`
-              : `${project.name}: источник Вебмастера пока не подключен для этого проекта.`}
-          </p>
-        </div>
-        <FileSpreadsheet size={20} />
-      </div>
-
-      {!feeds ? (
-        <div className="webmaster-feed-empty">
-          <AlertTriangle size={18} />
-          <div>
-            <strong>Для этого проекта нет подключенной выгрузки фидов</strong>
-            <p>Сейчас автоматическая выгрузка настроена под Аквагард. Когда добавим сайт в список, здесь появятся фиды, статусы, ошибки и замечания.</p>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="webmaster-feed-overview">
-            <div>
-              <span>Всего фидов</span>
-              <strong>{summary?.count || feedRows.length}</strong>
-            </div>
-            <div>
-              <span>Проверено</span>
-              <strong>{successCount}</strong>
-            </div>
-            <div>
-              <span>В проверке</span>
-              <strong>{inProgressCount}</strong>
-            </div>
-            <div className={failedCount ? 'is-risk' : ''}>
-              <span>С ошибками</span>
-              <strong>{failedCount}</strong>
-            </div>
-            <div className={warningCount || errorCount ? 'is-risk' : ''}>
-              <span>Ошибки / замечания</span>
-              <strong>
-                {errorCount} / {warningCount}
-              </strong>
-            </div>
-            <div className={summary?.moderationRejectedOffersCount ? 'is-risk' : ''}>
-              <span>Отклонено модерацией</span>
-              <strong>{summary?.moderationRejectedOffersCount ?? 0}</strong>
-            </div>
-          </div>
-
-          <div className="webmaster-host-card">
-            <div>
-              <span className="mini-dot" style={{ background: project.color }} />
-              <strong>{feeds.hostDisplayName || feeds.siteUrl || project.name}</strong>
-              <p>
-                {feeds.verified ? 'Права подтверждены' : 'Права не подтверждены'} · статус сайта:{' '}
-                {feeds.hostDataStatus || 'без статуса'}
-              </p>
-            </div>
-            {feeds.siteUrl && (
-              <a href={feeds.siteUrl} target="_blank" rel="noreferrer">
-                Сайт
-                <ExternalLink size={14} />
-              </a>
-            )}
-          </div>
-
-          {errors.length > 0 && (
-            <div className="webmaster-feed-errors" role="status">
-              <strong>Что не загрузилось</strong>
-              {errors.slice(0, 4).map((error) => (
-                <span key={error}>{error}</span>
-              ))}
-            </div>
-          )}
-
-          {feedRows.length === 0 ? (
-            <div className="webmaster-feed-empty">
-              <AlertTriangle size={18} />
-              <div>
-                <strong>Фиды по Аквагарду пока не найдены</strong>
-                <p>Сайт найден в Вебмастере, но метод фидов не вернул строки. Если фиды видны в кабинете, нужно проверить права токена к разделу фидов.</p>
-              </div>
-            </div>
-          ) : (
-            <div className="webmaster-feed-list">
-              {feedRows.map((feed) => (
-                <article className={`webmaster-feed-row ${feed.status.toLowerCase().replace(/_/g, '-')}`} key={feed.url}>
-                  <div className="webmaster-feed-row-main">
-                    <span>{feed.typeLabel}</span>
-                    <strong>{feed.url}</strong>
-                    <p>
-                      Регионы: {feed.regionIds.length ? feed.regionIds.join(', ') : 'не указаны'} · добавлен:{' '}
-                      {formatDateTime(feed.addedTime)}
-                    </p>
-                  </div>
-                  <div className="webmaster-feed-status">
-                    <em>{feed.statusLabel}</em>
-                    <span>последний обход {formatDateTime(feed.lastAccessTime)}</span>
-                  </div>
-                  <dl>
-                    <div>
-                      <dt>Ошибки</dt>
-                      <dd>{feed.errorsCount}</dd>
-                    </div>
-                    <div>
-                      <dt>Замечания</dt>
-                      <dd>{feed.warningsCount}</dd>
-                    </div>
-                    <div>
-                      <dt>Отклонено</dt>
-                      <dd>{feed.moderationRejectedOffersCount}</dd>
-                    </div>
-                  </dl>
-                </article>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-    </div>
   );
 }
 

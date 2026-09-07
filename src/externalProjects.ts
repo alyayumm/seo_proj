@@ -63,7 +63,7 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
   documentTitle: '10.08',
   tabTitle: '10.08.26',
   collaborator: 'Отдел маркетинга',
-  updatedLabel: 'по документу от 10.08.26',
+  updatedLabel: 'по документу от 10.08.26 и апдейту 04.09.26',
   url: 'https://docs.google.com/document/d/1hec-2lJGGsjDsmmbXHTk4YbFgwJV82avNA-EIT1ryEo/edit?tab=t.k4dzyo6kfkhb',
   sections: [
     {
@@ -263,9 +263,14 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
       id: 'trial-lesson-mailing',
       title: 'Рассылка “пробный урок”',
       status: 'active',
-      items: ['Письмо на верстке', 'Рассылка на почту', 'Рассылка в MAX: исполнитель найден, запуск 03.09.26'],
+      items: [
+        'Письмо на верстке',
+        'Рассылка на почту',
+        'Дополнительная рассылка в Telegram: запуск 07.09.26',
+        'Рассылка в MAX: ждем ответ от компании, ориентир запуска 10.09.26',
+      ],
       note:
-        'Исполнитель для MAX найден, запуск планируется на 03.09.26. Рассылка на почту просрочена у IT-отдела, новый дедлайн 26.08.26. Следующий этап: мессенджеры без упоминания АШ снят с плана этой недели.',
+        'Апдейт 04.09: в понедельник запускается дополнительная рассылка в Telegram. По MAX ждем ответ от компании по рассылке через ИИ, ориентир запуска 10.09. Рассылка на почту просрочена у IT-отдела.',
       people: ['Отдел маркетинга', 'IT-отдел'],
       timeline: [
         {
@@ -284,24 +289,42 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
         },
         {
           id: 'trial-lesson-mailing-max-launch',
-          title: 'Запустить рассылку в MAX',
-          status: 'active',
-          dateLabel: '03.09.26',
+          title: 'Запустить рассылку в MAX через ИИ',
+          status: 'waiting',
+          dateLabel: '10.09.26',
           ownerLabel: 'Отдел маркетинга',
-          displayStatusLabel: 'запуск планируется',
+          displayStatusLabel: 'ждем ответ',
+        },
+        {
+          id: 'trial-lesson-mailing-telegram-extra-04-09',
+          title: 'Запустить дополнительную рассылку в Telegram',
+          status: 'active',
+          dateLabel: '07.09.26',
+          ownerLabel: 'Отдел маркетинга',
+          displayStatusLabel: 'запуск в понедельник',
         },
       ],
       weeklyUpdates: [
         {
-          id: 'trial-lesson-mailing-week-17-08-26',
-          weekLabel: '17.08.26',
-          dateLabel: 'прошлая неделя',
+          id: 'trial-lesson-mailing-week-04-09-26',
+          weekLabel: '04.09.26',
+          dateLabel: 'апдейт',
           items: [
             {
-              id: 'trial-lesson-mailing-letter-layout-done-17-08',
-              title: 'Письмо на верстке',
-              status: 'done',
-              dateLabel: '17.08.26',
+              id: 'trial-lesson-mailing-telegram-extra-04-09-update',
+              title: 'В понедельник запускается дополнительная рассылка в Telegram',
+              status: 'active',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Отдел маркетинга',
+              displayStatusLabel: 'запуск',
+            },
+            {
+              id: 'trial-lesson-mailing-max-wait-answer-04-09-update',
+              title: 'Ждем ответ от компании по рассылке в MAX через ИИ',
+              status: 'waiting',
+              dateLabel: '10.09.26',
+              ownerLabel: 'Отдел маркетинга',
+              displayStatusLabel: 'ожидание',
             },
           ],
         },
@@ -315,6 +338,19 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
               title: 'Исполнитель для запуска рассылок в MAX найден',
               status: 'done',
               dateLabel: '24.08.26',
+            },
+          ],
+        },
+        {
+          id: 'trial-lesson-mailing-week-17-08-26',
+          weekLabel: '17.08.26',
+          dateLabel: 'прошлая неделя',
+          items: [
+            {
+              id: 'trial-lesson-mailing-letter-layout-done-17-08',
+              title: 'Письмо на верстке',
+              status: 'done',
+              dateLabel: '17.08.26',
             },
           ],
         },
@@ -336,7 +372,8 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
         'АШ СПБ: тест откручен, база заменена',
         'АШ МСК: запуск',
         'SEO: запуск',
-        'Рассылка в MAX: следующий шаг',
+        'Дополнительная рассылка в Telegram: запуск 07.09.26',
+        'Рассылка в MAX: ждем ответ, ориентир запуска 10.09.26',
       ],
     },
     {

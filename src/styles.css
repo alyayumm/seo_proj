@@ -3364,6 +3364,61 @@ p {
   gap: 12px;
 }
 
+.seo-trend-toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 10px 12px;
+  border: 1px solid rgba(216, 238, 243, 0.16);
+  border-radius: 16px;
+  background: rgba(216, 238, 243, 0.07);
+}
+
+.seo-trend-toolbar > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.seo-trend-toolbar span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.seo-trend-toolbar strong {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.seo-trend-toolbar > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.seo-trend-toolbar button {
+  min-height: 32px;
+  padding: 7px 11px;
+  border: 1px solid rgba(216, 238, 243, 0.16);
+  border-radius: 999px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.08);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.seo-trend-toolbar button.is-active {
+  color: #061111;
+  background: #ffe1d3;
+  border-color: rgba(255, 225, 211, 0.64);
+}
+
 .seo-projects-view {
   display: grid;
   gap: 18px;
@@ -3433,214 +3488,6 @@ p {
 .seo-inner-panel {
   display: grid;
   gap: 16px;
-}
-
-.webmaster-feeds-panel {
-  display: grid;
-  gap: 14px;
-}
-
-.webmaster-feed-overview {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.webmaster-feed-overview div,
-.webmaster-host-card,
-.webmaster-feed-row,
-.webmaster-feed-empty,
-.webmaster-feed-errors {
-  border: 1px solid rgba(216, 238, 243, 0.14);
-  border-radius: 14px;
-  background: rgba(216, 238, 243, 0.07);
-}
-
-.webmaster-feed-overview div {
-  display: grid;
-  gap: 5px;
-  min-height: 78px;
-  padding: 12px;
-}
-
-.webmaster-feed-overview div.is-risk {
-  border-color: rgba(255, 225, 211, 0.36);
-  background: rgba(255, 225, 211, 0.1);
-}
-
-.webmaster-feed-overview span,
-.webmaster-host-card p,
-.webmaster-feed-row p,
-.webmaster-feed-status span,
-.webmaster-feed-row dt,
-.webmaster-feed-empty p,
-.webmaster-feed-errors span {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 850;
-  line-height: 1.4;
-}
-
-.webmaster-feed-overview strong {
-  color: var(--ink);
-  font-size: 24px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.webmaster-host-card,
-.webmaster-feed-empty {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 13px;
-}
-
-.webmaster-host-card > div,
-.webmaster-feed-empty > div,
-.webmaster-feed-row-main,
-.webmaster-feed-errors {
-  display: grid;
-  gap: 5px;
-  min-width: 0;
-}
-
-.webmaster-host-card strong,
-.webmaster-feed-empty strong,
-.webmaster-feed-errors strong {
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 950;
-}
-
-.webmaster-host-card a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 34px;
-  border: 1px solid rgba(216, 238, 243, 0.16);
-  border-radius: 999px;
-  color: #061111;
-  background: var(--sky);
-  padding: 0 12px;
-  font-size: 11px;
-  font-weight: 950;
-  text-decoration: none;
-}
-
-.webmaster-feed-empty {
-  grid-template-columns: 38px minmax(0, 1fr);
-  align-items: start;
-  background: rgba(255, 225, 211, 0.09);
-}
-
-.webmaster-feed-empty > svg {
-  width: 38px;
-  height: 38px;
-  padding: 9px;
-  border-radius: 14px;
-  color: #061111;
-  background: #ffe1d3;
-}
-
-.webmaster-feed-errors {
-  padding: 12px;
-  border-color: rgba(255, 225, 211, 0.32);
-  background: rgba(255, 225, 211, 0.09);
-}
-
-.webmaster-feed-list {
-  display: grid;
-  gap: 10px;
-}
-
-.webmaster-feed-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.3fr) minmax(190px, 0.35fr);
-  gap: 12px;
-  align-items: start;
-  padding: 13px;
-}
-
-.webmaster-feed-row.success {
-  border-color: rgba(126, 231, 241, 0.26);
-}
-
-.webmaster-feed-row.error,
-.webmaster-feed-row.moderation-failed,
-.webmaster-feed-row.moderation-banned,
-.webmaster-feed-row.sets-check-failed,
-.webmaster-feed-row.empty-feed,
-.webmaster-feed-row.download-failed {
-  border-color: rgba(255, 225, 211, 0.38);
-  background: rgba(255, 225, 211, 0.09);
-}
-
-.webmaster-feed-row-main span,
-.webmaster-feed-status em {
-  width: fit-content;
-  min-height: 24px;
-  padding: 5px 8px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 950;
-}
-
-.webmaster-feed-row-main span {
-  color: #061111;
-  background: var(--sky);
-}
-
-.webmaster-feed-row strong {
-  color: var(--ink);
-  font-size: 13px;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-
-.webmaster-feed-row p {
-  margin: 0;
-}
-
-.webmaster-feed-status {
-  display: grid;
-  justify-items: start;
-  gap: 6px;
-}
-
-.webmaster-feed-status em {
-  color: #061111;
-  background: #ffe1d3;
-}
-
-.webmaster-feed-row dl {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-}
-
-.webmaster-feed-row dl div {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
-  padding: 8px;
-  border-radius: 10px;
-  background: rgba(216, 238, 243, 0.08);
-}
-
-.webmaster-feed-row dt,
-.webmaster-feed-row dd {
-  margin: 0;
-}
-
-.webmaster-feed-row dd {
-  color: var(--ink);
-  font-size: 16px;
-  font-weight: 950;
 }
 
 .managed-resource-section {
@@ -3831,7 +3678,6 @@ p {
   color: #294fc5;
 }
 
-.analytics-wave-chart,
 .analytics-placeholder-chart {
   display: flex;
   align-items: end;
@@ -3842,7 +3688,6 @@ p {
   background: rgba(255, 225, 211, 0.12);
 }
 
-.analytics-wave-chart i,
 .analytics-placeholder-chart i {
   flex: 1;
   min-width: 10px;
@@ -3850,28 +3695,45 @@ p {
   background: #ffe1d3;
 }
 
-.analytics-wave-chart i:nth-child(1) {
-  height: 34%;
+.analytics-trend-chart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
+  gap: 6px;
+  align-items: end;
+  min-height: 108px;
+  padding: 8px 0 0;
 }
 
-.analytics-wave-chart i:nth-child(2) {
-  height: 62%;
+.analytics-trend-chart div {
+  display: grid;
+  grid-template-rows: 64px 16px 14px;
+  gap: 4px;
+  align-items: end;
+  min-width: 0;
 }
 
-.analytics-wave-chart i:nth-child(3) {
-  height: 48%;
+.analytics-trend-chart span {
+  display: block;
+  width: 100%;
+  border-radius: 6px;
+  background: #ffe1d3;
 }
 
-.analytics-wave-chart i:nth-child(4) {
-  height: 78%;
+.analytics-trend-chart em,
+.analytics-trend-chart small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 850;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.analytics-wave-chart i:nth-child(5) {
-  height: 56%;
-}
-
-.analytics-wave-chart i:nth-child(6) {
-  height: 88%;
+.analytics-trend-chart small {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 .analytics-placeholder-chart i {
@@ -4952,7 +4814,6 @@ p {
 }
 
 .analytics-bar-row div,
-.analytics-wave-chart,
 .analytics-placeholder-chart,
 .chronology-item small,
 .chronology-empty,
@@ -4964,7 +4825,6 @@ p {
 }
 
 .analytics-bar-row i,
-.analytics-wave-chart i,
 .analytics-placeholder-chart i {
   background: #ffe1d3;
 }
@@ -5126,11 +4986,6 @@ p {
 :root[data-theme='light'] .report-row,
 :root[data-theme='light'] .work-plan-row,
 :root[data-theme='light'] .content-topic-row,
-:root[data-theme='light'] .webmaster-feed-overview div,
-:root[data-theme='light'] .webmaster-host-card,
-:root[data-theme='light'] .webmaster-feed-row,
-:root[data-theme='light'] .webmaster-feed-empty,
-:root[data-theme='light'] .webmaster-feed-errors,
 :root[data-theme='light'] .promotion-result-card,
 :root[data-theme='light'] .audit-source-card,
 :root[data-theme='light'] .audit-check-card,
@@ -5254,14 +5109,6 @@ p {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .webmaster-feed-overview {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .webmaster-feed-row {
-    grid-template-columns: 1fr;
-  }
-
   .payment-monthly-overview {
     grid-template-columns: 1fr;
   }
@@ -5323,9 +5170,7 @@ p {
 
   .bitrix-metrics,
   .bitrix-task-row dl,
-  .bitrix-crm-summary,
-  .webmaster-feed-overview,
-  .webmaster-feed-row dl {
+  .bitrix-crm-summary {
     grid-template-columns: 1fr;
   }
 
@@ -5456,6 +5301,15 @@ p {
   }
 
   .link-actions {
+    justify-content: flex-start;
+  }
+
+  .seo-trend-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .seo-trend-toolbar > div:last-child {
     justify-content: flex-start;
   }
 

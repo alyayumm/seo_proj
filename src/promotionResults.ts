@@ -8,6 +8,7 @@ export type PromotionGoalTrendPoint = {
   month: string;
   visits: number;
   goals: number;
+  date?: string;
 };
 
 export type PromotionGoalAnalytics = {
@@ -16,6 +17,8 @@ export type PromotionGoalAnalytics = {
   goalRows: number;
   goalCount: number;
   topQueries: PromotionGoalQueryStat[];
+  daily?: PromotionGoalTrendPoint[];
+  weekly?: PromotionGoalTrendPoint[];
   monthly: PromotionGoalTrendPoint[];
 };
 
