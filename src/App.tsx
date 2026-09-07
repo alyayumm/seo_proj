@@ -37,6 +37,7 @@ import {
   fetchContentPlanTopics,
   summarizeContentPlanTopics,
   type ContentPlanSource,
+  type ContentPlanSourceError,
   type ContentPlanSummary,
   type ContentPlanTopic,
 } from './contentPlans';
@@ -2105,6 +2106,7 @@ function App() {
   const [contentLoadStatus, setContentLoadStatus] = useState<LinkLoadStatus>('idle');
   const [contentError, setContentError] = useState('');
   const [contentUpdatedAt, setContentUpdatedAt] = useState('');
+  const [contentSourceErrors, setContentSourceErrors] = useState<ContentPlanSourceError[]>([]);
   const [paymentCashflowRows, setPaymentCashflowRows] = useState<PaymentCashflowRow[]>([]);
   const [paymentCashflowLoadStatus, setPaymentCashflowLoadStatus] = useState<LinkLoadStatus>('idle');
   const [paymentCashflowError, setPaymentCashflowError] = useState('');
@@ -2295,10 +2297,12 @@ function App() {
   const loadContentTopics = useCallback(async () => {
     setContentLoadStatus('loading');
     setContentError('');
+    setContentSourceErrors([]);
 
     try {
-      const rows = await fetchContentPlanTopics();
-      setContentTopics(rows);
+      const result = await fetchContentPlanTopics();
+      setContentTopics(result.topics);
+      setContentSourceErrors(result.errors);
       setContentUpdatedAt(new Date().toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }));
       setContentLoadStatus('ready');
     } catch (error) {
@@ -2388,6 +2392,14 @@ function App() {
     });
     return map;
   }, []);
+
+  const contentErrorsByProject = useMemo(() => {
+    const map = new Map<string, string>();
+    contentSourceErrors.forEach((error) => {
+      map.set(normalizeProjectName(error.projectName), error.message);
+    });
+    return map;
+  }, [contentSourceErrors]);
 
   const [metrikaStats, setMetrikaStats] = useState<MetrikaStatsPayload>(EMPTY_METRIKA_STATS);
   useEffect(() => {
@@ -2835,7 +2847,7 @@ function App() {
                       linkError={linkError}
                       linkUpdatedAt={linkUpdatedAt}
                       contentLoadStatus={contentLoadStatus}
-                      contentError={contentError}
+                      contentError={contentErrorsByProject.get(normalizeProjectName(project.name)) ?? contentError}
                       contentUpdatedAt={contentUpdatedAt}
                       activeTab={projectTabs[project.id] ?? 'tasks'}
                       collapsed={collapsedProjectIds.has(project.id)}
@@ -2928,6 +2940,7 @@ function App() {
             contentTopicsByProject={contentTopicsByProject}
             contentSummaries={contentSummaries}
             contentSourcesByProject={contentSourcesByProject}
+            contentErrorsByProject={contentErrorsByProject}
             workPlansByProject={workPlansByProject}
             auditSourcesByProject={auditSourcesByProject}
             managedResourcesByProject={managedResourcesByProject}
@@ -4014,10 +4027,13 @@ function ContentPlanPanel({
 }) {
   const groupedTopics = useMemo(() => groupContentTopicsByMonth(topics), [topics]);
   const openMonth = summary?.nextTopic?.month ?? groupedTopics[0]?.month;
+  const sourceErrorText = source && error ? `Не удалось загрузить этот контент-план: ${error}` : '';
   const statusText =
     loadStatus === 'loading'
       ? 'Загружаю темы из Google Sheets...'
-      : loadStatus === 'error'
+      : sourceErrorText
+        ? sourceErrorText
+        : loadStatus === 'error'
         ? error
         : updatedAt
           ? `Обновлено ${updatedAt}`
@@ -4044,7 +4060,7 @@ function ContentPlanPanel({
         </div>
       </div>
 
-      <div className={`sync-state ${loadStatus === 'error' ? 'is-error' : ''}`}>
+      <div className={`sync-state ${loadStatus === 'error' || sourceErrorText ? 'is-error' : ''}`}>
         {loadStatus === 'loading' ? <RefreshCw size={15} className="spin" /> : <FileSpreadsheet size={15} />}
         <span>{statusText}</span>
       </div>
@@ -4077,13 +4093,15 @@ function ContentPlanPanel({
             <h4>{summary?.nextTopic?.topic ?? source.title}</h4>
             <p>
               {summary?.nextTopic
-                ? `${summary.nextTopic.date} · ${summary.nextTopic.service} · ${summary.nextTopic.format}`
+                ? formatContentTopicMeta(summary.nextTopic, true)
                 : source.note}
             </p>
           </article>
 
           {groupedTopics.length === 0 ? (
-            <div className="empty-row">Темы еще загружаются или таблица пока не вернула строки.</div>
+            <div className="empty-row">
+              {sourceErrorText ? 'Проверь доступ к таблице или актуальность ссылки.' : 'Темы еще загружаются или таблица пока не вернула строки.'}
+            </div>
           ) : (
             <div className="content-months">
               {groupedTopics.map((group) => (
@@ -4098,11 +4116,14 @@ function ContentPlanPanel({
                         <time dateTime={topic.isoDate}>{topic.date}</time>
                         <div>
                           <strong>{topic.topic}</strong>
-                          <p>
-                            {topic.block} · {topic.intent} · {topic.service}
-                          </p>
+                          <p>{formatContentTopicMeta(topic)}</p>
+                          {topic.internalUrl && (
+                            <a href={topic.internalUrl} target="_blank" rel="noreferrer">
+                              Открыть URL
+                            </a>
+                          )}
                         </div>
-                        <span>{topic.priority}</span>
+                        {topic.priority && <span>{topic.priority}</span>}
                       </article>
                     ))}
                   </div>
@@ -4114,6 +4135,23 @@ function ContentPlanPanel({
       )}
     </div>
   );
+}
+
+function formatContentTopicMeta(topic: ContentPlanTopic, includeDate = false) {
+  const parts = [
+    includeDate ? topic.date : '',
+    topic.service,
+    topic.format,
+    topic.block,
+    topic.intent,
+    topic.materialType,
+    topic.audience,
+    topic.status && topic.status !== 'Без статуса' ? topic.status : '',
+  ].filter(Boolean);
+
+  if (parts.length) return parts.join(' · ');
+  if (topic.internalUrl) return 'URL указан в таблице';
+  return 'Дополнительные поля не заполнены';
 }
 
 function countWorkPlanItems(plan: WorkPlanSource) {
@@ -6372,6 +6410,7 @@ function SeoProjectsView({
   contentTopicsByProject,
   contentSummaries,
   contentSourcesByProject,
+  contentErrorsByProject,
   workPlansByProject,
   auditSourcesByProject,
   managedResourcesByProject,
@@ -6406,6 +6445,7 @@ function SeoProjectsView({
   contentTopicsByProject: Map<string, ContentPlanTopic[]>;
   contentSummaries: Map<string, ContentPlanSummary>;
   contentSourcesByProject: Map<string, ContentPlanSource>;
+  contentErrorsByProject: Map<string, string>;
   workPlansByProject: Map<string, WorkPlanSource[]>;
   auditSourcesByProject: Map<string, ClientAuditSource[]>;
   managedResourcesByProject: Map<string, ManagedResource[]>;
@@ -6440,6 +6480,7 @@ function SeoProjectsView({
   const selectedContentTopics = contentTopicsByProject.get(selectedKey) ?? [];
   const selectedContentSummary = contentSummaries.get(selectedKey);
   const selectedContentSource = contentSourcesByProject.get(selectedKey);
+  const selectedContentError = contentErrorsByProject.get(selectedKey);
   const selectedWorkPlans = workPlansByProject.get(selectedKey) ?? [];
   const selectedAuditSources = auditSourcesByProject.get(selectedKey) ?? [];
   const selectedResources = managedResourcesByProject.get(selectedProject?.id ?? '') ?? [];
@@ -6549,7 +6590,7 @@ function SeoProjectsView({
                   topics={selectedContentTopics}
                   summary={selectedContentSummary}
                   loadStatus={contentLoadStatus}
-                  error={contentError}
+                  error={selectedContentError ?? contentError}
                   updatedAt={contentUpdatedAt}
                   onReload={onReloadContent}
                 />

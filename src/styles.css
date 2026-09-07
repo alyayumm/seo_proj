@@ -1741,6 +1741,20 @@ p {
   line-height: 1.35;
 }
 
+.content-topic-row a {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 7px;
+  padding: 5px 8px;
+  border: 1px solid rgba(50, 109, 122, 0.22);
+  border-radius: 999px;
+  color: #326d7a;
+  background: rgba(216, 238, 243, 0.52);
+  font-size: 10px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
 .content-topic-row > span {
   min-height: 24px;
   padding: 5px 8px;

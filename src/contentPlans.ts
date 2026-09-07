@@ -38,6 +38,17 @@ export type ContentPlanSummary = {
   nextTopic?: ContentPlanTopic;
 };
 
+export type ContentPlanSourceError = {
+  sourceId: string;
+  projectName: string;
+  message: string;
+};
+
+export type ContentPlanFetchResult = {
+  topics: ContentPlanTopic[];
+  errors: ContentPlanSourceError[];
+};
+
 export const CONTENT_PLAN_SOURCES: ContentPlanSource[] = [
   {
     id: 'promteh-content-2026',
@@ -50,6 +61,18 @@ export const CONTENT_PLAN_SOURCES: ContentPlanSource[] = [
       'https://docs.google.com/spreadsheets/d/13SainHNKIaES85E2y94MppHyMEgAWJ6vVhW7IaABHo4/edit?usp=sharing',
     period: 'август-декабрь 2026',
     note: 'Ежедневные темы с 01.08.2026 по 31.12.2026: пластик, вторсырье, экология и B2B-сбор.',
+  },
+  {
+    id: 'smartstroy-content-2026',
+    projectName: 'Смартстрой',
+    clientName: 'СмартСтрой',
+    title: 'Контент-план на 5 месяцев',
+    sheetName: 'Статьи',
+    spreadsheetId: '1hhNc8EN3BlSWTaKQKTiwrpLQVyGoFmYAxeNe47Us40Q',
+    spreadsheetUrl:
+      'https://docs.google.com/spreadsheets/d/1hhNc8EN3BlSWTaKQKTiwrpLQVyGoFmYAxeNe47Us40Q/edit?usp=sharing',
+    period: 'до 15.08.2026',
+    note: 'Темы статей из вкладки "Статьи". В таблице нет календарных дат, поэтому темы показываются общим списком.',
   },
 ];
 
@@ -64,11 +87,39 @@ type GvizResponse = {
   };
 };
 
-export async function fetchContentPlanTopics() {
-  const topicGroups = await Promise.all(
-    CONTENT_PLAN_SOURCES.map(async (source) => parseContentPlanTopics(await loadGvizJsonp(source), source)),
+export async function fetchContentPlanTopics(): Promise<ContentPlanFetchResult> {
+  const topicGroups = await Promise.allSettled(
+    CONTENT_PLAN_SOURCES.map(async (source) => ({
+      source,
+      topics: parseContentPlanTopics(await loadGvizJsonp(source), source),
+    })),
   );
-  return topicGroups.flat();
+  const rows = topicGroups.flatMap((result) => (result.status === 'fulfilled' ? result.value.topics : []));
+  const errors = topicGroups.flatMap((result, index) => {
+    if (result.status === 'fulfilled') return [];
+    const source = CONTENT_PLAN_SOURCES[index];
+    return [
+      {
+        sourceId: source.id,
+        projectName: source.projectName,
+        message: result.reason instanceof Error ? result.reason.message : String(result.reason),
+      },
+    ];
+  });
+
+  if (errors.length) {
+    console.warn(
+      'Часть контент-планов не загрузилась',
+      errors.map((error) => `${error.projectName}: ${error.message}`),
+    );
+  }
+
+  if (!rows.length && errors.length) {
+    const message = errors.map((error) => `${error.projectName}: ${error.message}`).join('; ');
+    throw new Error(message || 'Контент-планы не загрузились');
+  }
+
+  return { topics: rows, errors };
 }
 
 export function summarizeContentPlanTopics(rows: ContentPlanTopic[]): ContentPlanSummary {
@@ -135,34 +186,59 @@ function loadGvizJsonp(source: ContentPlanSource) {
 function parseContentPlanTopics(response: GvizResponse, source: ContentPlanSource): ContentPlanTopic[] {
   const table = response.table;
   if (!table) return [];
+  const values = table.rows.map((row) => row.c ?? []);
+  const headerIndex = values.findIndex((cells, index) => {
+    if (index > 10) return false;
+    const labels = cells.map((cell) => normalize(formatGvizCell(cell)));
+    return labels.some((label) => label.includes('тема')) || labels.some((label) => label.includes('дата'));
+  });
+  const headers = headerIndex >= 0 ? values[headerIndex].map((cell) => normalize(formatGvizCell(cell))) : [];
+  const dataRows = headerIndex >= 0 ? values.slice(headerIndex + 1) : values;
+  const findHeader = (...needles: string[]) =>
+    headers.findIndex((header) => needles.some((needle) => header.includes(needle)));
+  const dateIndex = findHeader('дата', 'день');
+  const monthIndex = findHeader('месяц');
+  const topicIndex = findHeader('тема', 'статья', 'название');
+  const blockIndex = findHeader('блок', 'раздел');
+  const typeIndex = findHeader('тип', 'материал');
+  const intentIndex = findHeader('интент', 'цель');
+  const formatIndex = findHeader('формат');
+  const audienceIndex = findHeader('аудитория');
+  const serviceIndex = findHeader('услуга', 'направление');
+  const urlIndex = findHeader('url', 'ссылка');
+  const priorityIndex = findHeader('приоритет');
+  const statusIndex = findHeader('статус', 'состояние');
+  const fallbackTopicIndex = topicIndex >= 0 ? topicIndex : dateIndex === 0 ? 2 : 0;
+  const fallbackDateIndex = dateIndex >= 0 ? dateIndex : topicIndex === 0 ? -1 : 0;
 
-  return table.rows.flatMap((row, rowIndex) => {
-    const cells = row.c ?? [];
-    const date = cleanCell(formatGvizCell(cells[0]));
-    const topic = cleanCell(formatGvizCell(cells[2]));
+  return dataRows.flatMap((cells, rowIndex) => {
+    const date = fallbackDateIndex >= 0 ? cleanCell(formatGvizCell(cells[fallbackDateIndex])) : '';
+    const topic = cleanCell(formatGvizCell(cells[fallbackTopicIndex]));
+    const month = monthIndex >= 0 ? cleanCell(formatGvizCell(cells[monthIndex])) : '';
+    const isoDate = parseRuDateToIso(date);
 
-    if (!date || !topic) return [];
+    if (!topic) return [];
 
     return [
       {
-        id: `${source.id}-${rowIndex + 2}-${normalize(topic).slice(0, 40)}`,
+        id: `${source.id}-${rowIndex + headerIndex + 2}-${normalize(topic).slice(0, 40)}`,
         sourceId: source.id,
         projectName: source.projectName,
         clientName: source.clientName,
-        sourceRow: rowIndex + 2,
-        date,
-        isoDate: parseRuDateToIso(date),
-        month: cleanCell(formatGvizCell(cells[1])),
+        sourceRow: rowIndex + headerIndex + 2,
+        date: date || source.period || 'без даты',
+        isoDate,
+        month: month || getMonthFromIso(isoDate) || source.period || 'Без месяца',
         topic,
-        block: cleanCell(formatGvizCell(cells[3])),
-        materialType: cleanCell(formatGvizCell(cells[4])),
-        intent: cleanCell(formatGvizCell(cells[5])),
-        format: cleanCell(formatGvizCell(cells[6])),
-        audience: cleanCell(formatGvizCell(cells[7])),
-        service: cleanCell(formatGvizCell(cells[8])),
-        internalUrl: cleanCell(formatGvizCell(cells[9])),
-        priority: cleanCell(formatGvizCell(cells[10])),
-        status: cleanCell(formatGvizCell(cells[11])) || 'Без статуса',
+        block: getCellByIndex(cells, blockIndex, 3),
+        materialType: getCellByIndex(cells, typeIndex, 4),
+        intent: getCellByIndex(cells, intentIndex, 5),
+        format: getCellByIndex(cells, formatIndex, 6),
+        audience: getCellByIndex(cells, audienceIndex, 7),
+        service: getCellByIndex(cells, serviceIndex, 8),
+        internalUrl: getCellByIndex(cells, urlIndex, 9),
+        priority: getCellByIndex(cells, priorityIndex, 10),
+        status: getCellByIndex(cells, statusIndex, 11) || 'Без статуса',
       },
     ];
   });
@@ -177,8 +253,20 @@ function formatGvizCell(cell: GvizCell) {
 
 function parseRuDateToIso(value: string) {
   const [day, month, year] = value.split('.');
-  if (!day || !month || !year) return '';
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  if (!day || !month) return '';
+  const resolvedYear = year || String(new Date().getFullYear());
+  return `${resolvedYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+}
+
+function getMonthFromIso(value: string) {
+  if (!value) return '';
+  const [year, month] = value.split('-');
+  return month && year ? `${month}.${year}` : '';
+}
+
+function getCellByIndex(cells: GvizCell[], headerIndex: number, fallbackIndex: number) {
+  const index = headerIndex >= 0 ? headerIndex : fallbackIndex;
+  return cleanCell(formatGvizCell(cells[index]));
 }
 
 function normalize(value: string) {
