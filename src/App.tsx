@@ -267,6 +267,10 @@ const SEO_PLANNING_CHECKLIST_URL =
   'https://docs.google.com/document/d/1waAgTlkXKntLTkYruIVXEtprteaJhcq4ZiOe1XPqio8/edit?tab=t.emcoqoq3hai5#heading=h.9ocmnxqz6u8e';
 const PROMTEH_FORECAST_REPORT_URL =
   'https://docs.google.com/document/d/1UTVNP4WnpKGrwbBAylhyxPbOSvlyyRBxw_SQVrKMK1E/edit?usp=sharing';
+const RECTOP_CORRECTIONS_BRIEF_URL =
+  'https://docs.google.com/document/d/1H9039MtjWEtQjWv4R_iosviGo0gTeNlxlQr0cWExSmM/edit?usp=sharing';
+const RECTOP_FAQ_URL =
+  'https://docs.google.com/document/d/1pytSVh4lxSb5BDV9C9CM9gOgwxdm8Wnb2gR2mgrRpWg/edit?tab=t.0#heading=h.mlgh27lmuw4v';
 
 const initialProjects: Project[] = [
   { id: 'project-ash', name: 'АШ', color: '#6D72FF' },
@@ -343,6 +347,24 @@ const requiredManagedResourceSeeds: ManagedResource[] = [
     dateLabel: '31.08',
     note: 'Прогноз роста до трех заявок в день в течение трех месяцев.',
   },
+  {
+    id: 'resource-plan-rectop-corrections-2026-09-07',
+    projectId: 'project-rectop',
+    tab: 'plans',
+    title: 'ТЗ правки Ректоп',
+    url: RECTOP_CORRECTIONS_BRIEF_URL,
+    dateLabel: '07.09',
+    note: 'ТЗ по правкам сайта Ректоп.',
+  },
+  {
+    id: 'resource-content-rectop-faq-2026-09-07',
+    projectId: 'project-rectop',
+    tab: 'content',
+    title: 'FAQ Ректоп',
+    url: RECTOP_FAQ_URL,
+    dateLabel: '07.09',
+    note: 'FAQ к правкам сайта Ректоп.',
+  },
 ];
 
 function findInitialProjectId(projectName: string) {
@@ -404,7 +426,7 @@ function buildInitialManagedResources(): ManagedResource[] {
 
 const initialManagedResources = [...buildInitialManagedResources(), ...requiredManagedResourceSeeds];
 const requiredManagedResourceSeedsById = new Map(requiredManagedResourceSeeds.map((resource) => [resource.id, resource]));
-const managedResourceSeedVersion = 'managed-resources-2026-08-31-v1';
+const managedResourceSeedVersion = 'managed-resources-2026-09-07-v1';
 
 const legacyPersonIdMap: Record<string, string> = {
   'person-vlad': 'person-aleksey',
@@ -419,7 +441,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'task-updates-2026-09-04-v1';
+const taskSeedVersion = 'task-updates-2026-09-07-v1';
 const taskDefaultDeadlineVersion = 'default-deadlines-2026-09-03-v1';
 const legacyDemoTaskIds = new Set(['task-1', 'task-2', 'task-3', 'task-4']);
 
@@ -428,16 +450,40 @@ const requiredTaskSeeds: Task[] = [
     id: 'current-ash-avtopravo-redesign',
     projectId: 'project-ash',
     title: 'Редизайн сайта Автоправо',
-    description: 'Изменили ТЗ и брендбук, ориентир - сайты Симакина. Дедлайн по окну 20-23.08.',
+    description:
+      'Изменили ТЗ и брендбук, ориентир - сайты Симакина. На 07.09 сдан макет блога, остались небольшие блоки типа FAQ. План - передать айтишникам на этой неделе.',
     sourceLabel: 'редизайн в Figma',
     sourceUrl:
       'https://www.figma.com/design/BrReyqlaV4p15QX0bekG2X/%D0%90%D0%B2%D1%82%D0%BE%D0%BF%D1%80%D0%B0%D0%B2%D0%BE?node-id=519-8247&t=RXaNEtFVQQizrAjv-1',
     status: 'active',
     ownerIds: ['person-outsource'],
     createdAt: '2026-08-10',
-    deadline: '2026-08-23',
-    timelineEnabled: false,
-    timeline: [],
+    deadline: '2026-09-13',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-ash-avtopravo-blog-layout',
+        title: 'Сдать макет блога',
+        ownerId: 'person-outsource',
+        status: 'done',
+        dueDate: '2026-09-06',
+        completedAt: '2026-09-06',
+      },
+      {
+        id: 'timeline-ash-avtopravo-faq-blocks',
+        title: 'Доделать небольшие блоки типа FAQ',
+        ownerId: 'person-outsource',
+        status: 'active',
+        dueDate: '2026-09-13',
+      },
+      {
+        id: 'timeline-ash-avtopravo-transfer-to-it',
+        title: 'Передать макет айтишникам',
+        ownerId: 'person-vlad-it',
+        status: 'planned',
+        dueDate: '2026-09-13',
+      },
+    ],
   },
   {
     id: 'current-ash-template-sites',
@@ -1171,11 +1217,13 @@ const requiredTaskSeeds: Task[] = [
     projectId: 'project-rectop',
     title: 'Ректоп: перенос на домен и первый блок главной',
     description:
-      'Ректоп и сайт Ректоп - один проект. Сейчас осталось перенести сайт на домен и переверстать первый блок на главной.',
+      'Отчет 07.09: ТЗ по правкам составлено, разработчик должен закончить к концу недели. Ректоп и сайт Ректоп - один проект.',
+    sourceLabel: 'ТЗ правки',
+    sourceUrl: RECTOP_CORRECTIONS_BRIEF_URL,
     status: 'active',
     ownerIds: ['person-outsource'],
     createdAt: '2026-08-10',
-    deadline: '',
+    deadline: '2026-09-13',
     timelineEnabled: true,
     timeline: [
       {
@@ -1187,18 +1235,33 @@ const requiredTaskSeeds: Task[] = [
         completedAt: '2026-08-17',
       },
       {
+        id: 'timeline-rectop-corrections-brief-07-09',
+        title: 'Составить ТЗ по правкам',
+        ownerId: 'person-marketing',
+        status: 'done',
+        dueDate: '2026-09-06',
+        completedAt: '2026-09-06',
+      },
+      {
         id: 'timeline-rectop-domain-transfer',
         title: 'Перенести сайт на домен',
         ownerId: 'person-outsource',
         status: 'active',
-        dueDate: '',
+        dueDate: '2026-09-13',
       },
       {
         id: 'timeline-rectop-first-block-home',
         title: 'Переверстать первый блок на главной',
         ownerId: 'person-outsource',
         status: 'active',
-        dueDate: '',
+        dueDate: '2026-09-13',
+      },
+      {
+        id: 'timeline-rectop-dev-finish-week',
+        title: 'Разработчик должен закончить правки к концу недели',
+        ownerId: 'person-outsource',
+        status: 'active',
+        dueDate: '2026-09-13',
       },
     ],
   },

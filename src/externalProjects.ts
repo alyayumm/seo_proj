@@ -57,13 +57,19 @@ const SEO_PLANNING_CHECKLIST_URL =
   'https://docs.google.com/document/d/1waAgTlkXKntLTkYruIVXEtprteaJhcq4ZiOe1XPqio8/edit?tab=t.emcoqoq3hai5#heading=h.9ocmnxqz6u8e';
 
 const DENTAL_CLINIC_URL = 'https://pershin-clinic.ru/services';
+const RECTOP_CORRECTIONS_BRIEF_URL =
+  'https://docs.google.com/document/d/1H9039MtjWEtQjWv4R_iosviGo0gTeNlxlQr0cWExSmM/edit?usp=sharing';
+const RECTOP_FAQ_URL =
+  'https://docs.google.com/document/d/1pytSVh4lxSb5BDV9C9CM9gOgwxdm8Wnb2gR2mgrRpWg/edit?tab=t.0#heading=h.mlgh27lmuw4v';
+const AUTOPRAVO_FIGMA_URL =
+  'https://www.figma.com/design/BrReyqlaV4p15QX0bekG2X/%D0%90%D0%B2%D1%82%D0%BE%D0%BF%D1%80%D0%B0%D0%B2%D0%BE?node-id=519-8247&t=RXaNEtFVQQizrAjv-1';
 
 export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
   title: 'Сторонние проекты',
   documentTitle: '10.08',
   tabTitle: '10.08.26',
   collaborator: 'Отдел маркетинга',
-  updatedLabel: 'по документу от 10.08.26 и апдейту 04.09.26',
+  updatedLabel: 'по документу от 10.08.26, апдейту 04.09.26 и отчету 07.09.26',
   url: 'https://docs.google.com/document/d/1hec-2lJGGsjDsmmbXHTk4YbFgwJV82avNA-EIT1ryEo/edit?tab=t.k4dzyo6kfkhb',
   sections: [
     {
@@ -239,23 +245,107 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
     },
     {
       id: 'avito-test',
-      title: 'Авито: запуск Москва',
+      title: 'Авито в МСК',
       status: 'active',
-      items: ['Запустить Авито по Москве', 'Контролировать расход бюджета 40 000 ₽', 'Заложить 15 000 ₽ на исполнителя'],
-      note: 'Запускаем Москва. Бюджет кампании 40 000 ₽, исполнитель 15 000 ₽.',
-      goal: 'Запустить тест Авито по Москве и оценить стоимость заявок.',
-      budgetLabel: '40 000 ₽',
-      people: ['Отдел маркетинга'],
+      items: [
+        'Период теста: 20.08-06.09',
+        'Лиды: 121 шт., цена лида 528 ₽',
+        'Квалы: 61 шт., цена квала 1 049 ₽',
+        'Продажи: 6 шт., цена продажи 10 666 ₽',
+        'Выручка: 256 470 ₽',
+        'Чистая прибыль: около 13 000 ₽',
+        'Потенциальных продаж: 8',
+      ],
+      note:
+        'Отчет 07.09: инструмент вышел в ноль, потенциальные продажи дальше идут в прибыль.',
+      goal: 'Закрепить окупаемый канал Авито в Москве и дожать потенциальные продажи.',
+      budgetLabel: '64 000 ₽ затрат',
+      people: ['Отдел маркетинга', 'Исполнитель'],
       budgetLines: [
         {
           id: 'avito-moscow-budget',
-          label: 'Бюджет запуска Москва',
-          amountLabel: '40 000 ₽',
+          label: 'Бюджет Avito',
+          amountLabel: '44 000 ₽',
         },
         {
           id: 'avito-moscow-executor',
           label: 'Исполнитель',
-          amountLabel: '15 000 ₽',
+          amountLabel: '20 000 ₽',
+        },
+        {
+          id: 'avito-moscow-total-costs',
+          label: 'Всего затрат',
+          amountLabel: '64 000 ₽',
+        },
+        {
+          id: 'avito-moscow-revenue',
+          label: 'Выручка',
+          amountLabel: '256 470 ₽',
+        },
+        {
+          id: 'avito-moscow-net-profit',
+          label: 'Чистая прибыль',
+          amountLabel: 'около 13 000 ₽',
+        },
+      ],
+      timeline: [
+        {
+          id: 'avito-moscow-test-period',
+          title: 'Провести запуск Авито в МСК за 20.08-06.09',
+          status: 'done',
+          dateLabel: '06.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'avito-moscow-leads-results',
+          title: 'Получено 121 лид, 61 квал и 6 продаж',
+          status: 'done',
+          dateLabel: '07.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'avito-moscow-profit-results',
+          title: 'Зафиксирована выручка 256 470 ₽ и чистая прибыль около 13 000 ₽',
+          status: 'done',
+          dateLabel: '07.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'avito-moscow-potential-sales',
+          title: 'Дожать 8 потенциальных продаж',
+          status: 'active',
+          dateLabel: '13.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'avito-moscow-week-31-08-26',
+          weekLabel: '31.08.26',
+          dateLabel: 'отчет 07.09.26',
+          items: [
+            {
+              id: 'avito-moscow-results-07-09',
+              title: 'За 20.08-06.09 получено 121 лид, 61 квал и 6 продаж',
+              status: 'done',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+            {
+              id: 'avito-moscow-money-07-09',
+              title: 'Затраты 64 000 ₽, выручка 256 470 ₽, чистая прибыль около 13 000 ₽',
+              status: 'done',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+            {
+              id: 'avito-moscow-break-even-07-09',
+              title: 'Инструмент вышел в ноль, дальше потенциальные продажи идут в прибыль',
+              status: 'done',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+          ],
         },
       ],
     },
@@ -266,11 +356,12 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
       items: [
         'Письмо на верстке',
         'Рассылка на почту',
-        'Дополнительная рассылка в Telegram: запуск 07.09.26',
-        'Рассылка в MAX: ждем ответ от компании, ориентир запуска 10.09.26',
+        'Повторная рассылка дала 0 переходов',
+        'Договориться о рассылке без упоминания бренда',
+        'Выбрать дешевую рассылку или ИИ-рассылку',
       ],
       note:
-        'Апдейт 04.09: в понедельник запускается дополнительная рассылка в Telegram. По MAX ждем ответ от компании по рассылке через ИИ, ориентир запуска 10.09. Рассылка на почту просрочена у IT-отдела.',
+        'Отчет 07.09: рассылка неуспешна, 0 переходов. Дальше договариваемся о рассылке без упоминания бренда и выбираем дешевую рассылку или ИИ.',
       people: ['Отдел маркетинга', 'IT-отдел'],
       timeline: [
         {
@@ -289,22 +380,44 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
         },
         {
           id: 'trial-lesson-mailing-max-launch',
-          title: 'Запустить рассылку в MAX через ИИ',
-          status: 'waiting',
-          dateLabel: '10.09.26',
+          title: 'Выбрать дешевую рассылку или ИИ-рассылку',
+          status: 'planned',
+          dateLabel: '13.09.26',
           ownerLabel: 'Отдел маркетинга',
-          displayStatusLabel: 'ждем ответ',
+          displayStatusLabel: 'новая гипотеза',
         },
         {
           id: 'trial-lesson-mailing-telegram-extra-04-09',
-          title: 'Запустить дополнительную рассылку в Telegram',
-          status: 'active',
+          title: 'Повторная рассылка дала 0 переходов',
+          status: 'done',
           dateLabel: '07.09.26',
           ownerLabel: 'Отдел маркетинга',
-          displayStatusLabel: 'запуск в понедельник',
+          displayStatusLabel: 'неуспешно',
+        },
+        {
+          id: 'trial-lesson-mailing-no-brand',
+          title: 'Договориться о рассылке без упоминания бренда',
+          status: 'active',
+          dateLabel: '13.09.26',
+          ownerLabel: 'Отдел маркетинга',
         },
       ],
       weeklyUpdates: [
+        {
+          id: 'trial-lesson-mailing-week-31-08-26',
+          weekLabel: '31.08.26',
+          dateLabel: 'отчет 07.09.26',
+          items: [
+            {
+              id: 'trial-lesson-mailing-zero-clicks-07-09',
+              title: 'Рассылка “пробный урок” неуспешна: 0 переходов',
+              status: 'done',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Отдел маркетинга',
+              displayStatusLabel: 'неуспешно',
+            },
+          ],
+        },
         {
           id: 'trial-lesson-mailing-week-04-09-26',
           weekLabel: '04.09.26',
@@ -357,6 +470,118 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
       ],
     },
     {
+      id: 'rectop-mailings',
+      title: 'Рассылки Ректоп',
+      status: 'active',
+      items: [
+        'Повторный запуск Telegram через ИИ утром 08.09',
+        'Есть бюджет на 500 контактов',
+        'MAX через ИИ: подрядчик найден, ждем КП',
+        'Запуск MAX планируется на этой неделе',
+      ],
+      note:
+        'Отчет 07.09: Telegram-запуск стоит на утро 08.09, по MAX найден подрядчик и ожидается КП.',
+      goal: 'Повторно запустить рассылки Ректоп в Telegram и MAX через ИИ.',
+      budgetLabel: '500 контактов',
+      people: ['Отдел маркетинга', 'Подрядчик ИИ'],
+      timeline: [
+        {
+          id: 'rectop-mailings-telegram-ai-repeat',
+          title: 'Запустить Telegram через ИИ повторно',
+          status: 'active',
+          dateLabel: '08.09.26',
+          ownerLabel: 'Отдел маркетинга',
+          displayStatusLabel: 'запуск утром',
+        },
+        {
+          id: 'rectop-mailings-max-contractor-found',
+          title: 'Подрядчик для MAX через ИИ найден',
+          status: 'done',
+          dateLabel: '07.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'rectop-mailings-max-commercial-offer',
+          title: 'Получить КП по запуску MAX',
+          status: 'waiting',
+          dateLabel: '10.09.26',
+          ownerLabel: 'Подрядчик ИИ',
+          displayStatusLabel: 'ждем КП',
+        },
+        {
+          id: 'rectop-mailings-max-launch',
+          title: 'Запустить рассылку MAX на этой неделе',
+          status: 'planned',
+          dateLabel: '13.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'rectop-mailings-week-31-08-26',
+          weekLabel: '31.08.26',
+          dateLabel: 'отчет 07.09.26',
+          items: [
+            {
+              id: 'rectop-mailings-max-contractor-found-07-09',
+              title: 'Для рассылки MAX через ИИ найден подрядчик',
+              status: 'done',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+            {
+              id: 'rectop-mailings-telegram-budget-07-09',
+              title: 'Подготовлен повторный запуск Telegram через ИИ, есть бюджет на 500 контактов',
+              status: 'done',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'rectop-cases',
+      title: 'Кейсы Ректоп',
+      status: 'active',
+      items: ['Кейсы собраны', 'Кейсы не оформлены', 'Оформить кейсы до отпуска'],
+      note: 'Отчет 07.09: кейсы собрали, но пока не оформили. Дедлайн - сдать до отпуска.',
+      goal: 'Оформить собранные кейсы Ректоп в готовый материал до отпуска.',
+      people: ['Отдел маркетинга', 'Алина'],
+      timeline: [
+        {
+          id: 'rectop-cases-collected',
+          title: 'Собрать кейсы Ректоп',
+          status: 'done',
+          dateLabel: '07.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'rectop-cases-format',
+          title: 'Оформить кейсы Ректоп',
+          status: 'active',
+          dateLabel: 'до отпуска',
+          ownerLabel: 'Алина',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'rectop-cases-week-31-08-26',
+          weekLabel: '31.08.26',
+          dateLabel: 'отчет 07.09.26',
+          items: [
+            {
+              id: 'rectop-cases-collected-07-09',
+              title: 'Кейсы Ректоп собраны',
+              status: 'done',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+          ],
+        },
+      ],
+    },
+    {
       id: 'seo-dashboard',
       title: 'Единый дашборд по SEO-проектам',
       status: 'done',
@@ -372,8 +597,8 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
         'АШ СПБ: тест откручен, база заменена',
         'АШ МСК: запуск',
         'SEO: запуск',
-        'Дополнительная рассылка в Telegram: запуск 07.09.26',
-        'Рассылка в MAX: ждем ответ, ориентир запуска 10.09.26',
+        'Ректоп: повторный запуск Telegram через ИИ утром 08.09',
+        'MAX: подрядчик найден, ждем КП',
       ],
     },
     {
@@ -381,9 +606,100 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
       title: 'Автошколы',
       status: 'active',
       items: [
-        'Редизайн сайта Автоправо',
+        'Сайт Автоправо: сдан макет блога',
+        'Остались небольшие блоки типа FAQ',
+        'Передать макет айтишникам на этой неделе',
+        'На всех сайтах убрали интеграцию с amo',
+        'В хеддер добавлены кнопки с мессенджерами',
+        'Обучить Кирилла пользоваться Codex',
         'Создание сайтов по шаблону',
         'Матрица параметров передается IT на реализацию',
+      ],
+      note:
+        'Отчет 07.09: макет блога Автоправо сдан, работу с IT на ветке настроили. На сайтах убрали интеграцию с amo и добавили кнопки с мессенджерами.',
+      goal: 'Передать редизайн Автоправо в IT и ускорить самостоятельные правки по автошколам через ветку.',
+      people: ['Отдел маркетинга', 'IT-отдел', 'Кирилл', 'Аутсорс'],
+      assets: [
+        {
+          id: 'autoschools-avtopravo-figma',
+          title: 'Редизайн Автоправо',
+          url: AUTOPRAVO_FIGMA_URL,
+          kind: 'link',
+        },
+      ],
+      timeline: [
+        {
+          id: 'autoschools-avtopravo-blog-layout',
+          title: 'Сдать макет блога для сайта Автоправо',
+          status: 'done',
+          dateLabel: '07.09.26',
+          ownerLabel: 'Аутсорс',
+        },
+        {
+          id: 'autoschools-dev-branch-workflow',
+          title: 'Настроить работу с айтишниками для оперативных правок на ветке',
+          status: 'done',
+          dateLabel: '05.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'autoschools-remove-amo-messengers',
+          title: 'Убрать интеграцию с amo и добавить в хеддер кнопки с мессенджерами',
+          status: 'done',
+          dateLabel: '05.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'autoschools-avtopravo-faq-blocks',
+          title: 'Доделать небольшие блоки типа FAQ',
+          status: 'active',
+          dateLabel: '13.09.26',
+          ownerLabel: 'Аутсорс',
+        },
+        {
+          id: 'autoschools-transfer-layout-to-it',
+          title: 'Передать макет айтишникам',
+          status: 'planned',
+          dateLabel: '13.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'autoschools-kirill-codex-training',
+          title: 'Обучить Кирилла пользоваться Codex',
+          status: 'planned',
+          dateLabel: '08.09.26',
+          ownerLabel: 'Алина',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'autoschools-week-31-08-26',
+          weekLabel: '31.08.26',
+          dateLabel: 'отчет 07.09.26',
+          items: [
+            {
+              id: 'autoschools-avtopravo-blog-layout-07-09',
+              title: 'Сдан макет блога для сайта Автоправо',
+              status: 'done',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Аутсорс',
+            },
+            {
+              id: 'autoschools-dev-branch-workflow-07-09',
+              title: 'Настроили работу с IT, чтобы оперативно вносить правки на ветке',
+              status: 'done',
+              dateLabel: '05.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+            {
+              id: 'autoschools-remove-amo-messengers-07-09',
+              title: 'На всех сайтах убрали интеграцию с amo и добавили в хеддер кнопки с мессенджерами',
+              status: 'done',
+              dateLabel: '05.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+          ],
+        },
       ],
     },
     {
@@ -438,19 +754,74 @@ export const EXTERNAL_PROJECTS_SOURCE: ExternalProjectsSource = {
       id: 'rectop-site',
       title: 'Ректоп',
       status: 'active',
-      items: ['Перенести сайт на домен', 'Переверстать первый блок на главной'],
-      note: 'Ректоп и сайт Ректоп - один проект.',
-      people: ['Аутсорс'],
+      items: [
+        'ТЗ по правкам составлено',
+        'Разработчик должен закончить правки к концу недели',
+        'Перенести сайт на домен',
+        'Переверстать первый блок на главной',
+      ],
+      note:
+        'Отчет 07.09: ТЗ по правкам составлено, разработчик должен закончить к концу недели. Ректоп и сайт Ректоп - один проект.',
+      goal: 'Довести сайт Ректоп до готовности: закрыть правки, перенести на домен и обновить первый блок главной.',
+      people: ['Аутсорс', 'Разработчик', 'Отдел маркетинга'],
+      assets: [
+        {
+          id: 'rectop-corrections-brief',
+          title: 'ТЗ правки',
+          url: RECTOP_CORRECTIONS_BRIEF_URL,
+          kind: 'file',
+        },
+        {
+          id: 'rectop-faq',
+          title: 'FAQ',
+          url: RECTOP_FAQ_URL,
+          kind: 'file',
+        },
+      ],
       timeline: [
+        {
+          id: 'rectop-site-corrections-brief',
+          title: 'Составить ТЗ по правкам',
+          status: 'done',
+          dateLabel: '07.09.26',
+          ownerLabel: 'Отдел маркетинга',
+        },
+        {
+          id: 'rectop-site-dev-finish-week',
+          title: 'Разработчик должен закончить правки к концу недели',
+          status: 'active',
+          dateLabel: '13.09.26',
+          ownerLabel: 'Разработчик',
+        },
         {
           id: 'rectop-site-domain-transfer',
           title: 'Перенести сайт на домен',
           status: 'active',
+          dateLabel: '13.09.26',
+          ownerLabel: 'Разработчик',
         },
         {
           id: 'rectop-site-first-block-home',
           title: 'Переверстать первый блок на главной',
           status: 'active',
+          dateLabel: '13.09.26',
+          ownerLabel: 'Разработчик',
+        },
+      ],
+      weeklyUpdates: [
+        {
+          id: 'rectop-site-week-31-08-26',
+          weekLabel: '31.08.26',
+          dateLabel: 'отчет 07.09.26',
+          items: [
+            {
+              id: 'rectop-site-corrections-brief-07-09',
+              title: 'ТЗ по правкам сайта Ректоп составлено',
+              status: 'done',
+              dateLabel: '07.09.26',
+              ownerLabel: 'Отдел маркетинга',
+            },
+          ],
         },
       ],
     },
