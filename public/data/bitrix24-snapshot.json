@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-07T10:36:39.645Z",
+  "updatedAt": "2026-09-08T09:56:43.342Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -261,6 +261,12 @@
       "id": "642",
       "name": "Азаренко Константин",
       "workPosition": "",
+      "active": true
+    },
+    {
+      "id": "644",
+      "name": "Чернышев Юрий Александрович",
+      "workPosition": "SEO-специалсит",
       "active": true
     }
   ],
