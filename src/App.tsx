@@ -91,7 +91,7 @@ type AdminTab = 'projects' | 'people' | 'tasks' | 'sources' | 'payments';
 type ProjectTab = 'tasks' | 'links' | 'plans' | 'content' | 'results' | 'audit';
 type SeoProjectTab = 'analytics' | 'tasks' | 'links' | 'content' | 'plans' | 'audit' | 'reports' | 'payments';
 type SeoTrendMode = 'daily' | 'weekly' | 'monthly';
-type ReportMode = 'tasks' | 'metrics';
+type ReportMode = 'tasks' | 'logic' | 'metrics';
 type TaskReportFilter =
   | 'all'
   | 'done'
@@ -102,6 +102,8 @@ type TaskReportFilter =
   | 'overdue'
   | 'lateDone'
   | 'withoutDeadline';
+type TaskLogicCategory = 'carried' | 'added' | 'done' | 'lateDone' | 'deadlineMoved' | 'stuck';
+type TaskScoreMetric = 'done' | 'overdue' | 'lateDone' | 'carried' | 'risk' | 'withoutDeadline';
 type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 type PaymentStatus = 'planned' | 'issued' | 'paid' | 'overdue';
 type PaymentKind = 'service' | 'outsource';
@@ -252,6 +254,7 @@ const seoTrendModeShortLabels: Record<SeoTrendMode, string> = {
 
 const reportModeLabels: Record<ReportMode, string> = {
   tasks: 'Динамика задач',
+  logic: 'Логика задач',
   metrics: 'Динамика показателей',
 };
 
@@ -264,6 +267,24 @@ const taskReportFilterLabels: Record<TaskReportFilter, string> = {
   risk: 'Риск',
   overdue: 'Просрочено',
   lateDone: 'Закрыто с опозданием',
+  withoutDeadline: 'Без дедлайна',
+};
+
+const taskLogicCategoryLabels: Record<TaskLogicCategory, string> = {
+  carried: 'Тянется из прошлого отчета',
+  added: 'Добавилось за неделю',
+  done: 'Сделано за неделю',
+  lateDone: 'Закрыто с опозданием',
+  deadlineMoved: 'Перенесен дедлайн',
+  stuck: 'Не закрывается 2+ отчета',
+};
+
+const taskScoreMetricLabels: Record<TaskScoreMetric, string> = {
+  done: 'Процент выполнения',
+  overdue: 'Процент просрочек',
+  lateDone: 'Закрыто с опозданием',
+  carried: 'Тянется от отчета к отчету',
+  risk: 'В статусе риск',
   withoutDeadline: 'Без дедлайна',
 };
 
@@ -1938,8 +1959,17 @@ type TaskTimingInfo = {
   lateDays: number;
 };
 
+type TaskLogicTrailStep = {
+  id: string;
+  date: string;
+  title: string;
+  meta: string;
+  tone: 'success' | 'warning' | 'danger' | 'info';
+};
+
 type WeeklyReportItem = {
   id: string;
+  taskId?: string;
   title: string;
   meta: string;
   projectName?: string;
@@ -1955,9 +1985,41 @@ type WeeklyReportItem = {
   lateDays?: number;
   timelineProgress?: string;
   timelineItems?: TimelineItem[];
+  logicTrail?: TaskLogicTrailStep[];
   date?: string;
   statusLabel?: string;
   tone?: 'success' | 'warning' | 'danger' | 'info';
+};
+
+type ReportDrilldownState = {
+  projectId: string;
+  filter: TaskReportFilter;
+  title?: string;
+  items?: WeeklyReportItem[];
+};
+
+type TaskReportSnapshotItem = {
+  taskId: string;
+  projectId: string;
+  title: string;
+  status: Status;
+  ownerIds: string[];
+  deadline: string;
+  completedAt?: string;
+  createdAt: string;
+  open: boolean;
+  timelineDone: number;
+  timelineTotal: number;
+};
+
+type TaskReportSnapshot = {
+  id: string;
+  reportDate: string;
+  capturedAt: string;
+  source: 'dashboard' | 'inferred';
+  taskCount: number;
+  bitrixTaskCount: number;
+  tasks: TaskReportSnapshotItem[];
 };
 
 type WeeklyProjectTaskSummary = {
@@ -1995,6 +2057,39 @@ type WeeklyProjectReport = {
   planned: WeeklyReportItem[];
   summary?: WeeklyProjectTaskSummary;
   trend?: WeeklyTaskTrendPoint[];
+};
+
+type ProjectTaskScore = {
+  score: number;
+  label: string;
+  tone: 'success' | 'warning' | 'danger' | 'info';
+  total: number;
+  completionPercent: number;
+  currentOverduePercent: number;
+  lateDonePercent: number;
+  carriedPercent: number;
+  riskPercent: number;
+  deadlineFilledPercent: number;
+  done: number;
+  overdue: number;
+  lateDone: number;
+  carried: number;
+  stuck: number;
+  risk: number;
+  withoutDeadline: number;
+  signals: string[];
+  itemsByMetric: Record<TaskScoreMetric, WeeklyReportItem[]>;
+};
+
+type TaskLogicReport = {
+  id: string;
+  title: string;
+  color: string;
+  score: ProjectTaskScore;
+  hasSavedHistory: boolean;
+  currentSnapshotDate: string;
+  previousSnapshotDate: string;
+  itemsByCategory: Record<TaskLogicCategory, WeeklyReportItem[]>;
 };
 
 type WeeklyReportArchiveFolder = {
@@ -2526,6 +2621,7 @@ function App() {
   const [projects, setProjects] = useStoredState<Project[]>('task-seo-projects', initialProjects);
   const [people, setPeople] = useStoredState<Person[]>('task-seo-people', initialPeople);
   const [tasks, setTasks] = useStoredState<Task[]>('task-seo-tasks', initialTasks);
+  const [reportSnapshots, setReportSnapshots] = useStoredState<TaskReportSnapshot[]>('task-seo-report-snapshots', []);
   const [paymentRows, setPaymentRows] = useStoredState<PaymentRow[]>('task-seo-payments', initialPaymentRows);
   const [managedResources, setManagedResources] = useStoredState<ManagedResource[]>(
     'task-seo-managed-resources',
@@ -2884,6 +2980,17 @@ function App() {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    const currentReportDate = getWeekWindow(0).start;
+    setReportSnapshots((current) => {
+      if (current.some((snapshot) => snapshot.reportDate === currentReportDate)) return current;
+      return upsertTaskReportSnapshot(
+        current,
+        makeTaskReportSnapshot(tasks, currentReportDate, bitrix24Snapshot, 'dashboard'),
+      );
+    });
+  }, [bitrix24Snapshot, setReportSnapshots, tasks]);
 
   const workPlansByProject = useMemo(() => {
     const map = new Map<string, WorkPlanSource[]>();
@@ -3397,6 +3504,9 @@ function App() {
             promotionSources={promotionSources}
             selectedProjectId={seoProjectId}
             expanded={expanded}
+            reportSnapshots={reportSnapshots}
+            bitrix24Snapshot={bitrix24Snapshot}
+            onReportSnapshotsChange={setReportSnapshots}
             onProjectChange={setSeoProjectId}
             linkLoadStatus={linkLoadStatus}
             linkError={linkError}
@@ -3445,10 +3555,13 @@ function App() {
             projects={projects}
             tasks={tasks}
             peopleById={peopleById}
+            reportSnapshots={reportSnapshots}
+            bitrix24Snapshot={bitrix24Snapshot}
             linkRows={linkRows}
             promotionSources={promotionSources}
             externalSource={EXTERNAL_PROJECTS_SOURCE}
             externalAdditions={externalProjectAdditions}
+            onReportSnapshotsChange={setReportSnapshots}
           />
         )}
 
@@ -6322,28 +6435,31 @@ function WeeklyReportView({
   projects,
   tasks,
   peopleById,
+  reportSnapshots,
+  bitrix24Snapshot,
   linkRows,
   promotionSources,
   externalSource,
   externalAdditions,
+  onReportSnapshotsChange,
 }: {
   projects: Project[];
   tasks: Task[];
   peopleById: Map<string, Person>;
+  reportSnapshots: TaskReportSnapshot[];
+  bitrix24Snapshot: Bitrix24Snapshot;
   linkRows: LinkPurchase[];
   promotionSources: PromotionResultSource[];
   externalSource: ExternalProjectsSource;
   externalAdditions: ExternalProjectAdditions;
+  onReportSnapshotsChange: Dispatch<SetStateAction<TaskReportSnapshot[]>>;
 }) {
   const [reportMode, setReportMode] = useStoredState<ReportMode>('task-seo-report-mode', 'tasks');
   const [reportProjectId, setReportProjectId] = useStoredState<string>(
     'task-seo-report-project-id',
     projects[0]?.id ?? '',
   );
-  const [selectedDrilldown, setSelectedDrilldown] = useState<{
-    projectId: string;
-    filter: TaskReportFilter;
-  } | null>(null);
+  const [selectedDrilldown, setSelectedDrilldown] = useState<ReportDrilldownState | null>(null);
   const latestReportWeek = useMemo(() => getWeekWindow(-1), []);
   const archiveStarts = useMemo(
     () => collectReportArchiveStarts(tasks, externalSource, externalAdditions, latestReportWeek),
@@ -6381,6 +6497,20 @@ function WeeklyReportView({
     () => buildExternalWeeklyReports(externalSource, externalAdditions, selectedReportWeek, selectedPlanWeek),
     [externalAdditions, externalSource, selectedPlanWeek, selectedReportWeek],
   );
+  const taskLogicReports = useMemo(
+    () =>
+      buildTaskLogicReports(
+        projects,
+        tasks,
+        peopleById,
+        reportSnapshots,
+        bitrix24Snapshot,
+        selectedReportWeek,
+        selectedPlanWeek,
+      ),
+    [bitrix24Snapshot, peopleById, projects, reportSnapshots, selectedPlanWeek, selectedReportWeek, tasks],
+  );
+  const overallTaskScore = useMemo(() => buildOverallTaskScore(taskLogicReports), [taskLogicReports]);
   const projectById = useMemo(() => new Map(projects.map((project) => [project.id, project])), [projects]);
   const selectedMetricsProject = projects.find((project) => project.id === reportProjectId) ?? projects[0];
   const selectedMetricsProjectKey = normalizeProjectName(selectedMetricsProject?.name ?? '');
@@ -6392,11 +6522,14 @@ function WeeklyReportView({
     ? seoReports.find((report) => report.id === selectedDrilldown.projectId)
     : undefined;
   const selectedDrilldownItems =
-    selectedDrilldownReport?.summary?.itemsByFilter[selectedDrilldown?.filter ?? 'all'] ?? [];
+    selectedDrilldown?.items ??
+    selectedDrilldownReport?.summary?.itemsByFilter[selectedDrilldown?.filter ?? 'all'] ??
+    [];
   const selectedDrilldownTitle =
-    selectedDrilldown && selectedDrilldownReport
+    selectedDrilldown?.title ??
+    (selectedDrilldown && selectedDrilldownReport
       ? `${selectedDrilldownReport.title}: ${taskReportFilterLabels[selectedDrilldown.filter].toLowerCase()}`
-      : '';
+      : '');
   const reportFocusTasks = useMemo(
     () =>
       tasks
@@ -6416,6 +6549,17 @@ function WeeklyReportView({
   const externalLate = externalReports.reduce((sum, report) => sum + report.late.length, 0);
   const externalPlanned = externalReports.reduce((sum, report) => sum + report.planned.length, 0);
   const selectedReportTitle = formatReportArchiveTitle(selectedReportWeek);
+  const savedSnapshotCount = normalizeReportSnapshots(reportSnapshots).filter(
+    (snapshot) => snapshot.reportDate <= selectedPlanWeek.start,
+  ).length;
+  const saveSelectedSnapshot = () => {
+    onReportSnapshotsChange((current) =>
+      upsertTaskReportSnapshot(
+        current,
+        makeTaskReportSnapshot(tasks, selectedPlanWeek.start, bitrix24Snapshot, 'dashboard'),
+      ),
+    );
+  };
 
   useEffect(() => {
     if (selectedMetricsProject) return;
@@ -6435,6 +6579,7 @@ function WeeklyReportView({
           <Metric label="Открыт отчет" value={selectedReportTitle} />
           <Metric label="Период" value={formatWeekWindow(selectedReportWeek)} />
           <Metric label="Отправка" value={formatNumericDate(selectedReportSendDate)} />
+          <Metric label="Оценка задач" value={`${overallTaskScore.score}/100`} tone={overallTaskScore.tone} />
           <Metric label="SEO сделано" value={String(seoDone)} tone={seoDone ? 'success' : undefined} />
           <Metric label="SEO просрочено" value={String(seoLate)} tone={seoLate ? 'danger' : 'success'} />
           <Metric label="SEO план" value={String(seoPlanned)} />
@@ -6443,7 +6588,13 @@ function WeeklyReportView({
         </div>
       </div>
 
-      <ReportModeSwitch mode={reportMode} onModeChange={setReportMode} />
+      <ReportModeSwitch
+        mode={reportMode}
+        onModeChange={(mode) => {
+          setReportMode(mode);
+          setSelectedDrilldown(null);
+        }}
+      />
 
       {reportMode === 'metrics' && selectedMetricsProject ? (
         <ReportMetricsMode
@@ -6454,6 +6605,35 @@ function WeeklyReportView({
           promotionSources={selectedMetricsSources}
           onProjectChange={setReportProjectId}
         />
+      ) : reportMode === 'logic' ? (
+        <>
+          <TaskLogicMode
+            reports={taskLogicReports}
+            overallScore={overallTaskScore}
+            selectedReportWeek={selectedReportWeek}
+            selectedPlanWeek={selectedPlanWeek}
+            savedSnapshotCount={savedSnapshotCount}
+            bitrix24Snapshot={bitrix24Snapshot}
+            onSaveSnapshot={saveSelectedSnapshot}
+            onOpenItems={(title, items) =>
+              setSelectedDrilldown({
+                projectId: 'logic',
+                filter: 'all',
+                title,
+                items,
+              })
+            }
+          />
+
+          {selectedDrilldown && (
+            <WeeklyReportDrilldown
+              title={selectedDrilldownTitle}
+              items={selectedDrilldownItems}
+              empty="По этому сигналу задач нет."
+              onClose={() => setSelectedDrilldown(null)}
+            />
+          )}
+        </>
       ) : (
         <>
           <WeeklyTaskSummaryTable
@@ -6606,13 +6786,325 @@ function ReportMetricsMode({
   );
 }
 
+function getTaskScoreRows(score: ProjectTaskScore): Array<{
+  metric: TaskScoreMetric;
+  label: string;
+  value: number;
+  count: number;
+  tone: 'success' | 'warning' | 'danger' | 'info';
+}> {
+  return [
+    {
+      metric: 'done',
+      label: 'Процент выполнения',
+      value: score.completionPercent,
+      count: score.done,
+      tone: 'success',
+    },
+    {
+      metric: 'overdue',
+      label: 'Процент текущих просрочек',
+      value: score.currentOverduePercent,
+      count: score.overdue,
+      tone: score.overdue ? 'danger' : 'success',
+    },
+    {
+      metric: 'lateDone',
+      label: 'Процент закрытых с опозданием',
+      value: score.lateDonePercent,
+      count: score.lateDone,
+      tone: score.lateDone ? 'warning' : 'success',
+    },
+    {
+      metric: 'carried',
+      label: 'Тянется от отчета к отчету',
+      value: score.carriedPercent,
+      count: score.carried,
+      tone: score.carried ? 'warning' : 'success',
+    },
+    {
+      metric: 'risk',
+      label: 'Задачи в риске',
+      value: score.riskPercent,
+      count: score.risk,
+      tone: score.risk ? 'warning' : 'success',
+    },
+    {
+      metric: 'withoutDeadline',
+      label: 'Заполненность дедлайнов',
+      value: score.deadlineFilledPercent,
+      count: score.withoutDeadline,
+      tone: score.withoutDeadline ? 'warning' : 'success',
+    },
+  ];
+}
+
+function ReportScoreOverview({
+  score,
+  reports,
+  selectedReportWeek,
+  selectedPlanWeek,
+  savedSnapshotCount,
+  bitrix24Snapshot,
+  onSaveSnapshot,
+  onOpenItems,
+}: {
+  score: ProjectTaskScore;
+  reports: TaskLogicReport[];
+  selectedReportWeek: WeekWindow;
+  selectedPlanWeek: WeekWindow;
+  savedSnapshotCount: number;
+  bitrix24Snapshot: Bitrix24Snapshot;
+  onSaveSnapshot: () => void;
+  onOpenItems: (title: string, items: WeeklyReportItem[]) => void;
+}) {
+  const rows = getTaskScoreRows(score);
+  const bitrixLabel = bitrix24Snapshot.updatedAt
+    ? `Bitrix24: ${formatDateTime(bitrix24Snapshot.updatedAt)}`
+    : 'Bitrix24: ждет backend-выгрузку';
+  const historyLabel =
+    savedSnapshotCount >= 2
+      ? `Сохранено снимков: ${savedSnapshotCount}`
+      : 'История начнется со следующего отчета';
+
+  return (
+    <section className="panel report-score-overview">
+      <div className="report-score-head">
+        <div className={`score-gauge ${score.tone}`}>
+          <strong>{score.score}</strong>
+          <span>/100</span>
+        </div>
+        <div>
+          <span>Общая оценка всех SEO-проектов</span>
+          <h2>{score.label}</h2>
+          <p>
+            Отчет за {formatWeekWindow(selectedReportWeek)}. Плановая неделя начинается {formatDate(selectedPlanWeek.start)}.
+          </p>
+        </div>
+        <button className="task-action-button" type="button" onClick={onSaveSnapshot}>
+          <Save size={14} />
+          Сохранить снимок
+        </button>
+      </div>
+
+      <div className="score-metric-grid" aria-label="Проценты оценки задач">
+        {rows.map((row) => (
+          <button
+            className={`score-metric-button ${row.tone}`}
+            key={row.metric}
+            type="button"
+            onClick={() => onOpenItems(`${row.label}: ${taskScoreMetricLabels[row.metric].toLowerCase()}`, score.itemsByMetric[row.metric])}
+            disabled={score.itemsByMetric[row.metric].length === 0}
+          >
+            <span>{row.label}</span>
+            <strong>{row.value}%</strong>
+            <em>{row.count ? `${row.count} задач` : row.metric === 'withoutDeadline' ? 'без пропусков' : '0 задач'}</em>
+          </button>
+        ))}
+      </div>
+
+      <div className="score-signal-list">
+        <span>{historyLabel}</span>
+        <span>{bitrixLabel}</span>
+        <span>{reports.length} проектов в оценке</span>
+        {score.signals.slice(0, 5).map((signal) => (
+          <strong key={signal}>{signal}</strong>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProjectTaskScoreCard({
+  report,
+  onOpenItems,
+}: {
+  report: TaskLogicReport;
+  onOpenItems: (title: string, items: WeeklyReportItem[]) => void;
+}) {
+  const rows = getTaskScoreRows(report.score);
+
+  return (
+    <article className="project-score-card" style={{ '--project-color': report.color } as CSSProperties}>
+      <header>
+        <div>
+          <span className="project-dot" />
+          <strong>{report.title}</strong>
+        </div>
+        <div className={`score-gauge compact ${report.score.tone}`}>
+          <strong>{report.score.score}</strong>
+          <span>/100</span>
+        </div>
+      </header>
+      <div className="score-meter" aria-hidden="true">
+        <span style={{ width: `${Math.min(report.score.score, 100)}%` }} />
+      </div>
+      <p>{report.score.signals[0] ?? 'сроки под контролем'}</p>
+      <div className="score-metric-grid compact">
+        {rows.slice(0, 4).map((row) => (
+          <button
+            className={`score-metric-button ${row.tone}`}
+            key={row.metric}
+            type="button"
+            onClick={() =>
+              onOpenItems(`${report.title}: ${row.label.toLowerCase()}`, report.score.itemsByMetric[row.metric])
+            }
+            disabled={report.score.itemsByMetric[row.metric].length === 0}
+          >
+            <span>{row.label}</span>
+            <strong>{row.value}%</strong>
+            <em>{row.count} задач</em>
+          </button>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function TaskLogicProjectCard({
+  report,
+  hasEnoughHistory,
+  onOpenItems,
+}: {
+  report: TaskLogicReport;
+  hasEnoughHistory: boolean;
+  onOpenItems: (title: string, items: WeeklyReportItem[]) => void;
+}) {
+  const categories: TaskLogicCategory[] = ['carried', 'added', 'done', 'lateDone', 'deadlineMoved', 'stuck'];
+
+  return (
+    <article className="task-logic-project-card" style={{ '--project-color': report.color } as CSSProperties}>
+      <header>
+        <div>
+          <span className="project-dot" />
+          <h3>{report.title}</h3>
+          <p>
+            Снимки: {formatDate(report.previousSnapshotDate)} и {formatDate(report.currentSnapshotDate)}
+          </p>
+        </div>
+        <span className={`score-badge ${report.score.tone}`}>{report.score.label}</span>
+      </header>
+
+      {!hasEnoughHistory && (
+        <div className="snapshot-status">
+          История начнется со следующего отчета. Сейчас видны текущие завершения, переносы и новые задачи.
+        </div>
+      )}
+
+      <div className="task-logic-category-grid">
+        {categories.map((category) => {
+          const requiresHistory = category === 'carried' || category === 'stuck';
+          const items = requiresHistory && !hasEnoughHistory ? [] : report.itemsByCategory[category];
+          const disabled = items.length === 0;
+
+          return (
+            <button
+              className={`task-logic-category-card ${category}`}
+              key={category}
+              type="button"
+              onClick={() => onOpenItems(`${report.title}: ${taskLogicCategoryLabels[category]}`, items)}
+              disabled={disabled}
+            >
+              <span>{taskLogicCategoryLabels[category]}</span>
+              <strong>{items.length}</strong>
+              {items.length > 0 ? (
+                <div className="task-logic-preview-list">
+                  {items.slice(0, 3).map((item) => (
+                    <em key={item.id}>{item.title}</em>
+                  ))}
+                </div>
+              ) : (
+                <p>{requiresHistory && !hasEnoughHistory ? 'нужен следующий snapshot' : 'нет задач'}</p>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </article>
+  );
+}
+
+function TaskLogicMode({
+  reports,
+  overallScore,
+  selectedReportWeek,
+  selectedPlanWeek,
+  savedSnapshotCount,
+  bitrix24Snapshot,
+  onSaveSnapshot,
+  onOpenItems,
+}: {
+  reports: TaskLogicReport[];
+  overallScore: ProjectTaskScore;
+  selectedReportWeek: WeekWindow;
+  selectedPlanWeek: WeekWindow;
+  savedSnapshotCount: number;
+  bitrix24Snapshot: Bitrix24Snapshot;
+  onSaveSnapshot: () => void;
+  onOpenItems: (title: string, items: WeeklyReportItem[]) => void;
+}) {
+  const hasEnoughHistory = savedSnapshotCount >= 2;
+
+  return (
+    <section className="report-logic-mode">
+      <ReportScoreOverview
+        score={overallScore}
+        reports={reports}
+        selectedReportWeek={selectedReportWeek}
+        selectedPlanWeek={selectedPlanWeek}
+        savedSnapshotCount={savedSnapshotCount}
+        bitrix24Snapshot={bitrix24Snapshot}
+        onSaveSnapshot={onSaveSnapshot}
+        onOpenItems={onOpenItems}
+      />
+
+      <div className="project-score-grid">
+        {reports.length ? (
+          reports.map((report) => <ProjectTaskScoreCard key={report.id} report={report} onOpenItems={onOpenItems} />)
+        ) : (
+          <div className="weekly-report-empty">Пока нет задач для оценки.</div>
+        )}
+      </div>
+
+      <section className="panel task-logic-board">
+        <div className="section-heading compact-heading">
+          <div>
+            <h2>Логика задач</h2>
+            <p>
+              Сравнение отчетных снимков: что тянется, что добавилось, что закрыли и где переносился срок.
+            </p>
+          </div>
+          <span className={hasEnoughHistory ? 'snapshot-status success' : 'snapshot-status'}>
+            {hasEnoughHistory ? 'История активна' : 'История начнется со следующего отчета'}
+          </span>
+        </div>
+
+        <div className="task-logic-board-grid">
+          {reports.length ? (
+            reports.map((report) => (
+              <TaskLogicProjectCard
+                key={report.id}
+                report={report}
+                hasEnoughHistory={hasEnoughHistory}
+                onOpenItems={onOpenItems}
+              />
+            ))
+          ) : (
+            <div className="weekly-report-empty">Проектов с рабочими задачами пока нет.</div>
+          )}
+        </div>
+      </section>
+    </section>
+  );
+}
+
 function WeeklyTaskSummaryTable({
   reports,
   selected,
   onSelect,
 }: {
   reports: WeeklyProjectReport[];
-  selected: { projectId: string; filter: TaskReportFilter } | null;
+  selected: ReportDrilldownState | null;
   onSelect: (projectId: string, filter: TaskReportFilter) => void;
 }) {
   const rows = reports.filter((report) => report.summary);
@@ -6987,6 +7479,18 @@ function WeeklyReportList({
                     ))}
                   </div>
                 )}
+                {item.logicTrail && item.logicTrail.length > 0 && (
+                  <div className="weekly-report-event-line" aria-label="Линия изменений задачи">
+                    {item.logicTrail.map((step) => (
+                      <div className={`weekly-report-event-step ${step.tone}`} key={step.id}>
+                        <i />
+                        <span>{formatDate(step.date)}</span>
+                        <strong>{step.title}</strong>
+                        <em>{step.meta}</em>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </details>
           ))}
@@ -7201,6 +7705,7 @@ function makeTaskReportItem(
 
   return {
     id: `${task.id}-${idSuffix}`,
+    taskId: task.id,
     title: task.title,
     meta: `${project.name} · ${owners}`,
     projectName: project.name,
@@ -7235,6 +7740,7 @@ function makeTimelineReportItem(
 
   return {
     id: `${task.id}-${item.id}-${idSuffix}`,
+    taskId: task.id,
     title: item.title,
     meta: `${task.title} · ${owner}`,
     projectName: project.name,
@@ -7253,6 +7759,479 @@ function makeTimelineReportItem(
     date: item.status === 'done' ? item.completedAt : item.dueDate,
     statusLabel: timing.label,
     tone: timing.tone,
+  };
+}
+
+function percentOf(part: number, total: number) {
+  return total > 0 ? Math.round((part / total) * 100) : 0;
+}
+
+function makeEmptyLogicCategoryMap(): Record<TaskLogicCategory, WeeklyReportItem[]> {
+  return {
+    carried: [],
+    added: [],
+    done: [],
+    lateDone: [],
+    deadlineMoved: [],
+    stuck: [],
+  };
+}
+
+function makeEmptyScoreMetricMap(): Record<TaskScoreMetric, WeeklyReportItem[]> {
+  return {
+    done: [],
+    overdue: [],
+    lateDone: [],
+    carried: [],
+    risk: [],
+    withoutDeadline: [],
+  };
+}
+
+function toDateOnly(value = '') {
+  return value ? value.slice(0, 10) : '';
+}
+
+function isDateInWindow(value: string | undefined, window: WeekWindow) {
+  return isIsoInWindow(toDateOnly(value), window);
+}
+
+function getTaskStatusAtDate(task: Task, reportDate: string): Status {
+  if (task.status === 'done' && !task.completedAt) return 'done';
+  if (task.completedAt && task.completedAt <= reportDate) return 'done';
+  return task.status === 'done' ? 'active' : task.status;
+}
+
+function getTimelineStatusAtDate(item: TimelineItem, reportDate: string): Status {
+  if (item.status === 'done' && !item.completedAt) return 'done';
+  if (item.completedAt && item.completedAt <= reportDate) return 'done';
+  return item.status === 'done' ? 'active' : item.status;
+}
+
+function makeTaskReportSnapshot(
+  tasks: Task[],
+  reportDate: string,
+  bitrix24Snapshot: Bitrix24Snapshot = EMPTY_BITRIX24_SNAPSHOT,
+  source: TaskReportSnapshot['source'] = 'dashboard',
+): TaskReportSnapshot {
+  const snapshotTasks = tasks
+    .filter(isCountableTask)
+    .filter((task) => !task.createdAt || task.createdAt <= reportDate)
+    .map((task) => {
+      const status = getTaskStatusAtDate(task, reportDate);
+      const timeline = task.timeline.filter(() => !task.createdAt || task.createdAt <= reportDate);
+      const timelineDone = timeline.filter((item) => getTimelineStatusAtDate(item, reportDate) === 'done').length;
+
+      return {
+        taskId: task.id,
+        projectId: task.projectId,
+        title: task.title,
+        status,
+        ownerIds: task.ownerIds,
+        deadline: task.deadline,
+        completedAt: task.completedAt && task.completedAt <= reportDate ? task.completedAt : undefined,
+        createdAt: task.createdAt,
+        open: status !== 'done',
+        timelineDone,
+        timelineTotal: timeline.length,
+      };
+    });
+
+  return {
+    id: `snapshot-${reportDate}`,
+    reportDate,
+    capturedAt: new Date().toISOString(),
+    source,
+    taskCount: snapshotTasks.length,
+    bitrixTaskCount: bitrix24Snapshot.tasks.length,
+    tasks: snapshotTasks,
+  };
+}
+
+function normalizeReportSnapshots(snapshots: TaskReportSnapshot[]) {
+  return snapshots
+    .filter((snapshot) => snapshot && typeof snapshot.reportDate === 'string' && Array.isArray(snapshot.tasks))
+    .sort((left, right) => right.reportDate.localeCompare(left.reportDate));
+}
+
+function upsertTaskReportSnapshot(current: TaskReportSnapshot[], next: TaskReportSnapshot) {
+  return [next, ...normalizeReportSnapshots(current).filter((snapshot) => snapshot.reportDate !== next.reportDate)]
+    .sort((left, right) => right.reportDate.localeCompare(left.reportDate))
+    .slice(0, 40);
+}
+
+function getReportSnapshotForDate(
+  reportSnapshots: TaskReportSnapshot[],
+  tasks: Task[],
+  bitrix24Snapshot: Bitrix24Snapshot,
+  reportDate: string,
+) {
+  return (
+    normalizeReportSnapshots(reportSnapshots).find((snapshot) => snapshot.reportDate === reportDate) ??
+    makeTaskReportSnapshot(tasks, reportDate, bitrix24Snapshot, 'inferred')
+  );
+}
+
+function hasDeadlineMoveInWindow(task: Task, window: WeekWindow) {
+  return getTaskHistory(task).some(
+    (entry) =>
+      isDateInWindow(entry.changedAt, window) &&
+      entry.changes.some((change) => change.field === 'Дедлайн' || change.field.startsWith('Хронология:')),
+  );
+}
+
+function buildTaskLogicTrail(
+  task: Task,
+  peopleById: Map<string, Person>,
+  previousSnapshotItem: TaskReportSnapshotItem | undefined,
+  currentSnapshotItem: TaskReportSnapshotItem | undefined,
+  previousSnapshotDate: string,
+  currentSnapshotDate: string,
+  reportWeek: WeekWindow,
+  openStreak: number,
+): TaskLogicTrailStep[] {
+  const steps: TaskLogicTrailStep[] = [
+    {
+      id: `${task.id}-created`,
+      date: task.createdAt,
+      title: 'Поставили задачу',
+      meta: `${ownerNames(task.ownerIds, peopleById)} · дедлайн ${formatDate(task.deadline)}`,
+      tone: 'info',
+    },
+  ];
+
+  if (previousSnapshotItem?.open) {
+    steps.push({
+      id: `${task.id}-previous-open`,
+      date: previousSnapshotDate,
+      title: 'Была открыта в прошлом отчете',
+      meta: `${statusLabels[previousSnapshotItem.status]} · этапы ${previousSnapshotItem.timelineDone}/${previousSnapshotItem.timelineTotal}`,
+      tone: 'warning',
+    });
+  }
+
+  getTaskHistory(task)
+    .filter((entry) => isDateInWindow(entry.changedAt, reportWeek))
+    .forEach((entry) => {
+      steps.push({
+        id: entry.id,
+        date: toDateOnly(entry.changedAt),
+        title: entry.action,
+        meta: entry.summary,
+        tone: entry.changes.some((change) => change.field === 'Дедлайн') ? 'warning' : 'info',
+      });
+    });
+
+  task.timeline
+    .filter((item) => item.status === 'done' && isDateInWindow(item.completedAt, reportWeek))
+    .forEach((item) => {
+      steps.push({
+        id: `${task.id}-${item.id}-done`,
+        date: item.completedAt ?? currentSnapshotDate,
+        title: `Закрыли этап: ${item.title}`,
+        meta: `${peopleById.get(item.ownerId)?.name ?? 'Ответственный'} · срок ${formatDate(item.dueDate)}`,
+        tone: item.completedAt && item.dueDate && item.completedAt > item.dueDate ? 'danger' : 'success',
+      });
+    });
+
+  if (task.completedAt && isDateInWindow(task.completedAt, reportWeek)) {
+    steps.push({
+      id: `${task.id}-completed`,
+      date: task.completedAt,
+      title: 'Закрыли задачу',
+      meta: task.deadline && task.completedAt > task.deadline ? `Позже срока на ${daysBetweenIso(task.deadline, task.completedAt)} дн.` : 'В срок',
+      tone: task.deadline && task.completedAt > task.deadline ? 'danger' : 'success',
+    });
+  }
+
+  if (currentSnapshotItem?.open) {
+    steps.push({
+      id: `${task.id}-current-open`,
+      date: currentSnapshotDate,
+      title: openStreak >= 2 ? 'Тянется дальше' : 'Осталась в работе',
+      meta: openStreak >= 2 ? `${openStreak} отчета подряд` : statusLabels[currentSnapshotItem.status],
+      tone: openStreak >= 2 ? 'danger' : 'warning',
+    });
+  }
+
+  return steps
+    .filter((step) => step.date)
+    .sort((left, right) => left.date.localeCompare(right.date))
+    .slice(-8);
+}
+
+function getOpenSnapshotStreak(taskId: string, snapshots: TaskReportSnapshot[]) {
+  let streak = 0;
+  for (const snapshot of snapshots) {
+    const item = snapshot.tasks.find((snapshotTask) => snapshotTask.taskId === taskId);
+    if (!item?.open) break;
+    streak += 1;
+  }
+  return streak;
+}
+
+function getScoreGrade(score: number, total: number): Pick<ProjectTaskScore, 'label' | 'tone'> {
+  if (total === 0) return { label: 'нет задач', tone: 'info' };
+  if (score >= 85) return { label: 'стабильно', tone: 'success' };
+  if (score >= 70) return { label: 'нужен контроль', tone: 'warning' };
+  if (score >= 50) return { label: 'риск срыва', tone: 'warning' };
+  return { label: 'критично', tone: 'danger' };
+}
+
+function buildProjectTaskScore(
+  project: Project,
+  projectTasks: Task[],
+  peopleById: Map<string, Person>,
+  today: string,
+  itemsByCategory: Record<TaskLogicCategory, WeeklyReportItem[]>,
+  logicTrailByTaskId: Map<string, TaskLogicTrailStep[]> = new Map(),
+): ProjectTaskScore {
+  const summary = buildProjectTaskSummary(project, projectTasks, peopleById, today);
+  const itemsByMetric = makeEmptyScoreMetricMap();
+  itemsByMetric.done = summary.itemsByFilter.done;
+  itemsByMetric.overdue = summary.itemsByFilter.overdue;
+  itemsByMetric.lateDone = summary.itemsByFilter.lateDone;
+  itemsByMetric.carried = itemsByCategory.carried;
+  itemsByMetric.risk = summary.itemsByFilter.risk;
+  itemsByMetric.withoutDeadline = summary.itemsByFilter.withoutDeadline;
+  (Object.keys(itemsByMetric) as TaskScoreMetric[]).forEach((metric) => {
+    itemsByMetric[metric] = itemsByMetric[metric].map((item) => {
+      const trail = item.taskId ? logicTrailByTaskId.get(item.taskId) : undefined;
+      return trail ? { ...item, logicTrail: trail } : item;
+    });
+  });
+
+  const completionPercent = summary.completionPercent;
+  const currentOverduePercent = percentOf(summary.overdue, summary.total);
+  const lateDonePercent = percentOf(summary.lateDone, summary.total);
+  const carriedPercent = percentOf(itemsByCategory.carried.length, summary.total);
+  const riskPercent = percentOf(summary.risk, summary.total);
+  const deadlineFilledPercent = summary.total ? percentOf(summary.total - summary.withoutDeadline, summary.total) : 0;
+  const score = summary.total
+    ? Math.round(
+        completionPercent * 0.4 +
+          (100 - currentOverduePercent) * 0.25 +
+          (100 - carriedPercent) * 0.2 +
+          (100 - riskPercent) * 0.1 +
+          deadlineFilledPercent * 0.05,
+      )
+    : 0;
+  const grade = getScoreGrade(score, summary.total);
+  const signals = [
+    summary.overdue ? `${summary.overdue} текущих просрочек` : '',
+    itemsByCategory.stuck.length ? `${itemsByCategory.stuck.length} задач не закрываются 2+ отчета` : '',
+    itemsByCategory.carried.length ? `${itemsByCategory.carried.length} тянутся из прошлого отчета` : '',
+    summary.risk ? `${summary.risk} задач в риске` : '',
+    summary.lateDone ? `${summary.lateDone} закрыты с опозданием` : '',
+    summary.withoutDeadline ? `${summary.withoutDeadline} без дедлайна` : '',
+  ].filter(Boolean);
+
+  return {
+    score,
+    ...grade,
+    total: summary.total,
+    completionPercent,
+    currentOverduePercent,
+    lateDonePercent,
+    carriedPercent,
+    riskPercent,
+    deadlineFilledPercent,
+    done: summary.done,
+    overdue: summary.overdue,
+    lateDone: summary.lateDone,
+    carried: itemsByCategory.carried.length,
+    stuck: itemsByCategory.stuck.length,
+    risk: summary.risk,
+    withoutDeadline: summary.withoutDeadline,
+    signals: signals.length ? signals.slice(0, 5) : ['сроки под контролем'],
+    itemsByMetric,
+  };
+}
+
+function buildTaskLogicReports(
+  projects: Project[],
+  tasks: Task[],
+  peopleById: Map<string, Person>,
+  reportSnapshots: TaskReportSnapshot[],
+  bitrix24Snapshot: Bitrix24Snapshot,
+  reportWeek: WeekWindow,
+  planWeek: WeekWindow,
+): TaskLogicReport[] {
+  const currentSnapshotDate = planWeek.start;
+  const previousSnapshotDate = reportWeek.start;
+  const normalizedSnapshots = normalizeReportSnapshots(reportSnapshots).filter(
+    (snapshot) => snapshot.reportDate <= currentSnapshotDate,
+  );
+  const currentSnapshot = getReportSnapshotForDate(reportSnapshots, tasks, bitrix24Snapshot, currentSnapshotDate);
+  const previousSnapshot = getReportSnapshotForDate(reportSnapshots, tasks, bitrix24Snapshot, previousSnapshotDate);
+  const previousByTaskId = new Map(previousSnapshot.tasks.map((item) => [item.taskId, item]));
+  const currentByTaskId = new Map(currentSnapshot.tasks.map((item) => [item.taskId, item]));
+  const savedDates = new Set(normalizedSnapshots.map((snapshot) => snapshot.reportDate));
+  const streakSnapshots = normalizedSnapshots;
+  const today = todayIso();
+
+  return projects
+    .map((project) => {
+      const projectTasks = tasks.filter((task) => task.projectId === project.id && isCountableTask(task));
+      const itemsByCategory = makeEmptyLogicCategoryMap();
+      const hasSavedHistory = savedDates.has(currentSnapshotDate) && savedDates.has(previousSnapshotDate);
+      const logicTrailByTaskId = new Map<string, TaskLogicTrailStep[]>();
+
+      projectTasks.forEach((task) => {
+        const previousSnapshotItem = previousByTaskId.get(task.id);
+        const currentSnapshotItem = currentByTaskId.get(task.id);
+        const openStreak = getOpenSnapshotStreak(task.id, streakSnapshots);
+        const trail = buildTaskLogicTrail(
+          task,
+          peopleById,
+          previousSnapshotItem,
+          currentSnapshotItem,
+          previousSnapshotDate,
+          currentSnapshotDate,
+          reportWeek,
+          openStreak,
+        );
+        logicTrailByTaskId.set(task.id, trail);
+        const baseItem = {
+          ...makeTaskReportItem(task, project, peopleById, today, 'logic'),
+          logicTrail: trail,
+        };
+
+        if (hasSavedHistory && previousSnapshotItem?.open && currentSnapshotItem?.open) {
+          itemsByCategory.carried.push({
+            ...baseItem,
+            id: `${task.id}-carried`,
+            date: currentSnapshotDate,
+            statusLabel: openStreak >= 2 ? `${openStreak} отчета` : 'тянется',
+            tone: openStreak >= 2 ? 'danger' : 'warning',
+          });
+        }
+
+        if (isIsoInWindow(task.createdAt, reportWeek) || (!previousSnapshotItem && currentSnapshotItem)) {
+          itemsByCategory.added.push({
+            ...baseItem,
+            id: `${task.id}-added`,
+            date: task.createdAt,
+            statusLabel: 'добавлено',
+            tone: 'info',
+          });
+        }
+
+        if (task.completedAt && isIsoInWindow(task.completedAt, reportWeek)) {
+          const isLate = Boolean(task.deadline) && task.completedAt > task.deadline;
+          const item = {
+            ...baseItem,
+            id: `${task.id}-logic-done`,
+            date: task.completedAt,
+            statusLabel: isLate ? 'позже срока' : 'готово',
+            tone: isLate ? 'danger' : 'success',
+          } satisfies WeeklyReportItem;
+          itemsByCategory.done.push(item);
+          if (isLate) itemsByCategory.lateDone.push({ ...item, id: `${task.id}-logic-late-done` });
+        }
+
+        if (hasDeadlineMoveInWindow(task, reportWeek)) {
+          itemsByCategory.deadlineMoved.push({
+            ...baseItem,
+            id: `${task.id}-deadline-moved`,
+            date: currentSnapshotDate,
+            statusLabel: 'срок менялся',
+            tone: 'warning',
+          });
+        }
+
+        if (hasSavedHistory && currentSnapshotItem?.open && openStreak >= 2) {
+          itemsByCategory.stuck.push({
+            ...baseItem,
+            id: `${task.id}-stuck`,
+            date: currentSnapshotDate,
+            statusLabel: `${openStreak} отчета`,
+            tone: 'danger',
+          });
+        }
+      });
+
+      Object.keys(itemsByCategory).forEach((key) => {
+        const category = key as TaskLogicCategory;
+        itemsByCategory[category] = sortWeeklyItems(
+          itemsByCategory[category],
+          category === 'done' || category === 'lateDone' ? 'desc' : 'asc',
+        );
+      });
+
+      return {
+        id: project.id,
+        title: project.name,
+        color: project.color,
+        score: buildProjectTaskScore(project, projectTasks, peopleById, today, itemsByCategory, logicTrailByTaskId),
+        hasSavedHistory,
+        currentSnapshotDate,
+        previousSnapshotDate,
+        itemsByCategory,
+      };
+    })
+    .filter((report) => report.score.total || Object.values(report.itemsByCategory).some((items) => items.length));
+}
+
+function buildOverallTaskScore(reports: TaskLogicReport[]): ProjectTaskScore {
+  const itemsByMetric = makeEmptyScoreMetricMap();
+  reports.forEach((report) => {
+    (Object.keys(itemsByMetric) as TaskScoreMetric[]).forEach((metric) => {
+      itemsByMetric[metric].push(...report.score.itemsByMetric[metric]);
+    });
+  });
+
+  const total = reports.reduce((sum, report) => sum + report.score.total, 0);
+  const done = reports.reduce((sum, report) => sum + report.score.done, 0);
+  const overdue = reports.reduce((sum, report) => sum + report.score.overdue, 0);
+  const lateDone = reports.reduce((sum, report) => sum + report.score.lateDone, 0);
+  const carried = reports.reduce((sum, report) => sum + report.score.carried, 0);
+  const stuck = reports.reduce((sum, report) => sum + report.score.stuck, 0);
+  const risk = reports.reduce((sum, report) => sum + report.score.risk, 0);
+  const withoutDeadline = reports.reduce((sum, report) => sum + report.score.withoutDeadline, 0);
+  const completionPercent = percentOf(done, total);
+  const currentOverduePercent = percentOf(overdue, total);
+  const lateDonePercent = percentOf(lateDone, total);
+  const carriedPercent = percentOf(carried, total);
+  const riskPercent = percentOf(risk, total);
+  const deadlineFilledPercent = total ? percentOf(total - withoutDeadline, total) : 0;
+  const score = total
+    ? Math.round(
+        completionPercent * 0.4 +
+          (100 - currentOverduePercent) * 0.25 +
+          (100 - carriedPercent) * 0.2 +
+          (100 - riskPercent) * 0.1 +
+          deadlineFilledPercent * 0.05,
+      )
+    : 0;
+  const grade = getScoreGrade(score, total);
+  const problemSignals = reports
+    .flatMap((report) =>
+      report.score.signals
+        .filter((signal) => signal !== 'сроки под контролем')
+        .map((signal) => `${report.title}: ${signal}`),
+    )
+    .slice(0, 5);
+
+  return {
+    score,
+    ...grade,
+    total,
+    completionPercent,
+    currentOverduePercent,
+    lateDonePercent,
+    carriedPercent,
+    riskPercent,
+    deadlineFilledPercent,
+    done,
+    overdue,
+    lateDone,
+    carried,
+    stuck,
+    risk,
+    withoutDeadline,
+    signals: problemSignals.length ? problemSignals : ['критичных сигналов нет'],
+    itemsByMetric,
   };
 }
 
@@ -7434,7 +8413,10 @@ function SeoProjectsView({
   paymentDraft,
   promotionSources,
   selectedProjectId,
+  reportSnapshots,
+  bitrix24Snapshot,
   onProjectChange,
+  onReportSnapshotsChange,
   linkLoadStatus,
   linkError,
   linkUpdatedAt,
@@ -7476,7 +8458,10 @@ function SeoProjectsView({
   paymentDraft: PaymentDraft;
   promotionSources: PromotionResultSource[];
   selectedProjectId: string;
+  reportSnapshots: TaskReportSnapshot[];
+  bitrix24Snapshot: Bitrix24Snapshot;
   onProjectChange: (projectId: string) => void;
+  onReportSnapshotsChange: Dispatch<SetStateAction<TaskReportSnapshot[]>>;
   linkLoadStatus: LinkLoadStatus;
   linkError: string;
   linkUpdatedAt: string;
@@ -7671,8 +8656,11 @@ function SeoProjectsView({
                 <SeoProjectReportsPanel
                   project={selectedProject}
                   resources={selectedResources.filter((resource) => resource.tab === 'report' || resource.tab === 'site')}
-                  tasks={selectedTasks}
+                  tasks={tasks}
                   peopleById={peopleById}
+                  reportSnapshots={reportSnapshots}
+                  bitrix24Snapshot={bitrix24Snapshot}
+                  onReportSnapshotsChange={onReportSnapshotsChange}
                   linkRows={selectedLinkRows}
                   promotionSources={selectedSources}
                 />
@@ -8139,6 +9127,9 @@ function SeoProjectReportsPanel({
   resources,
   tasks,
   peopleById,
+  reportSnapshots,
+  bitrix24Snapshot,
+  onReportSnapshotsChange,
   linkRows,
   promotionSources,
 }: {
@@ -8146,16 +9137,33 @@ function SeoProjectReportsPanel({
   resources: ManagedResource[];
   tasks: Task[];
   peopleById: Map<string, Person>;
+  reportSnapshots: TaskReportSnapshot[];
+  bitrix24Snapshot: Bitrix24Snapshot;
+  onReportSnapshotsChange: Dispatch<SetStateAction<TaskReportSnapshot[]>>;
   linkRows: LinkPurchase[];
   promotionSources: PromotionResultSource[];
 }) {
   const [reportMode, setReportMode] = useStoredState<ReportMode>('task-seo-single-project-report-mode', 'tasks');
+  const [selectedDrilldown, setSelectedDrilldown] = useState<{ title: string; items: WeeklyReportItem[] } | null>(null);
   const reportWeek = useMemo(() => getWeekWindow(-1), []);
   const planWeek = useMemo(() => getWeekWindow(0), []);
   const report = useMemo(
     () => buildSeoWeeklyReports([project], tasks, peopleById, reportWeek, planWeek)[0],
     [peopleById, planWeek, project, reportWeek, tasks],
   );
+  const taskLogicReports = useMemo(
+    () => buildTaskLogicReports([project], tasks, peopleById, reportSnapshots, bitrix24Snapshot, reportWeek, planWeek),
+    [bitrix24Snapshot, peopleById, planWeek, project, reportSnapshots, reportWeek, tasks],
+  );
+  const overallTaskScore = useMemo(() => buildOverallTaskScore(taskLogicReports), [taskLogicReports]);
+  const savedSnapshotCount = normalizeReportSnapshots(reportSnapshots).filter(
+    (snapshot) => snapshot.reportDate <= planWeek.start,
+  ).length;
+  const saveCurrentSnapshot = () => {
+    onReportSnapshotsChange((current) =>
+      upsertTaskReportSnapshot(current, makeTaskReportSnapshot(tasks, planWeek.start, bitrix24Snapshot, 'dashboard')),
+    );
+  };
   const reportResources = resources.filter((resource) => resource.tab === 'report');
   const siteResources = resources.filter((resource) => resource.tab === 'site');
 
@@ -8175,7 +9183,10 @@ function SeoProjectReportsPanel({
               className={reportMode === mode ? 'is-active' : ''}
               key={mode}
               type="button"
-              onClick={() => setReportMode(mode)}
+              onClick={() => {
+                setReportMode(mode);
+                setSelectedDrilldown(null);
+              }}
             >
               {reportModeLabels[mode]}
             </button>
@@ -8185,6 +9196,27 @@ function SeoProjectReportsPanel({
 
       {reportMode === 'metrics' ? (
         <ProjectSeoAnalyticsTiles project={project} linkRows={linkRows} promotionSources={promotionSources} />
+      ) : reportMode === 'logic' ? (
+        <>
+          <TaskLogicMode
+            reports={taskLogicReports}
+            overallScore={overallTaskScore}
+            selectedReportWeek={reportWeek}
+            selectedPlanWeek={planWeek}
+            savedSnapshotCount={savedSnapshotCount}
+            bitrix24Snapshot={bitrix24Snapshot}
+            onSaveSnapshot={saveCurrentSnapshot}
+            onOpenItems={(title, items) => setSelectedDrilldown({ title, items })}
+          />
+          {selectedDrilldown && (
+            <WeeklyReportDrilldown
+              title={selectedDrilldown.title}
+              items={selectedDrilldown.items}
+              empty="По этому сигналу задач нет."
+              onClose={() => setSelectedDrilldown(null)}
+            />
+          )}
+        </>
       ) : report ? (
         <div className="seo-single-report">
           <WeeklyReportProjectCard report={report} />
@@ -8868,7 +9900,7 @@ function Metric({
 }: {
   label: string;
   value: string;
-  tone?: 'success' | 'warning' | 'danger';
+  tone?: 'success' | 'warning' | 'danger' | 'info';
   compact?: boolean;
 }) {
   return (
