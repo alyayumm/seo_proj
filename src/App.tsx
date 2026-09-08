@@ -6459,6 +6459,10 @@ function WeeklyReportView({
     'task-seo-report-project-id',
     projects[0]?.id ?? '',
   );
+  const [reportTaskProjectId, setReportTaskProjectId] = useStoredState<string>(
+    'task-seo-report-task-project-id',
+    'all',
+  );
   const [selectedDrilldown, setSelectedDrilldown] = useState<ReportDrilldownState | null>(null);
   const latestReportWeek = useMemo(() => getWeekWindow(-1), []);
   const archiveStarts = useMemo(
@@ -6510,8 +6514,25 @@ function WeeklyReportView({
       ),
     [bitrix24Snapshot, peopleById, projects, reportSnapshots, selectedPlanWeek, selectedReportWeek, tasks],
   );
-  const overallTaskScore = useMemo(() => buildOverallTaskScore(taskLogicReports), [taskLogicReports]);
   const projectById = useMemo(() => new Map(projects.map((project) => [project.id, project])), [projects]);
+  const selectedTaskProject =
+    reportTaskProjectId === 'all' ? undefined : projects.find((project) => project.id === reportTaskProjectId);
+  const visibleSeoReports = useMemo(
+    () =>
+      selectedTaskProject
+        ? seoReports.filter((report) => report.id === selectedTaskProject.id)
+        : seoReports,
+    [selectedTaskProject, seoReports],
+  );
+  const visibleTaskLogicReports = useMemo(
+    () =>
+      selectedTaskProject
+        ? taskLogicReports.filter((report) => report.id === selectedTaskProject.id)
+        : taskLogicReports,
+    [selectedTaskProject, taskLogicReports],
+  );
+  const allTaskScore = useMemo(() => buildOverallTaskScore(taskLogicReports), [taskLogicReports]);
+  const visibleTaskScore = useMemo(() => buildOverallTaskScore(visibleTaskLogicReports), [visibleTaskLogicReports]);
   const selectedMetricsProject = projects.find((project) => project.id === reportProjectId) ?? projects[0];
   const selectedMetricsProjectKey = normalizeProjectName(selectedMetricsProject?.name ?? '');
   const selectedMetricsLinkRows = linkRows.filter((row) => normalizeProjectName(row.projectName) === selectedMetricsProjectKey);
@@ -6519,7 +6540,7 @@ function WeeklyReportView({
     (source) => normalizeProjectName(source.projectName) === selectedMetricsProjectKey,
   );
   const selectedDrilldownReport = selectedDrilldown
-    ? seoReports.find((report) => report.id === selectedDrilldown.projectId)
+    ? visibleSeoReports.find((report) => report.id === selectedDrilldown.projectId)
     : undefined;
   const selectedDrilldownItems =
     selectedDrilldown?.items ??
@@ -6542,9 +6563,12 @@ function WeeklyReportView({
         .sort((a, b) => a.title.localeCompare(b.title)),
     [selectedReportSendDate, tasks],
   );
-  const seoDone = seoReports.reduce((sum, report) => sum + report.done.length, 0);
-  const seoLate = seoReports.reduce((sum, report) => sum + report.late.length, 0);
-  const seoPlanned = seoReports.reduce((sum, report) => sum + report.planned.length, 0);
+  const visibleReportFocusTasks = selectedTaskProject
+    ? reportFocusTasks.filter((task) => task.projectId === selectedTaskProject.id)
+    : reportFocusTasks;
+  const seoDone = visibleSeoReports.reduce((sum, report) => sum + report.done.length, 0);
+  const seoLate = visibleSeoReports.reduce((sum, report) => sum + report.late.length, 0);
+  const seoPlanned = visibleSeoReports.reduce((sum, report) => sum + report.planned.length, 0);
   const externalDone = externalReports.reduce((sum, report) => sum + report.done.length, 0);
   const externalLate = externalReports.reduce((sum, report) => sum + report.late.length, 0);
   const externalPlanned = externalReports.reduce((sum, report) => sum + report.planned.length, 0);
@@ -6566,6 +6590,20 @@ function WeeklyReportView({
     setReportProjectId(projects[0]?.id ?? '');
   }, [projects, selectedMetricsProject, setReportProjectId]);
 
+  useEffect(() => {
+    if (reportTaskProjectId === 'all') return;
+    if (projects.some((project) => project.id === reportTaskProjectId)) return;
+    setReportTaskProjectId('all');
+  }, [projects, reportTaskProjectId, setReportTaskProjectId]);
+
+  useEffect(() => {
+    if (!selectedDrilldown) return;
+    if (visibleSeoReports.some((report) => report.id === selectedDrilldown.projectId)) return;
+    setSelectedDrilldown(null);
+  }, [selectedDrilldown, visibleSeoReports]);
+
+  const taskScopeLabel = selectedTaskProject?.name ?? 'все SEO-проекты';
+
   return (
     <section className="weekly-report-view">
       <div className="dashboard-hero panel weekly-report-hero">
@@ -6579,7 +6617,7 @@ function WeeklyReportView({
           <Metric label="Открыт отчет" value={selectedReportTitle} />
           <Metric label="Период" value={formatWeekWindow(selectedReportWeek)} />
           <Metric label="Отправка" value={formatNumericDate(selectedReportSendDate)} />
-          <Metric label="Оценка задач" value={`${overallTaskScore.score}/100`} tone={overallTaskScore.tone} />
+          <Metric label="Оценка задач" value={`${visibleTaskScore.score}/100`} tone={visibleTaskScore.tone} />
           <Metric label="SEO сделано" value={String(seoDone)} tone={seoDone ? 'success' : undefined} />
           <Metric label="SEO просрочено" value={String(seoLate)} tone={seoLate ? 'danger' : 'success'} />
           <Metric label="SEO план" value={String(seoPlanned)} />
@@ -6607,20 +6645,53 @@ function WeeklyReportView({
         />
       ) : reportMode === 'logic' ? (
         <>
+          <ReportAnalyticsOverview
+            reportWeek={selectedReportWeek}
+            planWeek={selectedPlanWeek}
+            score={allTaskScore}
+            seoReports={seoReports}
+            externalReports={externalReports}
+          />
+          <ReportProjectFilter
+            projects={projects}
+            reports={seoReports}
+            selectedProjectId={reportTaskProjectId}
+            onSelect={(projectId) => {
+              setReportTaskProjectId(projectId);
+              setSelectedDrilldown(null);
+            }}
+          />
           <TaskLogicMode
-            reports={taskLogicReports}
-            overallScore={overallTaskScore}
+            reports={visibleTaskLogicReports}
+            overallScore={visibleTaskScore}
             selectedReportWeek={selectedReportWeek}
             selectedPlanWeek={selectedPlanWeek}
             savedSnapshotCount={savedSnapshotCount}
             bitrix24Snapshot={bitrix24Snapshot}
             onSaveSnapshot={saveSelectedSnapshot}
+            scopeProjectName={selectedTaskProject?.name}
           />
         </>
       ) : (
         <>
-          <WeeklyTaskSummaryTable
+          <ReportAnalyticsOverview
+            reportWeek={selectedReportWeek}
+            planWeek={selectedPlanWeek}
+            score={allTaskScore}
+            seoReports={seoReports}
+            externalReports={externalReports}
+          />
+          <ReportProjectFilter
+            projects={projects}
             reports={seoReports}
+            selectedProjectId={reportTaskProjectId}
+            onSelect={(projectId) => {
+              setReportTaskProjectId(projectId);
+              setSelectedDrilldown(null);
+            }}
+          />
+          <WeeklyTaskSummaryTable
+            reports={visibleSeoReports}
             selected={selectedDrilldown}
             onSelect={(projectId, filter) => setSelectedDrilldown({ projectId, filter })}
           />
@@ -6634,18 +6705,19 @@ function WeeklyReportView({
             />
           )}
 
-          <WeeklyTaskTrendPanel reports={seoReports} />
+          <WeeklyTaskTrendPanel reports={visibleSeoReports} />
 
           <section className="panel weekly-focus-card">
             <div>
               <span>Открытая отчетная папка</span>
               <h2>{selectedReportTitle}</h2>
               <p>
-                Работы за {formatWeekWindow(selectedReportWeek)}. Отправка отчета - {formatNumericDate(selectedReportSendDate)}.
+                {taskScopeLabel}: работы за {formatWeekWindow(selectedReportWeek)}. Отправка отчета -{' '}
+                {formatNumericDate(selectedReportSendDate)}.
               </p>
             </div>
             <div className="weekly-focus-list">
-              {reportFocusTasks.map((task) => {
+              {visibleReportFocusTasks.map((task) => {
                 const project = projectById.get(task.projectId);
                 return (
                   <span key={task.id}>
@@ -6654,19 +6726,20 @@ function WeeklyReportView({
                   </span>
                 );
               })}
+              {visibleReportFocusTasks.length === 0 && <span>Отчетных закрытий по выбранному проекту пока нет</span>}
             </div>
           </section>
 
           <div className="weekly-report-grid">
             <WeeklyReportSection
-              title="SEO-проекты"
+              title={selectedTaskProject ? `SEO-проект: ${selectedTaskProject.name}` : 'SEO-проекты'}
               description={`Открытая папка: ${selectedReportTitle}. План на следующую неделю: ${formatWeekWindow(
                 selectedPlanWeek,
               )}.`}
               doneCount={seoDone}
               lateCount={seoLate}
               plannedCount={seoPlanned}
-              reports={seoReports}
+              reports={visibleSeoReports}
             />
             <WeeklyReportSection
               title="Сторонние проекты"
@@ -6717,6 +6790,149 @@ function ReportModeSwitch({
             </button>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function ReportAnalyticsOverview({
+  reportWeek,
+  planWeek,
+  score,
+  seoReports,
+  externalReports,
+}: {
+  reportWeek: WeekWindow;
+  planWeek: WeekWindow;
+  score: ProjectTaskScore;
+  seoReports: WeeklyProjectReport[];
+  externalReports: WeeklyProjectReport[];
+}) {
+  const seoDone = seoReports.reduce((sum, report) => sum + report.done.length, 0);
+  const seoLate = seoReports.reduce((sum, report) => sum + report.late.length, 0);
+  const seoPlanned = seoReports.reduce((sum, report) => sum + report.planned.length, 0);
+  const externalDone = externalReports.reduce((sum, report) => sum + report.done.length, 0);
+  const externalLate = externalReports.reduce((sum, report) => sum + report.late.length, 0);
+  const externalPlanned = externalReports.reduce((sum, report) => sum + report.planned.length, 0);
+
+  return (
+    <section className="panel report-analytics-panel">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>Аналитика всех отчетов</h2>
+          <p>Сводка по всем SEO-проектам и сторонним направлениям без фильтра по конкретному клиенту.</p>
+        </div>
+        <span className={`score-badge ${score.tone}`}>{score.label}</span>
+      </div>
+      <div className="report-analytics-grid">
+        <article>
+          <span>Неделя отчета</span>
+          <strong>{formatWeekWindow(reportWeek)}</strong>
+        </article>
+        <article>
+          <span>План недели</span>
+          <strong>{formatWeekWindow(planWeek)}</strong>
+        </article>
+        <article>
+          <span>SEO сделано</span>
+          <strong>{seoDone}</strong>
+        </article>
+        <article>
+          <span>SEO просрочено</span>
+          <strong className={seoLate ? 'is-danger' : ''}>{seoLate}</strong>
+        </article>
+        <article>
+          <span>Сторонние сделано</span>
+          <strong>{externalDone}</strong>
+        </article>
+        <article>
+          <span>Сторонние просрочено</span>
+          <strong className={externalLate ? 'is-danger' : ''}>{externalLate}</strong>
+        </article>
+        <article>
+          <span>Закрыто с опозданием</span>
+          <strong className={score.lateDone ? 'is-warning' : ''}>{score.lateDone}</strong>
+        </article>
+        <article>
+          <span>Тянется 2+ отчета</span>
+          <strong className={score.stuck ? 'is-warning' : ''}>{score.stuck}</strong>
+        </article>
+        <article>
+          <span>Без дедлайна</span>
+          <strong className={score.withoutDeadline ? 'is-warning' : ''}>{score.withoutDeadline}</strong>
+        </article>
+        <article>
+          <span>SEO план</span>
+          <strong>{seoPlanned}</strong>
+        </article>
+        <article>
+          <span>Сторонние план</span>
+          <strong>{externalPlanned}</strong>
+        </article>
+        <article>
+          <span>Оценка</span>
+          <strong>{score.score}/100</strong>
+        </article>
+      </div>
+      <div className="score-signal-list">
+        {score.signals.length ? score.signals.map((signal) => <strong key={signal}>{signal}</strong>) : <span>сроки под контролем</span>}
+      </div>
+    </section>
+  );
+}
+
+function ReportProjectFilter({
+  projects,
+  reports,
+  selectedProjectId,
+  onSelect,
+}: {
+  projects: Project[];
+  reports: WeeklyProjectReport[];
+  selectedProjectId: string;
+  onSelect: (projectId: string) => void;
+}) {
+  const reportByProjectId = useMemo(() => new Map(reports.map((report) => [report.id, report])), [reports]);
+  const totalTasks = reports.reduce((sum, report) => sum + (report.summary?.total ?? 0), 0);
+  const doneTasks = reports.reduce((sum, report) => sum + report.done.length, 0);
+  const lateTasks = reports.reduce((sum, report) => sum + report.late.length, 0);
+  const plannedTasks = reports.reduce((sum, report) => sum + report.planned.length, 0);
+
+  return (
+    <section className="panel report-project-filter-panel">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>Проект в динамике задач</h2>
+          <p>Выбери клиента и ниже останутся только его выполненные, просроченные и запланированные задачи.</p>
+        </div>
+        <div className="report-filter-summary">
+          <span>{doneTasks} сделано</span>
+          <span className={lateTasks ? 'is-danger' : ''}>{lateTasks} просрочено</span>
+          <span>{plannedTasks} в плане</span>
+        </div>
+      </div>
+      <div className="report-project-filter" role="group" aria-label="Фильтр проекта в динамике задач">
+        <button className={selectedProjectId === 'all' ? 'is-active' : ''} type="button" onClick={() => onSelect('all')}>
+          <span className="mini-dot" />
+          Все проекты
+          <em>{totalTasks}</em>
+        </button>
+        {projects.map((project) => {
+          const report = reportByProjectId.get(project.id);
+          const count = report?.summary?.total ?? 0;
+          return (
+            <button
+              className={selectedProjectId === project.id ? 'is-active' : ''}
+              key={project.id}
+              type="button"
+              onClick={() => onSelect(project.id)}
+            >
+              <span className="mini-dot" style={{ background: project.color }} />
+              {project.name}
+              <em>{count}</em>
+            </button>
+          );
+        })}
       </div>
     </section>
   );
@@ -7033,6 +7249,7 @@ function TaskLogicMode({
   savedSnapshotCount,
   bitrix24Snapshot,
   onSaveSnapshot,
+  scopeProjectName,
 }: {
   reports: TaskLogicReport[];
   overallScore: ProjectTaskScore;
@@ -7041,6 +7258,7 @@ function TaskLogicMode({
   savedSnapshotCount: number;
   bitrix24Snapshot: Bitrix24Snapshot;
   onSaveSnapshot: () => void;
+  scopeProjectName?: string;
 }) {
   const hasEnoughHistory = savedSnapshotCount >= 2;
   const [openedItems, setOpenedItems] = useState<{ title: string; items: WeeklyReportItem[] } | null>(null);
@@ -7083,7 +7301,7 @@ function TaskLogicMode({
       <section className="panel task-logic-board">
         <div className="section-heading compact-heading">
           <div>
-            <h2>Динамика выполнения</h2>
+            <h2>{scopeProjectName ? `Динамика выполнения: ${scopeProjectName}` : 'Динамика выполнения'}</h2>
             <p>
               Сравнение отчетных снимков: что тянется, что добавилось, что закрыли и где переносился срок.
             </p>
@@ -7140,51 +7358,55 @@ function WeeklyTaskSummaryTable({
           ))}
           <span>% выполнения</span>
         </div>
-        {rows.map((report) => {
-          const summary = report.summary;
-          if (!summary) return null;
-          return (
-            <div className="report-summary-row" role="row" key={report.id}>
-              <strong>
-                <i style={{ background: report.color }} />
-                {report.title}
-              </strong>
-              {filters.map((filter) => {
-                const value =
-                  filter === 'all'
-                    ? summary.total
-                    : filter === 'done'
-                      ? summary.done
-                      : filter === 'open'
-                        ? summary.open
-                        : filter === 'planned'
-                          ? summary.planned
-                          : filter === 'active'
-                            ? summary.active
-                            : filter === 'risk'
-                              ? summary.risk
-                              : filter === 'overdue'
-                                ? summary.overdue
-                                : filter === 'lateDone'
-                                  ? summary.lateDone
-                                  : summary.withoutDeadline;
-                const isActive = selected?.projectId === report.id && selected.filter === filter;
-                return (
-                  <button
-                    className={`${isActive ? 'is-active' : ''} ${filter === 'overdue' && value ? 'is-danger' : ''}`}
-                    key={filter}
-                    type="button"
-                    onClick={() => onSelect(report.id, filter)}
-                    disabled={value === 0}
-                  >
-                    {value}
-                  </button>
-                );
-              })}
-              <em>{summary.completionPercent}%</em>
-            </div>
-          );
-        })}
+        {rows.length ? (
+          rows.map((report) => {
+            const summary = report.summary;
+            if (!summary) return null;
+            return (
+              <div className="report-summary-row" role="row" key={report.id}>
+                <strong>
+                  <i style={{ background: report.color }} />
+                  {report.title}
+                </strong>
+                {filters.map((filter) => {
+                  const value =
+                    filter === 'all'
+                      ? summary.total
+                      : filter === 'done'
+                        ? summary.done
+                        : filter === 'open'
+                          ? summary.open
+                          : filter === 'planned'
+                            ? summary.planned
+                            : filter === 'active'
+                              ? summary.active
+                              : filter === 'risk'
+                                ? summary.risk
+                                : filter === 'overdue'
+                                  ? summary.overdue
+                                  : filter === 'lateDone'
+                                    ? summary.lateDone
+                                    : summary.withoutDeadline;
+                  const isActive = selected?.projectId === report.id && selected.filter === filter;
+                  return (
+                    <button
+                      className={`${isActive ? 'is-active' : ''} ${filter === 'overdue' && value ? 'is-danger' : ''}`}
+                      key={filter}
+                      type="button"
+                      onClick={() => onSelect(report.id, filter)}
+                      disabled={value === 0}
+                    >
+                      {value}
+                    </button>
+                  );
+                })}
+                <em>{summary.completionPercent}%</em>
+              </div>
+            );
+          })
+        ) : (
+          <div className="weekly-report-empty report-summary-empty">По выбранному проекту пока нет данных для сводки.</div>
+        )}
       </div>
     </section>
   );
@@ -7254,41 +7476,45 @@ function WeeklyTaskTrendPanel({ reports }: { reports: WeeklyProjectReport[] }) {
           <p>Последние шесть недель до выбранной отчетной папки, расчет по текущему реестру задач.</p>
         </div>
       </div>
-      <div className="report-trend-grid">
-        {points.map((point) => (
-          <article className="report-trend-week" key={point.start}>
-            <strong>{point.label}</strong>
-            <div className="report-trend-bars" aria-hidden="true">
-              <span className="created" style={{ height: `${Math.max(6, (point.created / maxValue) * 100)}%` }} />
-              <span className="deadline" style={{ height: `${Math.max(6, (point.deadline / maxValue) * 100)}%` }} />
-              <span className="completed" style={{ height: `${Math.max(6, (point.completed / maxValue) * 100)}%` }} />
-              <span className="missed" style={{ height: `${Math.max(6, (point.notClosed / maxValue) * 100)}%` }} />
-            </div>
-            <dl>
-              <div>
-                <dt>Поставлено</dt>
-                <dd>{point.created}</dd>
+      {points.length ? (
+        <div className="report-trend-grid">
+          {points.map((point) => (
+            <article className="report-trend-week" key={point.start}>
+              <strong>{point.label}</strong>
+              <div className="report-trend-bars" aria-hidden="true">
+                <span className="created" style={{ height: `${Math.max(6, (point.created / maxValue) * 100)}%` }} />
+                <span className="deadline" style={{ height: `${Math.max(6, (point.deadline / maxValue) * 100)}%` }} />
+                <span className="completed" style={{ height: `${Math.max(6, (point.completed / maxValue) * 100)}%` }} />
+                <span className="missed" style={{ height: `${Math.max(6, (point.notClosed / maxValue) * 100)}%` }} />
               </div>
-              <div>
-                <dt>План</dt>
-                <dd>{point.deadline}</dd>
-              </div>
-              <div>
-                <dt>Выполнено</dt>
-                <dd>{point.completed}</dd>
-              </div>
-              <div>
-                <dt>Не закрыто</dt>
-                <dd>{point.notClosed}</dd>
-              </div>
-              <div>
-                <dt>План закрыт</dt>
-                <dd>{point.completionPercent}%</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
-      </div>
+              <dl>
+                <div>
+                  <dt>Поставлено</dt>
+                  <dd>{point.created}</dd>
+                </div>
+                <div>
+                  <dt>План</dt>
+                  <dd>{point.deadline}</dd>
+                </div>
+                <div>
+                  <dt>Выполнено</dt>
+                  <dd>{point.completed}</dd>
+                </div>
+                <div>
+                  <dt>Не закрыто</dt>
+                  <dd>{point.notClosed}</dd>
+                </div>
+                <div>
+                  <dt>План закрыт</dt>
+                  <dd>{point.completionPercent}%</dd>
+                </div>
+              </dl>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="weekly-report-empty">Динамика появится после сохранения хотя бы одного отчетного снимка.</div>
+      )}
     </section>
   );
 }
@@ -9216,6 +9442,7 @@ function SeoProjectReportsPanel({
             savedSnapshotCount={savedSnapshotCount}
             bitrix24Snapshot={bitrix24Snapshot}
             onSaveSnapshot={saveCurrentSnapshot}
+            scopeProjectName={project.name}
           />
         </>
       ) : report ? (

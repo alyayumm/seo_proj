@@ -3193,6 +3193,8 @@ p {
 
 .report-mode-panel,
 .report-metrics-mode,
+.report-analytics-panel,
+.report-project-filter-panel,
 .report-summary-panel,
 .report-drilldown-panel,
 .report-trend-panel {
@@ -3202,8 +3204,115 @@ p {
 }
 
 .report-mode-panel .section-heading,
+.report-analytics-panel .section-heading,
+.report-project-filter-panel .section-heading,
 .seo-single-report .section-heading {
   align-items: center;
+}
+
+.report-analytics-panel {
+  padding: 10px 12px;
+}
+
+.report-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.report-analytics-grid article {
+  display: grid;
+  gap: 4px;
+  padding: 10px 11px;
+  border: 1px solid rgba(216, 238, 243, 0.12);
+  border-radius: 12px;
+  background: rgba(216, 238, 243, 0.05);
+}
+
+.report-analytics-grid span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.report-analytics-grid strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.report-analytics-grid strong.is-danger {
+  color: var(--danger);
+}
+
+.report-analytics-grid strong.is-warning {
+  color: var(--warning);
+}
+
+.report-project-filter-panel {
+  padding: 10px 12px;
+}
+
+.report-filter-summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.report-filter-summary span {
+  min-height: 24px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #326d7a;
+  background: rgba(216, 238, 243, 0.55);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.report-filter-summary span.is-danger {
+  color: var(--danger);
+  background: rgba(255, 142, 130, 0.12);
+}
+
+.report-project-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-project-filter button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(216, 238, 243, 0.12);
+  border-radius: 999px;
+  color: var(--ink);
+  background: rgba(216, 238, 243, 0.06);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.report-project-filter button em {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  min-height: 20px;
+  margin-left: 1px;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: #326d7a;
+  background: rgba(216, 238, 243, 0.6);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 950;
 }
 
 .report-summary-table {
@@ -3213,6 +3322,12 @@ p {
   border: 1px solid rgba(216, 238, 243, 0.14);
   border-radius: 12px;
   background: rgba(216, 238, 243, 0.055);
+}
+
+.report-summary-empty {
+  min-height: 82px;
+  margin-top: 0;
+  border-radius: 10px;
 }
 
 .report-summary-panel {
@@ -5858,7 +5973,10 @@ p {
 :root[data-theme='light'] .bitrix-task-row,
 :root[data-theme='light'] .bitrix-deal-list div,
 :root[data-theme='light'] .report-summary-table,
+:root[data-theme='light'] .report-analytics-panel,
+:root[data-theme='light'] .report-project-filter-panel,
 :root[data-theme='light'] .report-summary-row button,
+:root[data-theme='light'] .report-project-filter button,
 :root[data-theme='light'] .report-trend-week,
 :root[data-theme='light'] .report-score-overview,
 :root[data-theme='light'] .score-metric-button,
@@ -5934,6 +6052,16 @@ p {
 :root[data-theme='light'] .report-archive-folder-metrics em {
   color: #326d7a;
   background: rgba(255, 255, 255, 0.56);
+}
+
+:root[data-theme='light'] .report-analytics-grid article,
+:root[data-theme='light'] .report-project-filter button {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+:root[data-theme='light'] .report-project-filter button em {
+  color: #326d7a;
+  background: rgba(216, 238, 243, 0.55);
 }
 
 :root[data-theme='light'] .report-score-head span,
@@ -6047,6 +6175,10 @@ p {
   }
 
   .analytics-tile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-analytics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -6252,6 +6384,7 @@ p {
 
   .link-summary-grid,
   .analytics-tile-grid,
+  .report-analytics-grid,
   .weekly-report-columns,
     .payment-add-form,
     .payment-cashflow-grid,
@@ -6297,6 +6430,7 @@ p {
 
   .promotion-result-grid,
   .analytics-tile-grid,
+  .report-analytics-grid,
   .weekly-report-columns,
   .score-metric-grid,
   .score-metric-grid.compact,
@@ -6345,6 +6479,16 @@ p {
   .goal-query-row span,
   .goal-query-row em {
     text-align: left;
+  }
+
+  .report-project-filter {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+
+  .report-project-filter button {
+    flex: 0 0 auto;
   }
 
   .external-add-form,
