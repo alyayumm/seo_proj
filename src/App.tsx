@@ -281,11 +281,11 @@ const taskLogicCategoryLabels: Record<TaskLogicCategory, string> = {
 
 const taskScoreMetricLabels: Record<TaskScoreMetric, string> = {
   done: 'Процент выполнения',
-  overdue: 'Процент просрочек',
+  overdue: 'Процент текущих просрочек',
   lateDone: 'Закрыто с опозданием',
   carried: 'Тянется от отчета к отчету',
   risk: 'В статусе риск',
-  withoutDeadline: 'Без дедлайна',
+  withoutDeadline: 'Задачи без дедлайна',
 };
 
 const ruMonthNames = [
@@ -6615,24 +6615,7 @@ function WeeklyReportView({
             savedSnapshotCount={savedSnapshotCount}
             bitrix24Snapshot={bitrix24Snapshot}
             onSaveSnapshot={saveSelectedSnapshot}
-            onOpenItems={(title, items) =>
-              setSelectedDrilldown({
-                projectId: 'logic',
-                filter: 'all',
-                title,
-                items,
-              })
-            }
           />
-
-          {selectedDrilldown && (
-            <WeeklyReportDrilldown
-              title={selectedDrilldownTitle}
-              items={selectedDrilldownItems}
-              empty="По этому сигналу задач нет."
-              onClose={() => setSelectedDrilldown(null)}
-            />
-          )}
         </>
       ) : (
         <>
@@ -6831,7 +6814,7 @@ function getTaskScoreRows(score: ProjectTaskScore): Array<{
     },
     {
       metric: 'withoutDeadline',
-      label: 'Заполненность дедлайнов',
+      label: 'Задачи с дедлайном',
       value: score.deadlineFilledPercent,
       count: score.withoutDeadline,
       tone: score.withoutDeadline ? 'warning' : 'success',
@@ -6888,19 +6871,30 @@ function ReportScoreOverview({
       </div>
 
       <div className="score-metric-grid" aria-label="Проценты оценки задач">
-        {rows.map((row) => (
-          <button
-            className={`score-metric-button ${row.tone}`}
-            key={row.metric}
-            type="button"
-            onClick={() => onOpenItems(`${row.label}: ${taskScoreMetricLabels[row.metric].toLowerCase()}`, score.itemsByMetric[row.metric])}
-            disabled={score.itemsByMetric[row.metric].length === 0}
-          >
-            <span>{row.label}</span>
-            <strong>{row.value}%</strong>
-            <em>{row.count ? `${row.count} задач` : row.metric === 'withoutDeadline' ? 'без пропусков' : '0 задач'}</em>
-          </button>
-        ))}
+        {rows.map((row) => {
+          const detailTitle = taskScoreMetricLabels[row.metric];
+          const caption =
+            row.metric === 'withoutDeadline'
+              ? row.count
+                ? `${row.count} без даты`
+                : 'все с датами'
+              : row.count
+                ? `${row.count} задач`
+                : '0 задач';
+
+          return (
+            <button
+              className={`score-metric-button ${row.tone}`}
+              key={row.metric}
+              type="button"
+              onClick={() => onOpenItems(detailTitle, score.itemsByMetric[row.metric])}
+            >
+              <span>{row.label}</span>
+              <strong>{row.value}%</strong>
+              <em>{caption}</em>
+            </button>
+          );
+        })}
       </div>
 
       <div className="score-signal-list">
@@ -6941,21 +6935,28 @@ function ProjectTaskScoreCard({
       </div>
       <p>{report.score.signals[0] ?? 'сроки под контролем'}</p>
       <div className="score-metric-grid compact">
-        {rows.slice(0, 4).map((row) => (
-          <button
-            className={`score-metric-button ${row.tone}`}
-            key={row.metric}
-            type="button"
-            onClick={() =>
-              onOpenItems(`${report.title}: ${row.label.toLowerCase()}`, report.score.itemsByMetric[row.metric])
-            }
-            disabled={report.score.itemsByMetric[row.metric].length === 0}
-          >
-            <span>{row.label}</span>
-            <strong>{row.value}%</strong>
-            <em>{row.count} задач</em>
-          </button>
-        ))}
+        {rows.slice(0, 4).map((row) => {
+          const detailLabel = taskScoreMetricLabels[row.metric].toLowerCase();
+          const caption =
+            row.metric === 'withoutDeadline'
+              ? row.count
+                ? `${row.count} без даты`
+                : 'все с датами'
+              : `${row.count} задач`;
+
+          return (
+            <button
+              className={`score-metric-button ${row.tone}`}
+              key={row.metric}
+              type="button"
+              onClick={() => onOpenItems(`${report.title}: ${detailLabel}`, report.score.itemsByMetric[row.metric])}
+            >
+              <span>{row.label}</span>
+              <strong>{row.value}%</strong>
+              <em>{caption}</em>
+            </button>
+          );
+        })}
       </div>
     </article>
   );
@@ -7032,7 +7033,6 @@ function TaskLogicMode({
   savedSnapshotCount,
   bitrix24Snapshot,
   onSaveSnapshot,
-  onOpenItems,
 }: {
   reports: TaskLogicReport[];
   overallScore: ProjectTaskScore;
@@ -7041,9 +7041,14 @@ function TaskLogicMode({
   savedSnapshotCount: number;
   bitrix24Snapshot: Bitrix24Snapshot;
   onSaveSnapshot: () => void;
-  onOpenItems: (title: string, items: WeeklyReportItem[]) => void;
 }) {
   const hasEnoughHistory = savedSnapshotCount >= 2;
+  const [openedItems, setOpenedItems] = useState<{ title: string; items: WeeklyReportItem[] } | null>(null);
+  const openItems = (title: string, items: WeeklyReportItem[]) => {
+    setOpenedItems((current) =>
+      current?.title === title ? null : { title, items },
+    );
+  };
 
   return (
     <section className="report-logic-mode">
@@ -7055,12 +7060,21 @@ function TaskLogicMode({
         savedSnapshotCount={savedSnapshotCount}
         bitrix24Snapshot={bitrix24Snapshot}
         onSaveSnapshot={onSaveSnapshot}
-        onOpenItems={onOpenItems}
+        onOpenItems={openItems}
       />
+
+      {openedItems && (
+        <WeeklyReportDrilldown
+          title={openedItems.title}
+          items={openedItems.items}
+          empty="По этому сигналу задач нет."
+          onClose={() => setOpenedItems(null)}
+        />
+      )}
 
       <div className="project-score-grid">
         {reports.length ? (
-          reports.map((report) => <ProjectTaskScoreCard key={report.id} report={report} onOpenItems={onOpenItems} />)
+          reports.map((report) => <ProjectTaskScoreCard key={report.id} report={report} onOpenItems={openItems} />)
         ) : (
           <div className="weekly-report-empty">Пока нет задач для оценки.</div>
         )}
@@ -7086,7 +7100,7 @@ function TaskLogicMode({
                 key={report.id}
                 report={report}
                 hasEnoughHistory={hasEnoughHistory}
-                onOpenItems={onOpenItems}
+                onOpenItems={openItems}
               />
             ))
           ) : (
@@ -9144,7 +9158,6 @@ function SeoProjectReportsPanel({
   promotionSources: PromotionResultSource[];
 }) {
   const [reportMode, setReportMode] = useStoredState<ReportMode>('task-seo-single-project-report-mode', 'tasks');
-  const [selectedDrilldown, setSelectedDrilldown] = useState<{ title: string; items: WeeklyReportItem[] } | null>(null);
   const reportWeek = useMemo(() => getWeekWindow(-1), []);
   const planWeek = useMemo(() => getWeekWindow(0), []);
   const report = useMemo(
@@ -9183,10 +9196,7 @@ function SeoProjectReportsPanel({
               className={reportMode === mode ? 'is-active' : ''}
               key={mode}
               type="button"
-              onClick={() => {
-                setReportMode(mode);
-                setSelectedDrilldown(null);
-              }}
+              onClick={() => setReportMode(mode)}
             >
               {reportModeLabels[mode]}
             </button>
@@ -9206,16 +9216,7 @@ function SeoProjectReportsPanel({
             savedSnapshotCount={savedSnapshotCount}
             bitrix24Snapshot={bitrix24Snapshot}
             onSaveSnapshot={saveCurrentSnapshot}
-            onOpenItems={(title, items) => setSelectedDrilldown({ title, items })}
           />
-          {selectedDrilldown && (
-            <WeeklyReportDrilldown
-              title={selectedDrilldown.title}
-              items={selectedDrilldown.items}
-              empty="По этому сигналу задач нет."
-              onClose={() => setSelectedDrilldown(null)}
-            />
-          )}
         </>
       ) : report ? (
         <div className="seo-single-report">
