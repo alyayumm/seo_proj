@@ -254,7 +254,7 @@ const seoTrendModeShortLabels: Record<SeoTrendMode, string> = {
 
 const reportModeLabels: Record<ReportMode, string> = {
   tasks: 'Динамика задач',
-  logic: 'Логика задач',
+  logic: 'Динамика выполнения',
   metrics: 'Динамика показателей',
 };
 
@@ -7083,7 +7083,7 @@ function TaskLogicMode({
       <section className="panel task-logic-board">
         <div className="section-heading compact-heading">
           <div>
-            <h2>Логика задач</h2>
+            <h2>Динамика выполнения</h2>
             <p>
               Сравнение отчетных снимков: что тянется, что добавилось, что закрыли и где переносился срок.
             </p>
