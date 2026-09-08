@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-07T10:23:06.559Z",
+  "updatedAt": "2026-09-08T09:45:05.495Z",
   "date1": "2026-04-01",
-  "date2": "2026-09-07",
-  "periodLabel": "01.04.26 - 07.09.26",
+  "date2": "2026-09-08",
+  "periodLabel": "01.04.26 - 08.09.26",
   "projects": [
     {
       "projectName": "Часы",
@@ -11,7 +11,7 @@
       "counterId": 95877415,
       "counterName": "watchstoree",
       "siteUrl": "https://watchstoree.ru",
-      "periodLabel": "01.04.26 - 07.09.26",
+      "periodLabel": "01.04.26 - 08.09.26",
       "visits": 225,
       "users": 134,
       "goalCount": 0,
@@ -1022,7 +1022,13 @@
         {
           "month": "07.09",
           "date": "2026-09-07",
-          "visits": 339,
+          "visits": 654,
+          "goals": 0
+        },
+        {
+          "month": "08.09",
+          "date": "2026-09-08",
+          "visits": 366,
           "goals": 0
         }
       ],
@@ -1166,9 +1172,9 @@
           "goals": 0
         },
         {
-          "month": "07.09-07.09",
+          "month": "07.09-08.09",
           "date": "2026-09-07",
-          "visits": 339,
+          "visits": 1020,
           "goals": 0
         }
       ],
@@ -1206,7 +1212,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 3780,
+          "visits": 4461,
           "goals": 0
         }
       ]
@@ -1217,7 +1223,7 @@
       "counterId": 99951775,
       "counterName": "Switch-Eng Metrika",
       "siteUrl": "https://switch-eng.ru",
-      "periodLabel": "01.04.26 - 07.09.26",
+      "periodLabel": "01.04.26 - 08.09.26",
       "visits": 348,
       "users": 329,
       "goalCount": 0,
@@ -2230,6 +2236,12 @@
           "date": "2026-09-07",
           "visits": 3,
           "goals": 0
+        },
+        {
+          "month": "08.09",
+          "date": "2026-09-08",
+          "visits": 2,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -2372,9 +2384,9 @@
           "goals": 0
         },
         {
-          "month": "07.09-07.09",
+          "month": "07.09-08.09",
           "date": "2026-09-07",
-          "visits": 3,
+          "visits": 5,
           "goals": 0
         }
       ],
@@ -2412,7 +2424,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 18,
+          "visits": 20,
           "goals": 0
         }
       ]
@@ -2423,11 +2435,11 @@
       "counterId": 103419904,
       "counterName": "Аквагард",
       "siteUrl": "https://аквагард.рф",
-      "periodLabel": "01.04.26 - 07.09.26",
-      "visits": 1033,
-      "users": 835,
+      "periodLabel": "01.04.26 - 08.09.26",
+      "visits": 1071,
+      "users": 871,
       "goalCount": 0,
-      "uniqueQueries": 676,
+      "uniqueQueries": 707,
       "goalRows": 0,
       "sampleQueries": [
         "аквагард",
@@ -2437,7 +2449,7 @@
       "topQueries": [
         {
           "query": "аквагард",
-          "visits": 126,
+          "visits": 127,
           "goals": 0
         },
         {
@@ -3434,7 +3446,13 @@
         {
           "month": "07.09",
           "date": "2026-09-07",
-          "visits": 40,
+          "visits": 91,
+          "goals": 0
+        },
+        {
+          "month": "08.09",
+          "date": "2026-09-08",
+          "visits": 28,
           "goals": 0
         }
       ],
@@ -3578,9 +3596,9 @@
           "goals": 0
         },
         {
-          "month": "07.09-07.09",
+          "month": "07.09-08.09",
           "date": "2026-09-07",
-          "visits": 40,
+          "visits": 119,
           "goals": 0
         }
       ],
@@ -3618,7 +3636,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 392,
+          "visits": 471,
           "goals": 0
         }
       ]
@@ -3629,11 +3647,11 @@
       "counterId": 99590873,
       "counterName": "promtehmakulatura.ru",
       "siteUrl": "https://promtehmakulatura.ru",
-      "periodLabel": "01.04.26 - 07.09.26",
-      "visits": 2367,
-      "users": 2192,
+      "periodLabel": "01.04.26 - 08.09.26",
+      "visits": 2419,
+      "users": 2242,
       "goalCount": 0,
-      "uniqueQueries": 1320,
+      "uniqueQueries": 1358,
       "goalRows": 0,
       "sampleQueries": [
         "промтехмакулатура",
@@ -3643,7 +3661,7 @@
       "topQueries": [
         {
           "query": "промтехмакулатура",
-          "visits": 51,
+          "visits": 53,
           "goals": 0
         },
         {
@@ -3653,7 +3671,7 @@
         },
         {
           "query": "прием макулатуры",
-          "visits": 32,
+          "visits": 34,
           "goals": 0
         },
         {
@@ -3662,13 +3680,13 @@
           "goals": 0
         },
         {
-          "query": "hdpe 2 что означает на канистре",
-          "visits": 25,
+          "query": "сколько видов пластика можно сдать на переработку в россии",
+          "visits": 27,
           "goals": 0
         },
         {
-          "query": "сколько видов пластика можно сдать на переработку в россии",
-          "visits": 25,
+          "query": "hdpe 2 что означает на канистре",
+          "visits": 26,
           "goals": 0
         },
         {
@@ -4640,7 +4658,13 @@
         {
           "month": "07.09",
           "date": "2026-09-07",
-          "visits": 45,
+          "visits": 89,
+          "goals": 0
+        },
+        {
+          "month": "08.09",
+          "date": "2026-09-08",
+          "visits": 44,
           "goals": 0
         }
       ],
@@ -4784,9 +4808,9 @@
           "goals": 0
         },
         {
-          "month": "07.09-07.09",
+          "month": "07.09-08.09",
           "date": "2026-09-07",
-          "visits": 45,
+          "visits": 133,
           "goals": 0
         }
       ],
@@ -4824,7 +4848,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 611,
+          "visits": 699,
           "goals": 0
         }
       ]
@@ -4835,11 +4859,11 @@
       "counterId": 107615431,
       "counterName": "smart-spb.pro",
       "siteUrl": "https://smart-spb.pro",
-      "periodLabel": "01.04.26 - 07.09.26",
-      "visits": 1074,
-      "users": 823,
+      "periodLabel": "01.04.26 - 08.09.26",
+      "visits": 1132,
+      "users": 880,
       "goalCount": 0,
-      "uniqueQueries": 655,
+      "uniqueQueries": 700,
       "goalRows": 0,
       "sampleQueries": [
         "смартстрой",
@@ -4869,7 +4893,7 @@
         },
         {
           "query": "смарт строй",
-          "visits": 26,
+          "visits": 28,
           "goals": 0
         },
         {
@@ -4879,7 +4903,7 @@
         },
         {
           "query": "smart-spb.pro",
-          "visits": 17,
+          "visits": 18,
           "goals": 0
         },
         {
@@ -5846,7 +5870,13 @@
         {
           "month": "07.09",
           "date": "2026-09-07",
-          "visits": 36,
+          "visits": 91,
+          "goals": 0
+        },
+        {
+          "month": "08.09",
+          "date": "2026-09-08",
+          "visits": 42,
           "goals": 0
         }
       ],
@@ -5990,9 +6020,9 @@
           "goals": 0
         },
         {
-          "month": "07.09-07.09",
+          "month": "07.09-08.09",
           "date": "2026-09-07",
-          "visits": 36,
+          "visits": 133,
           "goals": 0
         }
       ],
@@ -6030,7 +6060,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 394,
+          "visits": 491,
           "goals": 0
         }
       ]
@@ -6041,7 +6071,7 @@
       "counterId": 99163159,
       "counterName": "balt-pallet",
       "siteUrl": "https://balt-pallet.ru",
-      "periodLabel": "01.04.26 - 07.09.26",
+      "periodLabel": "01.04.26 - 08.09.26",
       "visits": 182,
       "users": 165,
       "goalCount": 0,
@@ -7052,7 +7082,13 @@
         {
           "month": "07.09",
           "date": "2026-09-07",
-          "visits": 433,
+          "visits": 771,
+          "goals": 0
+        },
+        {
+          "month": "08.09",
+          "date": "2026-09-08",
+          "visits": 425,
           "goals": 0
         }
       ],
@@ -7196,9 +7232,9 @@
           "goals": 0
         },
         {
-          "month": "07.09-07.09",
+          "month": "07.09-08.09",
           "date": "2026-09-07",
-          "visits": 433,
+          "visits": 1196,
           "goals": 0
         }
       ],
@@ -7236,7 +7272,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 5339,
+          "visits": 6102,
           "goals": 0
         }
       ]
@@ -7247,11 +7283,11 @@
       "counterId": 109615906,
       "counterName": "lombard-banka",
       "siteUrl": "https://lombard-banka.ru",
-      "periodLabel": "01.04.26 - 07.09.26",
-      "visits": 466,
-      "users": 445,
+      "periodLabel": "01.04.26 - 08.09.26",
+      "visits": 480,
+      "users": 459,
       "goalCount": 0,
-      "uniqueQueries": 320,
+      "uniqueQueries": 332,
       "goalRows": 0,
       "sampleQueries": [
         "ломбард музыкальных инструментов саксофон",
@@ -7261,7 +7297,7 @@
       "topQueries": [
         {
           "query": "ломбард музыкальных инструментов саксофон",
-          "visits": 47,
+          "visits": 48,
           "goals": 0
         },
         {
@@ -8258,7 +8294,13 @@
         {
           "month": "07.09",
           "date": "2026-09-07",
-          "visits": 15,
+          "visits": 30,
+          "goals": 0
+        },
+        {
+          "month": "08.09",
+          "date": "2026-09-08",
+          "visits": 12,
           "goals": 0
         }
       ],
@@ -8402,9 +8444,9 @@
           "goals": 0
         },
         {
-          "month": "07.09-07.09",
+          "month": "07.09-08.09",
           "date": "2026-09-07",
-          "visits": 15,
+          "visits": 42,
           "goals": 0
         }
       ],
@@ -8442,7 +8484,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 222,
+          "visits": 249,
           "goals": 0
         }
       ]
