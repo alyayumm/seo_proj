@@ -2059,6 +2059,74 @@ p {
   margin-top: 12px;
 }
 
+.collision-details {
+  display: grid;
+  gap: 0;
+}
+
+.collision-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.collision-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.collision-details summary span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.collision-details summary em {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: #061111;
+  background: rgba(216, 238, 243, 0.78);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.collision-summary-meta,
+.overlap-summary-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.details-caret {
+  flex: 0 0 auto;
+  transition: transform 180ms ease;
+}
+
+.collision-details[open] .details-caret,
+.overlap-panel[open] .details-caret {
+  transform: rotate(180deg);
+}
+
+.dashboard-card .collision-details summary span {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dashboard-card .collision-details summary em {
+  color: #061111;
+  background: #ffe1d3;
+}
+
+.dashboard-card .collision-list {
+  margin-top: 10px;
+}
+
 .collision-list div {
   display: flex;
   align-items: center;
@@ -2075,6 +2143,47 @@ p {
 .project-pulse {
   display: grid;
   gap: 10px;
+}
+
+.overlap-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.overlap-panel summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.overlap-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.overlap-summary {
+  align-items: center;
+}
+
+.overlap-summary-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.overlap-summary-meta span {
+  min-width: 28px;
+  min-height: 28px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: #061111;
+  background: #ffe1d3;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.overlap-panel .overlap-list {
+  margin-top: 0;
 }
 
 .pulse-row,

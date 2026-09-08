@@ -5635,22 +5635,31 @@ function DashboardCard({ completion, overdueCount, collisions }: DashboardCardPr
         <Metric label="Просрочено" value={String(overdueCount)} tone={overdueCount ? 'danger' : 'success'} />
         <Metric label="Наложения" value={String(collisions.length)} tone={collisions.length ? 'warning' : 'success'} />
       </div>
-      <div className="collision-list">
-        {collisions.slice(0, 3).map((item) => (
-          <div key={item.id}>
-            <AlertTriangle size={15} />
-            <span>
-              {item.owner?.name ?? 'Ответственный'}: {item.count} задачи рядом с одним дедлайном
-            </span>
+      <details className="collision-details">
+        <summary>
+          <span>Наложения</span>
+          <div className="collision-summary-meta">
+            <em>{collisions.length}</em>
+            <ChevronDown className="details-caret" size={14} />
           </div>
-        ))}
-        {collisions.length === 0 && (
-          <div>
-            <CheckCircle2 size={15} />
-            <span>Критичных наложений не видно.</span>
-          </div>
-        )}
-      </div>
+        </summary>
+        <div className="collision-list">
+          {collisions.slice(0, 3).map((item) => (
+            <div key={item.id}>
+              <AlertTriangle size={15} />
+              <span>
+                {item.owner?.name ?? 'Ответственный'}: {item.count} задачи рядом с одним дедлайном
+              </span>
+            </div>
+          ))}
+          {collisions.length === 0 && (
+            <div>
+              <CheckCircle2 size={15} />
+              <span>Критичных наложений не видно.</span>
+            </div>
+          )}
+        </div>
+      </details>
     </section>
   );
 }
@@ -6145,14 +6154,18 @@ function DashboardView({
               </div>
             </section>
 
-            <section className="panel">
-              <div className="section-heading compact-heading">
+            <details className="panel overlap-panel">
+              <summary className="section-heading compact-heading overlap-summary">
                 <div>
                   <h2>Наложения</h2>
                   <p>Ответственные с задачами рядом по срокам.</p>
                 </div>
-                <Users size={20} />
-              </div>
+                <div className="overlap-summary-meta">
+                  <span>{collisions.length}</span>
+                  <Users size={20} />
+                  <ChevronDown className="details-caret" size={15} />
+                </div>
+              </summary>
               <div className="overlap-list">
                 {collisions.map((item) => (
                   <div key={item.id} className="overlap-item">
@@ -6167,7 +6180,7 @@ function DashboardView({
                 ))}
                 {collisions.length === 0 && <div className="empty-row">Наложений по дедлайнам не найдено.</div>}
               </div>
-            </section>
+            </details>
           </div>
 
           <section className="panel">
