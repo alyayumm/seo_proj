@@ -1,0 +1,16 @@
+{
+  "scriptId": "1GvbvNunJOr4ZvQVwtUKqmFEbTIb6JbYSGcJ6cIv6Aoze_ZLpLC4GrEUy",
+  "rootDir": "apps-script\\metrika-export",
+  "scriptExtensions": [
+    ".js",
+    ".gs"
+  ],
+  "htmlExtensions": [
+    ".html"
+  ],
+  "jsonExtensions": [
+    ".json"
+  ],
+  "filePushOrder": [],
+  "skipSubdirectories": false
+}

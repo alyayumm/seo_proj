@@ -317,6 +317,53 @@ export const STATIC_LEAD_ANALYTICS_SUMMARIES: LeadAnalyticsSummary[] = [
       { period: '2026-08-28', label: '28.08', leads: 1, quality: 0, inWork: 0, rejected: 1, unknown: 0 },
     ],
   },
+  {
+    projectName: 'Балт-паллет',
+    clientName: 'Балт Паллет',
+    periodLabel: '21.08-10.09.2026',
+    total: 4,
+    quality: 0,
+    inWork: 4,
+    rejected: 0,
+    unknown: 0,
+    budget: 0,
+    sourceCount: 1,
+    note: 'Ручная отметка: по 1 заявке 21.08, 07.09, 09.09 и 10.09. Оценка качества пока не внесена.',
+    sources: [
+      {
+        id: 'balt-pallet-leads-manual-2026-09-10',
+        title: 'Балт-паллет: ручные заявки',
+        channel: 'Заявки',
+        periodLabel: '21.08-10.09.2026',
+        sourceType: 'local-snapshot',
+        total: 4,
+        quality: 0,
+        inWork: 4,
+        rejected: 0,
+        unknown: 0,
+      },
+    ],
+    byChannel: [{ label: 'Заявки', count: 4 }],
+    byStatus: [{ label: 'В работе / без оценки качества', count: 4 }],
+    byReason: [],
+    byVolume: [],
+    byMaterial: [],
+    byClientType: [],
+    monthly: [
+      { period: '2026-08', label: 'август', leads: 1, quality: 0, inWork: 1, rejected: 0, unknown: 0 },
+      { period: '2026-09', label: 'сентябрь', leads: 3, quality: 0, inWork: 3, rejected: 0, unknown: 0 },
+    ],
+    weekly: [
+      { period: '2026-08-17', label: '17.08', leads: 1, quality: 0, inWork: 1, rejected: 0, unknown: 0 },
+      { period: '2026-09-07', label: '07.09', leads: 3, quality: 0, inWork: 3, rejected: 0, unknown: 0 },
+    ],
+    daily: [
+      { period: '2026-08-21', label: '21.08', leads: 1, quality: 0, inWork: 1, rejected: 0, unknown: 0 },
+      { period: '2026-09-07', label: '07.09', leads: 1, quality: 0, inWork: 1, rejected: 0, unknown: 0 },
+      { period: '2026-09-09', label: '09.09', leads: 1, quality: 0, inWork: 1, rejected: 0, unknown: 0 },
+      { period: '2026-09-10', label: '10.09', leads: 1, quality: 0, inWork: 1, rejected: 0, unknown: 0 },
+    ],
+  },
 ];
 
 export async function fetchLeadAnalyticsSummaries(): Promise<LeadAnalyticsFetchResult> {

@@ -36,4 +36,20 @@ export default [
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
+  {
+    files: ['apps-script/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      globals: {
+        HtmlService: 'readonly',
+        SpreadsheetApp: 'readonly',
+        Utilities: 'readonly',
+      },
+      sourceType: 'script',
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-unused-vars': 'off',
+    },
+  },
 ];

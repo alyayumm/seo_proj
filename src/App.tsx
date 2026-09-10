@@ -54,7 +54,6 @@ import {
   fetchLeadAnalyticsSummaries,
   LEAD_ANALYTICS_SOURCES,
   STATIC_LEAD_ANALYTICS_SUMMARIES,
-  type LeadBreakdownItem,
   type LeadAnalyticsSourceError,
   type LeadAnalyticsSummary,
   type LeadTrendPoint,
@@ -109,6 +108,7 @@ type SeoLeadMetricMode = 'all' | 'target';
 type SeoImpactTab = 'pages' | 'queries';
 type SeoImpactDirection = 'growth' | 'drop';
 type SeoQuerySort = 'goals' | 'visits' | 'query';
+type MetrikaQueryExportStatus = 'idle' | 'ready' | 'fallback' | 'error';
 type ReportMode = 'tasks' | 'logic' | 'metrics';
 type TaskReportFilter =
   | 'all'
@@ -2204,6 +2204,10 @@ type SeoImpactRow = {
   note: string;
 };
 
+const METRIKA_QUERY_EXPORT_ENDPOINT =
+  'https://script.google.com/macros/s/AKfycbzDWHp58G5bsDAKmGFgKd3YKeUiH98fIlLUTULMaWWxangIq8dx8DctYydQ9aVDn2wnoA/exec';
+const METRIKA_QUERY_EXPORT_ROW_LIMIT = 20000;
+
 type Bitrix24ProjectTask = Bitrix24Snapshot['tasks'][number];
 
 function todayIso() {
@@ -2509,13 +2513,6 @@ function formatReportArchiveTitle(window: WeekWindow) {
   return `Отчет за ${formatNumericDate(window.start)}-${formatNumericDate(window.end)}`;
 }
 
-function getGoalTrendPoints(goalAnalytics: PromotionGoalAnalytics | undefined, mode: SeoTrendMode) {
-  if (!goalAnalytics) return [];
-  if (mode === 'daily') return goalAnalytics.daily ?? [];
-  if (mode === 'weekly') return goalAnalytics.weekly ?? [];
-  return goalAnalytics.monthly;
-}
-
 function getGoalQueryRows(goalAnalytics: PromotionGoalAnalytics | undefined): PromotionGoalQueryStat[] {
   if (!goalAnalytics) return [];
   return goalAnalytics.queries?.length ? goalAnalytics.queries : goalAnalytics.topQueries;
@@ -2541,23 +2538,6 @@ function mergePromotionQueryRows(sources: PromotionResultSource[]) {
 
 function getQueryGoalRate(query: PromotionGoalQueryStat) {
   return query.visits > 0 ? (query.goals / query.visits) * 100 : null;
-}
-
-function getVisibleGoalTrendPoints(points: PromotionGoalTrendPoint[], _mode: SeoTrendMode) {
-  void _mode;
-  return points;
-}
-
-function getLeadTrendPoints(leadAnalytics: LeadAnalyticsSummary | undefined, mode: SeoTrendMode) {
-  if (!leadAnalytics) return [];
-  if (mode === 'daily') return leadAnalytics.daily;
-  if (mode === 'weekly') return leadAnalytics.weekly;
-  return leadAnalytics.monthly;
-}
-
-function getVisibleLeadTrendPoints(points: LeadTrendPoint[], _mode: SeoTrendMode) {
-  void _mode;
-  return points;
 }
 
 function isValidIsoDate(value?: string) {
@@ -2847,6 +2827,79 @@ function downloadCsv(filename: string, rows: SeoImpactRow[]) {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function sanitizeExportText(value: string | number | null | undefined) {
+  const text = String(value ?? '').replace(/\s+/g, ' ').trim();
+  return /^[=+\-@]/.test(text) ? `'${text}` : text;
+}
+
+function slugifyFilePart(value: string) {
+  return normalizeSearchText(value).replace(/[^a-zа-я0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'seo-project';
+}
+
+function downloadMetrikaQueriesCsv(project: Project, rows: PromotionGoalQueryStat[], source?: PromotionResultSource) {
+  const headers = ['Проект', 'Источник', 'Период', 'Запрос', 'Переходы', 'Достижения целей', 'CR'];
+  const escapeCell = (value: string | number | null) => `"${sanitizeExportText(value).replace(/"/g, '""')}"`;
+  const csv = [
+    headers.map(escapeCell).join(';'),
+    ...rows.map((row) =>
+      [
+        project.name,
+        source?.spreadsheetTitle ?? 'Яндекс Метрика',
+        source?.periodLabel ?? '',
+        row.query,
+        row.visits,
+        row.goals,
+        getQueryGoalRate(row) === null ? '' : `${(getQueryGoalRate(row) ?? 0).toFixed(2)}%`,
+      ]
+        .map(escapeCell)
+        .join(';'),
+    ),
+  ].join('\n');
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `metrika-queries-${slugifyFilePart(project.name)}-${todayIso()}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function submitMetrikaQueriesExport(project: Project, rows: PromotionGoalQueryStat[], source?: PromotionResultSource) {
+  const preparedRows = rows.slice(0, METRIKA_QUERY_EXPORT_ROW_LIMIT).map((row) => ({
+    query: row.query,
+    visits: row.visits,
+    goals: row.goals,
+    cr: getQueryGoalRate(row) === null ? 0 : (getQueryGoalRate(row) ?? 0) / 100,
+  }));
+
+  if (!METRIKA_QUERY_EXPORT_ENDPOINT) {
+    downloadMetrikaQueriesCsv(project, preparedRows, source);
+    return 'fallback' as const;
+  }
+
+  const form = document.createElement('form');
+  const payload = document.createElement('input');
+  payload.type = 'hidden';
+  payload.name = 'payload';
+  payload.value = JSON.stringify({
+    projectName: project.name,
+    sourceTitle: source?.spreadsheetTitle ?? 'Яндекс Метрика',
+    periodLabel: source?.periodLabel ?? '',
+    generatedAt: new Date().toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }),
+    rows: preparedRows,
+  });
+  form.method = 'POST';
+  form.action = METRIKA_QUERY_EXPORT_ENDPOINT;
+  form.target = '_blank';
+  form.acceptCharset = 'UTF-8';
+  form.style.display = 'none';
+  form.append(payload);
+  document.body.append(form);
+  form.submit();
+  form.remove();
+  return 'ready' as const;
 }
 
 function isWeeklyReportTask(task: Task) {
@@ -5520,24 +5573,6 @@ function PromotionResultsPanel({
       {!source && !leadAnalytics && (
         <div className="empty-row">Для проекта {project.name} пока нет отдельного источника по результатам продвижения.</div>
       )}
-    </div>
-  );
-}
-
-function LeadBreakdownList({ title, items }: { title: string; items: LeadBreakdownItem[] }) {
-  if (items.length === 0) return null;
-
-  return (
-    <div className="lead-breakdown-list">
-      <strong>{title}</strong>
-      <div>
-        {items.slice(0, 6).map((item) => (
-          <span key={item.label}>
-            {item.label}
-            <em>{item.count}</em>
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
@@ -9544,12 +9579,11 @@ function SeoProjectsView({
   ];
   const effectiveActiveTab = seoTabs.some((item) => item.id === activeTab) ? activeTab : 'analytics';
   const showSideTaskPanel = effectiveActiveTab !== 'analytics';
-  const isAquaguardAnalytics =
-    effectiveActiveTab === 'analytics' && normalizeProjectName(selectedProject?.name ?? '') === 'аквагард';
+  const isFocusedAnalytics = effectiveActiveTab === 'analytics';
 
   return (
-    <section className={`seo-projects-view ${isAquaguardAnalytics ? 'is-analytics-focused' : ''}`}>
-      {!isAquaguardAnalytics && (
+    <section className={`seo-projects-view ${isFocusedAnalytics ? 'is-analytics-focused' : ''}`}>
+      {!isFocusedAnalytics && (
         <>
           <div className="dashboard-hero panel seo-projects-hero">
             <div>
@@ -9954,6 +9988,10 @@ function SeoMetrikaQueriesPanel({
   const [search, setSearch] = useState('');
   const [sortMode, setSortMode] = useStoredState<SeoQuerySort>('task-seo-metrika-query-sort', 'goals');
   const [visibleLimit, setVisibleLimit] = useState(150);
+  const [exportStatus, setExportStatus] = useState<{ status: MetrikaQueryExportStatus; message: string }>({
+    status: 'idle',
+    message: '',
+  });
   const sourceWithAnalytics = promotionSources.find((source) => source.goalAnalytics);
   const hasFullQueryList = promotionSources.some((source) => Boolean(source.goalAnalytics?.queries?.length));
   const queryRows = useMemo(() => mergePromotionQueryRows(promotionSources), [promotionSources]);
@@ -9975,6 +10013,26 @@ function SeoMetrikaQueriesPanel({
     setVisibleLimit(150);
   }, [project.id, normalizedSearch, sortMode]);
 
+  useEffect(() => {
+    setExportStatus({ status: 'idle', message: '' });
+  }, [project.id]);
+
+  const handleQueryExport = () => {
+    if (!queryRows.length) {
+      setExportStatus({ status: 'error', message: 'Нет строк для выгрузки.' });
+      return;
+    }
+    const result = submitMetrikaQueriesExport(project, queryRows, sourceWithAnalytics);
+    if (result === 'ready') {
+      setExportStatus({ status: 'ready', message: 'Создание Google-таблицы открыто в новой вкладке.' });
+      return;
+    }
+    setExportStatus({
+      status: 'fallback',
+      message: 'Google endpoint пока не подключен, поэтому скачан CSV со всеми запросами.',
+    });
+  };
+
   return (
     <section className="panel seo-inner-panel seo-metrika-query-panel">
       <div className="section-heading compact-heading">
@@ -9984,7 +10042,12 @@ function SeoMetrikaQueriesPanel({
             Органический поиск: каждая фраза, количество переходов и достижения целей по данным backend-снимка.
           </p>
         </div>
-        <Target size={20} />
+        <div className="metrika-query-head-actions">
+          <button type="button" onClick={handleQueryExport} disabled={!queryRows.length}>
+            <FileSpreadsheet size={16} />
+            Сделать выгрузку
+          </button>
+        </div>
       </div>
 
       <div className="metrika-query-stats">
@@ -10031,6 +10094,13 @@ function SeoMetrikaQueriesPanel({
             : 'источник Метрики не подключен'}
         </span>
       </div>
+
+      {exportStatus.message && (
+        <div className={`metrika-query-export-status ${exportStatus.status}`}>
+          <FileSpreadsheet size={15} />
+          <span>{exportStatus.message}</span>
+        </div>
+      )}
 
       {queryRows.length === 0 ? (
         <div className="empty-row">поисковые запросы в снимке Метрики пока пустые</div>
@@ -10200,29 +10270,8 @@ function ProjectSeoAnalyticsTiles({
   selectedProjectId?: string;
   onProjectChange?: (projectId: string) => void;
 }) {
-  if (normalizeProjectName(project.name) === 'аквагард') {
-    return (
-      <AquaguardSeoAnalyticsScreen
-        project={project}
-        linkRows={linkRows}
-        promotionSources={promotionSources}
-        leadAnalytics={leadAnalytics}
-        leadLoadStatus={leadLoadStatus}
-        leadError={leadError}
-        leadUpdatedAt={leadUpdatedAt}
-        onReloadLeads={onReloadLeads}
-        tasks={tasks}
-        peopleById={peopleById}
-        onOpenTasks={onOpenTasks}
-        allProjects={allProjects}
-        selectedProjectId={selectedProjectId}
-        onProjectChange={onProjectChange}
-      />
-    );
-  }
-
   return (
-    <GenericProjectSeoAnalyticsTiles
+    <ProjectSeoAnalyticsScreen
       project={project}
       linkRows={linkRows}
       promotionSources={promotionSources}
@@ -10231,316 +10280,16 @@ function ProjectSeoAnalyticsTiles({
       leadError={leadError}
       leadUpdatedAt={leadUpdatedAt}
       onReloadLeads={onReloadLeads}
+      tasks={tasks}
+      peopleById={peopleById}
+      onOpenTasks={onOpenTasks}
+      allProjects={allProjects}
+      selectedProjectId={selectedProjectId}
+      onProjectChange={onProjectChange}
     />
   );
 }
-
-function GenericProjectSeoAnalyticsTiles({
-  project,
-  linkRows,
-  promotionSources,
-  leadAnalytics,
-  leadLoadStatus,
-  leadError,
-  leadUpdatedAt,
-  onReloadLeads,
-}: {
-  project: Project;
-  linkRows: LinkPurchase[];
-  promotionSources: PromotionResultSource[];
-  leadAnalytics?: LeadAnalyticsSummary;
-  leadLoadStatus: LinkLoadStatus;
-  leadError: string;
-  leadUpdatedAt: string;
-  onReloadLeads: () => void;
-}) {
-  const [trendMode, setTrendMode] = useStoredState<SeoTrendMode>('task-seo-analytics-trend-mode', 'monthly');
-  const linkSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
-  const source = promotionSources[0];
-  const goalExamples = source?.goalExamples ?? [];
-  const hasGoalField = Boolean(source?.fields.includes('Достижение цели'));
-  const goalAnalytics = source?.goalAnalytics;
-  const allTrendPoints = getGoalTrendPoints(goalAnalytics, trendMode);
-  const visibleTrendPoints = getVisibleGoalTrendPoints(allTrendPoints, trendMode);
-  const trendVisitsMax = Math.max(...visibleTrendPoints.map((item) => item.visits), 1);
-  const goalTrendMax = Math.max(...visibleTrendPoints.map((item) => item.goals), 1);
-  const linkChartItems = [
-    { label: 'Всего строк', value: linkSummary.count },
-    { label: 'Размещено', value: linkSummary.placed },
-    { label: 'В работе', value: linkSummary.inProgress },
-    { label: 'Купить', value: linkSummary.needToBuy },
-  ].filter((item) => item.value > 0);
-  const maxLinks = Math.max(...linkChartItems.map((item) => item.value), 1);
-  const leadTrendPoints = getVisibleLeadTrendPoints(getLeadTrendPoints(leadAnalytics, trendMode), trendMode);
-  const leadTrendMax = Math.max(...leadTrendPoints.map((item) => item.leads), 1);
-  const leadQualityRate = leadAnalytics?.total ? Math.round((leadAnalytics.quality / leadAnalytics.total) * 100) : 0;
-  const leadWorkable = (leadAnalytics?.quality ?? 0) + (leadAnalytics?.inWork ?? 0);
-  const leadWorkableRate = leadAnalytics?.total ? Math.round((leadWorkable / leadAnalytics.total) * 100) : 0;
-
-  return (
-    <section className="analytics-tile-grid" aria-label={`Аналитика SEO-проекта ${project.name}`}>
-      <div className="seo-trend-toolbar">
-        <div>
-          <span>Динамика</span>
-          <strong>{seoTrendModeLabels[trendMode]}</strong>
-        </div>
-        <div role="group" aria-label="Период динамики">
-          {(Object.keys(seoTrendModeLabels) as SeoTrendMode[]).map((mode) => (
-            <button
-              className={trendMode === mode ? 'is-active' : ''}
-              key={mode}
-              type="button"
-              onClick={() => setTrendMode(mode)}
-            >
-              {seoTrendModeShortLabels[mode]}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <article className="analytics-tile analytics-tile-large">
-        <div className="analytics-tile-head">
-          <div>
-            <span>Закуп ссылок</span>
-            <h3>{linkSummary.count ? `${linkSummary.count} строк` : 'нет строк'}</h3>
-          </div>
-          <BarChart3 size={20} />
-        </div>
-        {linkChartItems.length === 0 ? (
-          <div className="analytics-empty">нет строк закупа по проекту</div>
-        ) : (
-          <div className="analytics-bar-chart">
-            {linkChartItems.map((item) => (
-              <div className="analytics-bar-row" key={item.label}>
-                <span>{item.label}</span>
-                <div>
-                  <i style={{ width: `${Math.max(9, (item.value / maxLinks) * 100)}%` }} />
-                </div>
-                <em>{item.value}</em>
-              </div>
-            ))}
-          </div>
-        )}
-        <div className="analytics-tile-footer">
-          <span>План: {formatMoney(linkSummary.planCost)}</span>
-          <span>Факт: {formatMoney(linkSummary.factCost)}</span>
-          <a href={LINK_SOURCE_SPREADSHEET_URL} target="_blank" rel="noreferrer">
-            Источник
-          </a>
-        </div>
-      </article>
-
-      <article className="analytics-tile">
-        <div className="analytics-tile-head">
-          <div>
-            <span>Динамика переходов</span>
-            <h3>{goalAnalytics ? `${goalAnalytics.visits} переходов` : source ? source.recordsLabel : 'нет источника'}</h3>
-          </div>
-          <RefreshCw size={20} />
-        </div>
-        {visibleTrendPoints.length ? (
-          <div className="analytics-trend-chart" aria-label={`Динамика переходов: ${seoTrendModeLabels[trendMode]}`}>
-            {visibleTrendPoints.map((point) => (
-              <div key={`${point.date ?? point.month}-${point.visits}-${point.goals}`}>
-                <span style={{ height: point.visits > 0 ? `${Math.max(8, (point.visits / trendVisitsMax) * 100)}%` : '0%' }} />
-                <em>{point.month}</em>
-                <small>{point.visits}</small>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="analytics-placeholder-chart" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-            <i />
-          </div>
-        )}
-        <p>
-          {goalAnalytics
-            ? visibleTrendPoints.length
-              ? `${goalAnalytics.uniqueQueries} ключевых запросов привели переходы. Срез: ${seoTrendModeLabels[trendMode].toLowerCase()}. Период: ${source?.periodLabel}.`
-              : `${seoTrendModeLabels[trendMode]} пока не загружены. После свежей выгрузки Метрики график появится здесь.`
-            : source
-              ? `${source.spreadsheetTitle} · ${source.periodLabel}. Для помесячной динамики нужен периодный срез.`
-            : 'источник Метрики не подключен'}
-        </p>
-        {source && (
-          <div className="analytics-chip-row">
-            {source.sampleQueries.map((query) => (
-              <em key={query}>{query}</em>
-            ))}
-          </div>
-        )}
-      </article>
-
-      <article className="analytics-tile">
-        <div className="analytics-tile-head">
-          <div>
-            <span>Динамика лидов</span>
-            <h3>
-              {leadAnalytics
-                ? `${leadAnalytics.total} лидов`
-                : leadLoadStatus === 'loading'
-                  ? 'загрузка'
-                  : 'данных пока нет'}
-            </h3>
-          </div>
-          <Users size={20} />
-        </div>
-        {leadAnalytics ? (
-          <>
-            <div className="lead-summary-grid">
-              <div>
-                <strong>{leadAnalytics.quality}</strong>
-                <span>качественных</span>
-              </div>
-              <div>
-                <strong>{leadAnalytics.inWork}</strong>
-                <span>в работе</span>
-              </div>
-              <div>
-                <strong>{leadAnalytics.rejected}</strong>
-                <span>отказ / нецелевые</span>
-              </div>
-            </div>
-            {leadTrendPoints.length ? (
-              <div className="lead-trend-chart" aria-label={`Динамика лидов: ${seoTrendModeLabels[trendMode]}`}>
-                {leadTrendPoints.map((point) => (
-                  <div key={`${point.period}-${point.leads}-${point.quality}`}>
-                    <span style={{ height: point.leads > 0 ? `${Math.max(10, (point.leads / leadTrendMax) * 100)}%` : '0%' }} />
-                    <em>{point.label}</em>
-                    <small>{point.leads}/{point.quality}</small>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="analytics-empty">{seoTrendModeLabels[trendMode]} пока не распознаны в источнике заявок</div>
-            )}
-            <p>
-              Качественные: {leadQualityRate}%. Качественные + в работе: {leadWorkableRate}%. Источников:{' '}
-              {leadAnalytics.sourceCount}. {leadAnalytics.periodLabel}.
-            </p>
-            <LeadBreakdownList title="Каналы" items={leadAnalytics.byChannel} />
-            <LeadBreakdownList title="Причины отказа" items={leadAnalytics.byReason} />
-            <div className="analytics-tile-footer">
-              {leadUpdatedAt && <span>Обновлено: {leadUpdatedAt}</span>}
-              <button type="button" onClick={onReloadLeads}>
-                Обновить заявки
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="analytics-placeholder-chart" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-              <i />
-            </div>
-            <p>
-              {leadError
-                ? `Источник заявок не загрузился: ${leadError}`
-                : 'данных пока нет'}
-            </p>
-            <div className="analytics-tile-footer">
-              <button type="button" onClick={onReloadLeads}>
-                Проверить источники
-              </button>
-            </div>
-          </>
-        )}
-      </article>
-
-      <article className="analytics-tile analytics-goal-summary">
-        <div className="analytics-tile-head">
-          <div>
-            <span>Цели на сайте</span>
-            <h3>{goalAnalytics ? `${goalAnalytics.goalCount} целей` : hasGoalField ? 'колонка готова' : 'нет источника'}</h3>
-          </div>
-          <Target size={20} />
-        </div>
-        {goalAnalytics ? (
-          <>
-            <div className="goal-summary-grid">
-              <div>
-                <strong>{goalAnalytics.uniqueQueries}</strong>
-                <span>ключей с переходами</span>
-              </div>
-              <div>
-                <strong>{goalAnalytics.goalRows}</strong>
-                <span>строк с целями</span>
-              </div>
-              <div>
-                <strong>{goalAnalytics.goalCount}</strong>
-                <span>достижений целей</span>
-              </div>
-            </div>
-            {visibleTrendPoints.length ? (
-              <div className="goal-trend-chart" aria-label={`Динамика достижений целей: ${seoTrendModeLabels[trendMode]}`}>
-                {visibleTrendPoints.map((point) => (
-                  <div key={`${point.date ?? point.month}-${point.visits}-${point.goals}`}>
-                    <strong>{point.goals}</strong>
-                    <span style={{ height: point.goals > 0 ? `${Math.max(10, (point.goals / goalTrendMax) * 100)}%` : '0%' }} />
-                    <em>{point.month}</em>
-                    <small>{point.visits} пер.</small>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="analytics-empty">
-                {seoTrendModeLabels[trendMode]} пока не загружены из Метрики
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="analytics-chip-row">
-              {(hasGoalField
-                ? goalExamples.length
-                  ? goalExamples
-                  : ['цели будут подтягиваться из таблицы']
-                : ['цели будут подтягиваться из таблицы']
-              ).map((goal) => (
-                <em key={goal}>{goal}</em>
-              ))}
-            </div>
-            <p>
-              {hasGoalField
-                ? 'Поле “Достижение цели” есть в таблице результатов продвижения.'
-                : 'Когда появится таблица целей, она попадет в часть отчета перед клиентом.'}
-            </p>
-          </>
-        )}
-      </article>
-
-      <article className="analytics-tile analytics-goal-queries">
-        <div className="analytics-tile-head">
-          <div>
-            <span>Ключевые запросы и цели</span>
-            <h3>{goalAnalytics ? `${goalAnalytics.topQueries.length} запросов` : 'нет данных'}</h3>
-          </div>
-          <LayoutList size={20} />
-        </div>
-        {goalAnalytics ? (
-          <div className="goal-query-list">
-            {goalAnalytics.topQueries.map((item) => (
-              <div className="goal-query-row" key={item.query}>
-                <strong>{item.query}</strong>
-                <span>{item.visits} переходов</span>
-                <em>{item.goals} целей</em>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>Детализация по ключевым запросам появится после подключения таблицы результатов продвижения.</p>
-        )}
-      </article>
-    </section>
-  );
-}
-
-function AquaguardSeoAnalyticsScreen({
+function ProjectSeoAnalyticsScreen({
   project,
   linkRows,
   promotionSources,
@@ -10575,17 +10324,17 @@ function AquaguardSeoAnalyticsScreen({
   const goalAnalytics = source?.goalAnalytics;
   const sourceEndDate = getLatestAnalyticsDate(goalAnalytics, leadAnalytics);
   const defaultRange = resolveSeoDateRange('30d', { start: '', end: '' }, sourceEndDate);
-  const [periodPreset, setPeriodPreset] = useStoredState<SeoPeriodPreset>('task-seo-aquaguard-period-preset', '30d');
-  const [trendMode, setTrendMode] = useStoredState<SeoTrendMode>('task-seo-aquaguard-trend-mode', 'daily');
-  const [compareMode, setCompareMode] = useStoredState<SeoCompareMode>('task-seo-aquaguard-compare-mode', 'previous');
-  const [trafficSystem, setTrafficSystem] = useStoredState<SeoTrafficSystem>('task-seo-aquaguard-traffic-system', 'all');
-  const [leadMetricMode, setLeadMetricMode] = useStoredState<SeoLeadMetricMode>('task-seo-aquaguard-lead-mode', 'target');
-  const [showMarkers, setShowMarkers] = useStoredState<boolean>('task-seo-aquaguard-show-markers', true);
-  const [impactTab, setImpactTab] = useStoredState<SeoImpactTab>('task-seo-aquaguard-impact-tab', 'queries');
-  const [impactDirection, setImpactDirection] = useStoredState<SeoImpactDirection>('task-seo-aquaguard-impact-direction', 'growth');
-  const [customRange, setCustomRange] = useStoredState<AnalyticsDateRange>('task-seo-aquaguard-custom-range', defaultRange);
+  const [periodPreset, setPeriodPreset] = useStoredState<SeoPeriodPreset>('task-seo-analytics-period-preset', '30d');
+  const [trendMode, setTrendMode] = useStoredState<SeoTrendMode>('task-seo-analytics-trend-mode', 'daily');
+  const [compareMode, setCompareMode] = useStoredState<SeoCompareMode>('task-seo-analytics-compare-mode', 'previous');
+  const [trafficSystem, setTrafficSystem] = useStoredState<SeoTrafficSystem>('task-seo-analytics-traffic-system', 'all');
+  const [leadMetricMode, setLeadMetricMode] = useStoredState<SeoLeadMetricMode>('task-seo-analytics-lead-mode', 'target');
+  const [showMarkers, setShowMarkers] = useStoredState<boolean>('task-seo-analytics-show-markers', true);
+  const [impactTab, setImpactTab] = useStoredState<SeoImpactTab>('task-seo-analytics-impact-tab', 'queries');
+  const [impactDirection, setImpactDirection] = useStoredState<SeoImpactDirection>('task-seo-analytics-impact-direction', 'growth');
+  const [customRange, setCustomRange] = useStoredState<AnalyticsDateRange>('task-seo-analytics-custom-range', defaultRange);
   const [customCompareRange, setCustomCompareRange] = useStoredState<AnalyticsDateRange>(
-    'task-seo-aquaguard-custom-compare-range',
+    'task-seo-analytics-custom-compare-range',
     { start: addDaysToIso(defaultRange.start, -30), end: addDaysToIso(defaultRange.start, -1) },
   );
   const [impactSearch, setImpactSearch] = useState('');
@@ -10702,13 +10451,13 @@ function AquaguardSeoAnalyticsScreen({
   ].filter(Boolean);
 
   return (
-    <section className="aquaguard-analytics" aria-label="Аналитика SEO-проекта Аквагард">
+    <section className="aquaguard-analytics" aria-label={`Аналитика SEO-проекта ${project.name}`}>
       <header className="aquaguard-analytics-head glass-inner">
         <div>
           <p>
             task-SEO <span>/</span> SEO-проекты <span>/</span> <strong>{project.name}</strong> <span>/</span> Аналитика
           </p>
-          <h2>Аквагард: динамика SEO-результата</h2>
+          <h2>{project.name}: динамика SEO-результата</h2>
         </div>
         {allProjects.length > 0 && onProjectChange && (
           <label className="aquaguard-project-select">
@@ -10969,7 +10718,7 @@ function AquaguardSeoAnalyticsScreen({
             value={impactSearch}
             onChange={(event) => setImpactSearch(event.target.value)}
           />
-          <button type="button" onClick={() => downloadCsv('aquaguard-seo-impact.csv', visibleImpactRows)}>
+          <button type="button" onClick={() => downloadCsv(`${slugifyFilePart(project.name)}-seo-impact.csv`, visibleImpactRows)}>
             <FileSpreadsheet size={16} />
             CSV
           </button>
@@ -11004,7 +10753,7 @@ function AquaguardSeoAnalyticsScreen({
 
       {activeTasks.length > 0 && (
         <details className="aquaguard-open-tasks">
-          <summary>Актуальные задачи Аквагарда</summary>
+          <summary>Актуальные задачи: {project.name}</summary>
           <div>
             {activeTasks.map((task) => (
               <article key={task.id}>
@@ -11066,8 +10815,8 @@ function SeoAnalyticsLineChart({
   if (current.length === 0) return <div className="aquaguard-chart-empty">{emptyLabel}</div>;
 
   const width = 880;
-  const height = 320;
-  const padding = { top: 24, right: 24, bottom: 48, left: 48 };
+  const height = 248;
+  const padding = { top: 18, right: 20, bottom: 38, left: 44 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
   const chartLength = Math.max(current.length, previous.length, 2);

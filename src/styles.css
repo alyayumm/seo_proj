@@ -4739,6 +4739,32 @@ p {
   overflow-x: auto;
 }
 
+.metrika-query-head-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.metrika-query-head-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(126, 231, 241, 0.34);
+  border-radius: 12px;
+  color: #061112;
+  background: linear-gradient(135deg, #9bf5ff, #d8eef3);
+  box-shadow: 0 12px 28px rgba(126, 231, 241, 0.12);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.metrika-query-head-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
 .metrika-query-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4781,6 +4807,32 @@ p {
 .metrika-query-source-note svg {
   flex: 0 0 auto;
   color: var(--cyan);
+}
+
+.metrika-query-export-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(126, 231, 241, 0.22);
+  border-radius: 12px;
+  color: var(--muted);
+  background: rgba(126, 231, 241, 0.08);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.metrika-query-export-status.error {
+  border-color: rgba(255, 142, 130, 0.36);
+  color: var(--danger);
+  background: rgba(255, 142, 130, 0.08);
+}
+
+.metrika-query-export-status.fallback {
+  border-color: rgba(255, 225, 211, 0.28);
+  background: rgba(255, 225, 211, 0.08);
 }
 
 .metrika-query-table {
@@ -5709,13 +5761,13 @@ p {
 .aquaguard-chart-panel,
 .aquaguard-impact-panel {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
-  padding: 16px;
+  padding: 12px;
 }
 
 .aquaguard-chart-panel-main {
-  min-height: 390px;
+  min-height: 300px;
 }
 
 .aquaguard-chart-toolbar {
@@ -5759,8 +5811,12 @@ p {
 .aquaguard-bar-chart svg {
   display: block;
   width: 100%;
-  height: auto;
-  min-height: 260px;
+  height: clamp(180px, 20vw, 230px);
+  min-height: 0;
+}
+
+.aquaguard-chart-panel-main .aquaguard-line-chart svg {
+  height: clamp(200px, 21vw, 240px);
 }
 
 .aquaguard-line-chart line,
@@ -5853,8 +5909,11 @@ p {
 }
 
 .aquaguard-marker-list span {
-  max-width: 260px;
+  min-height: 24px;
+  max-width: 220px;
+  padding: 5px 8px;
   overflow: hidden;
+  font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

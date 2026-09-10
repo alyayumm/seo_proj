@@ -9,6 +9,7 @@ const DATE_2 = process.env.METRIKA_DATE2 || todayIso();
 const ORGANIC_FILTER = "ym:s:trafficSource=='organic'";
 const ATTRIBUTION = 'lastsign';
 const SOURCE_TIMEZONE = '+03:00';
+const GOAL_REACH_METRIC = 'ym:s:anyGoalReaches';
 const QUERY_ROW_LIMIT = parsePositiveIntegerEnv('METRIKA_QUERY_ROW_LIMIT', 100000);
 const QUERY_PAGE_SIZE = Math.min(parsePositiveIntegerEnv('METRIKA_QUERY_PAGE_SIZE', 10000), QUERY_ROW_LIMIT);
 
@@ -148,7 +149,7 @@ async function fetchCounters(token) {
 }
 
 async function fetchSummaryStats(counterId, token, includeGoals = true) {
-  const metrics = includeGoals ? 'ym:s:visits,ym:s:users,ym:s:goalReachesAny' : 'ym:s:visits,ym:s:users';
+  const metrics = includeGoals ? `ym:s:visits,ym:s:users,${GOAL_REACH_METRIC}` : 'ym:s:visits,ym:s:users';
   const result = await apiGet(
     '/stat/v1/data',
     {
@@ -172,7 +173,7 @@ async function fetchSummaryStats(counterId, token, includeGoals = true) {
 }
 
 async function fetchTableStats(counterId, token, includeGoals = true) {
-  const metrics = includeGoals ? 'ym:s:visits,ym:s:users,ym:s:goalReachesAny' : 'ym:s:visits,ym:s:users';
+  const metrics = includeGoals ? `ym:s:visits,ym:s:users,${GOAL_REACH_METRIC}` : 'ym:s:visits,ym:s:users';
   const queryRowsByName = new Map();
   let totals = [];
   let totalRows = 0;
@@ -249,7 +250,7 @@ function formatTimeIntervalLabel(interval, group) {
 }
 
 async function fetchTimeStats(counterId, token, group, includeGoals = true) {
-  const metrics = includeGoals ? 'ym:s:visits,ym:s:goalReachesAny' : 'ym:s:visits';
+  const metrics = includeGoals ? `ym:s:visits,${GOAL_REACH_METRIC}` : 'ym:s:visits';
   const result = await apiGet(
     '/stat/v1/data/bytime',
     {
@@ -292,7 +293,7 @@ async function fetchProjectStats(project, counter, token) {
     weekly = await fetchTimeStats(counter.id, token, 'week', true);
     monthly = await fetchTimeStats(counter.id, token, 'month', true);
   } catch (error) {
-    if (!String(error.message).includes('goalReachesAny')) throw error;
+    if (!String(error.message).includes(GOAL_REACH_METRIC)) throw error;
     summary = await fetchSummaryStats(counter.id, token, false);
     table = await fetchTableStats(counter.id, token, false);
     daily = await fetchTimeStats(counter.id, token, 'day', false);
