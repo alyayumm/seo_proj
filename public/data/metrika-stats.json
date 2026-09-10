@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-10T11:02:34.368Z",
+  "updatedAt": "2026-09-10T11:08:35.403Z",
   "date1": "2026-04-01",
   "date2": "2026-09-10",
   "periodLabel": "01.04.26 - 10.09.26",
@@ -18,9 +18,11 @@
       "timezone": "+03:00",
       "dataStatus": "ok",
       "fullCoverageDate": "2026-09-10",
-      "visits": 145,
-      "users": 134,
+      "visits": 3796,
+      "users": 3768,
       "goalCount": 0,
+      "queryVisits": 145,
+      "queryGoalCount": 0,
       "uniqueQueries": 107,
       "goalRows": 0,
       "sampleQueries": [
@@ -1248,9 +1250,11 @@
       "timezone": "+03:00",
       "dataStatus": "ok",
       "fullCoverageDate": "2026-09-10",
-      "visits": 342,
-      "users": 334,
+      "visits": 711,
+      "users": 699,
       "goalCount": 0,
+      "queryVisits": 342,
+      "queryGoalCount": 0,
       "uniqueQueries": 185,
       "goalRows": 0,
       "sampleQueries": [
@@ -2478,9 +2482,11 @@
       "timezone": "+03:00",
       "dataStatus": "ok",
       "fullCoverageDate": "2026-09-10",
-      "visits": 1026,
-      "users": 954,
+      "visits": 1405,
+      "users": 1212,
       "goalCount": 0,
+      "queryVisits": 1026,
+      "queryGoalCount": 0,
       "uniqueQueries": 788,
       "goalRows": 0,
       "sampleQueries": [
@@ -3696,6 +3702,1238 @@
       ]
     },
     {
+      "projectName": "Промтех",
+      "clientName": "Макулатура",
+      "counterId": 99590873,
+      "counterName": "promtehmakulatura.ru",
+      "siteUrl": "https://promtehmakulatura.ru",
+      "periodLabel": "01.04.26 - 10.09.26",
+      "metricScope": "organic_search",
+      "filter": "ym:s:trafficSource=='organic'",
+      "attribution": "lastsign",
+      "timezone": "+03:00",
+      "dataStatus": "ok",
+      "fullCoverageDate": "2026-09-10",
+      "visits": 3717,
+      "users": 3427,
+      "goalCount": 0,
+      "queryVisits": 2406,
+      "queryGoalCount": 0,
+      "uniqueQueries": 1429,
+      "goalRows": 0,
+      "sampleQueries": [
+        "промтехмакулатура",
+        "прием макулатуры",
+        "сколько видов пластика можно сдать на переработку в россии"
+      ],
+      "topQueries": [
+        {
+          "query": "промтехмакулатура",
+          "visits": 35,
+          "goals": 0
+        },
+        {
+          "query": "прием макулатуры",
+          "visits": 32,
+          "goals": 0
+        },
+        {
+          "query": "сколько видов пластика можно сдать на переработку в россии",
+          "visits": 30,
+          "goals": 0
+        },
+        {
+          "query": "тренды в экологичной мебели",
+          "visits": 30,
+          "goals": 0
+        },
+        {
+          "query": "hdpe 2 что означает на канистре",
+          "visits": 28,
+          "goals": 0
+        },
+        {
+          "query": "пункт вторсырья",
+          "visits": 20,
+          "goals": 0
+        },
+        {
+          "query": "адреса макулатуры",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "query": "прием мукулатуры",
+          "visits": 18,
+          "goals": 0
+        }
+      ],
+      "daily": [
+        {
+          "month": "01.04",
+          "date": "2026-04-01",
+          "visits": 24,
+          "goals": 0
+        },
+        {
+          "month": "02.04",
+          "date": "2026-04-02",
+          "visits": 18,
+          "goals": 0
+        },
+        {
+          "month": "03.04",
+          "date": "2026-04-03",
+          "visits": 27,
+          "goals": 0
+        },
+        {
+          "month": "04.04",
+          "date": "2026-04-04",
+          "visits": 30,
+          "goals": 0
+        },
+        {
+          "month": "05.04",
+          "date": "2026-04-05",
+          "visits": 23,
+          "goals": 0
+        },
+        {
+          "month": "06.04",
+          "date": "2026-04-06",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "07.04",
+          "date": "2026-04-07",
+          "visits": 9,
+          "goals": 0
+        },
+        {
+          "month": "08.04",
+          "date": "2026-04-08",
+          "visits": 6,
+          "goals": 0
+        },
+        {
+          "month": "09.04",
+          "date": "2026-04-09",
+          "visits": 15,
+          "goals": 0
+        },
+        {
+          "month": "10.04",
+          "date": "2026-04-10",
+          "visits": 14,
+          "goals": 0
+        },
+        {
+          "month": "11.04",
+          "date": "2026-04-11",
+          "visits": 13,
+          "goals": 0
+        },
+        {
+          "month": "12.04",
+          "date": "2026-04-12",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "month": "13.04",
+          "date": "2026-04-13",
+          "visits": 7,
+          "goals": 0
+        },
+        {
+          "month": "14.04",
+          "date": "2026-04-14",
+          "visits": 14,
+          "goals": 0
+        },
+        {
+          "month": "15.04",
+          "date": "2026-04-15",
+          "visits": 21,
+          "goals": 0
+        },
+        {
+          "month": "16.04",
+          "date": "2026-04-16",
+          "visits": 13,
+          "goals": 0
+        },
+        {
+          "month": "17.04",
+          "date": "2026-04-17",
+          "visits": 11,
+          "goals": 0
+        },
+        {
+          "month": "18.04",
+          "date": "2026-04-18",
+          "visits": 18,
+          "goals": 0
+        },
+        {
+          "month": "19.04",
+          "date": "2026-04-19",
+          "visits": 14,
+          "goals": 0
+        },
+        {
+          "month": "20.04",
+          "date": "2026-04-20",
+          "visits": 14,
+          "goals": 0
+        },
+        {
+          "month": "21.04",
+          "date": "2026-04-21",
+          "visits": 8,
+          "goals": 0
+        },
+        {
+          "month": "22.04",
+          "date": "2026-04-22",
+          "visits": 4,
+          "goals": 0
+        },
+        {
+          "month": "23.04",
+          "date": "2026-04-23",
+          "visits": 20,
+          "goals": 0
+        },
+        {
+          "month": "24.04",
+          "date": "2026-04-24",
+          "visits": 11,
+          "goals": 0
+        },
+        {
+          "month": "25.04",
+          "date": "2026-04-25",
+          "visits": 17,
+          "goals": 0
+        },
+        {
+          "month": "26.04",
+          "date": "2026-04-26",
+          "visits": 18,
+          "goals": 0
+        },
+        {
+          "month": "27.04",
+          "date": "2026-04-27",
+          "visits": 13,
+          "goals": 0
+        },
+        {
+          "month": "28.04",
+          "date": "2026-04-28",
+          "visits": 12,
+          "goals": 0
+        },
+        {
+          "month": "29.04",
+          "date": "2026-04-29",
+          "visits": 15,
+          "goals": 0
+        },
+        {
+          "month": "30.04",
+          "date": "2026-04-30",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "month": "01.05",
+          "date": "2026-05-01",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "month": "02.05",
+          "date": "2026-05-02",
+          "visits": 17,
+          "goals": 0
+        },
+        {
+          "month": "03.05",
+          "date": "2026-05-03",
+          "visits": 16,
+          "goals": 0
+        },
+        {
+          "month": "04.05",
+          "date": "2026-05-04",
+          "visits": 11,
+          "goals": 0
+        },
+        {
+          "month": "05.05",
+          "date": "2026-05-05",
+          "visits": 9,
+          "goals": 0
+        },
+        {
+          "month": "06.05",
+          "date": "2026-05-06",
+          "visits": 6,
+          "goals": 0
+        },
+        {
+          "month": "07.05",
+          "date": "2026-05-07",
+          "visits": 11,
+          "goals": 0
+        },
+        {
+          "month": "08.05",
+          "date": "2026-05-08",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "month": "09.05",
+          "date": "2026-05-09",
+          "visits": 3,
+          "goals": 0
+        },
+        {
+          "month": "10.05",
+          "date": "2026-05-10",
+          "visits": 3,
+          "goals": 0
+        },
+        {
+          "month": "11.05",
+          "date": "2026-05-11",
+          "visits": 0,
+          "goals": 0
+        },
+        {
+          "month": "12.05",
+          "date": "2026-05-12",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "month": "13.05",
+          "date": "2026-05-13",
+          "visits": 6,
+          "goals": 0
+        },
+        {
+          "month": "14.05",
+          "date": "2026-05-14",
+          "visits": 12,
+          "goals": 0
+        },
+        {
+          "month": "15.05",
+          "date": "2026-05-15",
+          "visits": 18,
+          "goals": 0
+        },
+        {
+          "month": "16.05",
+          "date": "2026-05-16",
+          "visits": 23,
+          "goals": 0
+        },
+        {
+          "month": "17.05",
+          "date": "2026-05-17",
+          "visits": 16,
+          "goals": 0
+        },
+        {
+          "month": "18.05",
+          "date": "2026-05-18",
+          "visits": 7,
+          "goals": 0
+        },
+        {
+          "month": "19.05",
+          "date": "2026-05-19",
+          "visits": 12,
+          "goals": 0
+        },
+        {
+          "month": "20.05",
+          "date": "2026-05-20",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "21.05",
+          "date": "2026-05-21",
+          "visits": 12,
+          "goals": 0
+        },
+        {
+          "month": "22.05",
+          "date": "2026-05-22",
+          "visits": 23,
+          "goals": 0
+        },
+        {
+          "month": "23.05",
+          "date": "2026-05-23",
+          "visits": 21,
+          "goals": 0
+        },
+        {
+          "month": "24.05",
+          "date": "2026-05-24",
+          "visits": 11,
+          "goals": 0
+        },
+        {
+          "month": "25.05",
+          "date": "2026-05-25",
+          "visits": 13,
+          "goals": 0
+        },
+        {
+          "month": "26.05",
+          "date": "2026-05-26",
+          "visits": 9,
+          "goals": 0
+        },
+        {
+          "month": "27.05",
+          "date": "2026-05-27",
+          "visits": 4,
+          "goals": 0
+        },
+        {
+          "month": "28.05",
+          "date": "2026-05-28",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "month": "29.05",
+          "date": "2026-05-29",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "30.05",
+          "date": "2026-05-30",
+          "visits": 15,
+          "goals": 0
+        },
+        {
+          "month": "31.05",
+          "date": "2026-05-31",
+          "visits": 21,
+          "goals": 0
+        },
+        {
+          "month": "01.06",
+          "date": "2026-06-01",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "month": "02.06",
+          "date": "2026-06-02",
+          "visits": 3,
+          "goals": 0
+        },
+        {
+          "month": "03.06",
+          "date": "2026-06-03",
+          "visits": 11,
+          "goals": 0
+        },
+        {
+          "month": "04.06",
+          "date": "2026-06-04",
+          "visits": 13,
+          "goals": 0
+        },
+        {
+          "month": "05.06",
+          "date": "2026-06-05",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "month": "06.06",
+          "date": "2026-06-06",
+          "visits": 3,
+          "goals": 0
+        },
+        {
+          "month": "07.06",
+          "date": "2026-06-07",
+          "visits": 0,
+          "goals": 0
+        },
+        {
+          "month": "08.06",
+          "date": "2026-06-08",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "month": "09.06",
+          "date": "2026-06-09",
+          "visits": 4,
+          "goals": 0
+        },
+        {
+          "month": "10.06",
+          "date": "2026-06-10",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "month": "11.06",
+          "date": "2026-06-11",
+          "visits": 4,
+          "goals": 0
+        },
+        {
+          "month": "12.06",
+          "date": "2026-06-12",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "month": "13.06",
+          "date": "2026-06-13",
+          "visits": 6,
+          "goals": 0
+        },
+        {
+          "month": "14.06",
+          "date": "2026-06-14",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "month": "15.06",
+          "date": "2026-06-15",
+          "visits": 8,
+          "goals": 0
+        },
+        {
+          "month": "16.06",
+          "date": "2026-06-16",
+          "visits": 15,
+          "goals": 0
+        },
+        {
+          "month": "17.06",
+          "date": "2026-06-17",
+          "visits": 8,
+          "goals": 0
+        },
+        {
+          "month": "18.06",
+          "date": "2026-06-18",
+          "visits": 6,
+          "goals": 0
+        },
+        {
+          "month": "19.06",
+          "date": "2026-06-19",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "month": "20.06",
+          "date": "2026-06-20",
+          "visits": 4,
+          "goals": 0
+        },
+        {
+          "month": "21.06",
+          "date": "2026-06-21",
+          "visits": 8,
+          "goals": 0
+        },
+        {
+          "month": "22.06",
+          "date": "2026-06-22",
+          "visits": 14,
+          "goals": 0
+        },
+        {
+          "month": "23.06",
+          "date": "2026-06-23",
+          "visits": 14,
+          "goals": 0
+        },
+        {
+          "month": "24.06",
+          "date": "2026-06-24",
+          "visits": 12,
+          "goals": 0
+        },
+        {
+          "month": "25.06",
+          "date": "2026-06-25",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "26.06",
+          "date": "2026-06-26",
+          "visits": 7,
+          "goals": 0
+        },
+        {
+          "month": "27.06",
+          "date": "2026-06-27",
+          "visits": 12,
+          "goals": 0
+        },
+        {
+          "month": "28.06",
+          "date": "2026-06-28",
+          "visits": 16,
+          "goals": 0
+        },
+        {
+          "month": "29.06",
+          "date": "2026-06-29",
+          "visits": 17,
+          "goals": 0
+        },
+        {
+          "month": "30.06",
+          "date": "2026-06-30",
+          "visits": 29,
+          "goals": 0
+        },
+        {
+          "month": "01.07",
+          "date": "2026-07-01",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "02.07",
+          "date": "2026-07-02",
+          "visits": 23,
+          "goals": 0
+        },
+        {
+          "month": "03.07",
+          "date": "2026-07-03",
+          "visits": 12,
+          "goals": 0
+        },
+        {
+          "month": "04.07",
+          "date": "2026-07-04",
+          "visits": 8,
+          "goals": 0
+        },
+        {
+          "month": "05.07",
+          "date": "2026-07-05",
+          "visits": 10,
+          "goals": 0
+        },
+        {
+          "month": "06.07",
+          "date": "2026-07-06",
+          "visits": 23,
+          "goals": 0
+        },
+        {
+          "month": "07.07",
+          "date": "2026-07-07",
+          "visits": 20,
+          "goals": 0
+        },
+        {
+          "month": "08.07",
+          "date": "2026-07-08",
+          "visits": 22,
+          "goals": 0
+        },
+        {
+          "month": "09.07",
+          "date": "2026-07-09",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "10.07",
+          "date": "2026-07-10",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "11.07",
+          "date": "2026-07-11",
+          "visits": 13,
+          "goals": 0
+        },
+        {
+          "month": "12.07",
+          "date": "2026-07-12",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "13.07",
+          "date": "2026-07-13",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "14.07",
+          "date": "2026-07-14",
+          "visits": 29,
+          "goals": 0
+        },
+        {
+          "month": "15.07",
+          "date": "2026-07-15",
+          "visits": 24,
+          "goals": 0
+        },
+        {
+          "month": "16.07",
+          "date": "2026-07-16",
+          "visits": 29,
+          "goals": 0
+        },
+        {
+          "month": "17.07",
+          "date": "2026-07-17",
+          "visits": 18,
+          "goals": 0
+        },
+        {
+          "month": "18.07",
+          "date": "2026-07-18",
+          "visits": 26,
+          "goals": 0
+        },
+        {
+          "month": "19.07",
+          "date": "2026-07-19",
+          "visits": 14,
+          "goals": 0
+        },
+        {
+          "month": "20.07",
+          "date": "2026-07-20",
+          "visits": 16,
+          "goals": 0
+        },
+        {
+          "month": "21.07",
+          "date": "2026-07-21",
+          "visits": 27,
+          "goals": 0
+        },
+        {
+          "month": "22.07",
+          "date": "2026-07-22",
+          "visits": 21,
+          "goals": 0
+        },
+        {
+          "month": "23.07",
+          "date": "2026-07-23",
+          "visits": 29,
+          "goals": 0
+        },
+        {
+          "month": "24.07",
+          "date": "2026-07-24",
+          "visits": 21,
+          "goals": 0
+        },
+        {
+          "month": "25.07",
+          "date": "2026-07-25",
+          "visits": 14,
+          "goals": 0
+        },
+        {
+          "month": "26.07",
+          "date": "2026-07-26",
+          "visits": 20,
+          "goals": 0
+        },
+        {
+          "month": "27.07",
+          "date": "2026-07-27",
+          "visits": 13,
+          "goals": 0
+        },
+        {
+          "month": "28.07",
+          "date": "2026-07-28",
+          "visits": 21,
+          "goals": 0
+        },
+        {
+          "month": "29.07",
+          "date": "2026-07-29",
+          "visits": 19,
+          "goals": 0
+        },
+        {
+          "month": "30.07",
+          "date": "2026-07-30",
+          "visits": 24,
+          "goals": 0
+        },
+        {
+          "month": "31.07",
+          "date": "2026-07-31",
+          "visits": 30,
+          "goals": 0
+        },
+        {
+          "month": "01.08",
+          "date": "2026-08-01",
+          "visits": 24,
+          "goals": 0
+        },
+        {
+          "month": "02.08",
+          "date": "2026-08-02",
+          "visits": 13,
+          "goals": 0
+        },
+        {
+          "month": "03.08",
+          "date": "2026-08-03",
+          "visits": 27,
+          "goals": 0
+        },
+        {
+          "month": "04.08",
+          "date": "2026-08-04",
+          "visits": 30,
+          "goals": 0
+        },
+        {
+          "month": "05.08",
+          "date": "2026-08-05",
+          "visits": 26,
+          "goals": 0
+        },
+        {
+          "month": "06.08",
+          "date": "2026-08-06",
+          "visits": 26,
+          "goals": 0
+        },
+        {
+          "month": "07.08",
+          "date": "2026-08-07",
+          "visits": 18,
+          "goals": 0
+        },
+        {
+          "month": "08.08",
+          "date": "2026-08-08",
+          "visits": 18,
+          "goals": 0
+        },
+        {
+          "month": "09.08",
+          "date": "2026-08-09",
+          "visits": 17,
+          "goals": 0
+        },
+        {
+          "month": "10.08",
+          "date": "2026-08-10",
+          "visits": 31,
+          "goals": 0
+        },
+        {
+          "month": "11.08",
+          "date": "2026-08-11",
+          "visits": 27,
+          "goals": 0
+        },
+        {
+          "month": "12.08",
+          "date": "2026-08-12",
+          "visits": 29,
+          "goals": 0
+        },
+        {
+          "month": "13.08",
+          "date": "2026-08-13",
+          "visits": 43,
+          "goals": 0
+        },
+        {
+          "month": "14.08",
+          "date": "2026-08-14",
+          "visits": 34,
+          "goals": 0
+        },
+        {
+          "month": "15.08",
+          "date": "2026-08-15",
+          "visits": 29,
+          "goals": 0
+        },
+        {
+          "month": "16.08",
+          "date": "2026-08-16",
+          "visits": 27,
+          "goals": 0
+        },
+        {
+          "month": "17.08",
+          "date": "2026-08-17",
+          "visits": 92,
+          "goals": 0
+        },
+        {
+          "month": "18.08",
+          "date": "2026-08-18",
+          "visits": 69,
+          "goals": 0
+        },
+        {
+          "month": "19.08",
+          "date": "2026-08-19",
+          "visits": 69,
+          "goals": 0
+        },
+        {
+          "month": "20.08",
+          "date": "2026-08-20",
+          "visits": 53,
+          "goals": 0
+        },
+        {
+          "month": "21.08",
+          "date": "2026-08-21",
+          "visits": 64,
+          "goals": 0
+        },
+        {
+          "month": "22.08",
+          "date": "2026-08-22",
+          "visits": 30,
+          "goals": 0
+        },
+        {
+          "month": "23.08",
+          "date": "2026-08-23",
+          "visits": 53,
+          "goals": 0
+        },
+        {
+          "month": "24.08",
+          "date": "2026-08-24",
+          "visits": 60,
+          "goals": 0
+        },
+        {
+          "month": "25.08",
+          "date": "2026-08-25",
+          "visits": 57,
+          "goals": 0
+        },
+        {
+          "month": "26.08",
+          "date": "2026-08-26",
+          "visits": 77,
+          "goals": 0
+        },
+        {
+          "month": "27.08",
+          "date": "2026-08-27",
+          "visits": 73,
+          "goals": 0
+        },
+        {
+          "month": "28.08",
+          "date": "2026-08-28",
+          "visits": 53,
+          "goals": 0
+        },
+        {
+          "month": "29.08",
+          "date": "2026-08-29",
+          "visits": 56,
+          "goals": 0
+        },
+        {
+          "month": "30.08",
+          "date": "2026-08-30",
+          "visits": 70,
+          "goals": 0
+        },
+        {
+          "month": "31.08",
+          "date": "2026-08-31",
+          "visits": 66,
+          "goals": 0
+        },
+        {
+          "month": "01.09",
+          "date": "2026-09-01",
+          "visits": 73,
+          "goals": 0
+        },
+        {
+          "month": "02.09",
+          "date": "2026-09-02",
+          "visits": 76,
+          "goals": 0
+        },
+        {
+          "month": "03.09",
+          "date": "2026-09-03",
+          "visits": 75,
+          "goals": 0
+        },
+        {
+          "month": "04.09",
+          "date": "2026-09-04",
+          "visits": 75,
+          "goals": 0
+        },
+        {
+          "month": "05.09",
+          "date": "2026-09-05",
+          "visits": 67,
+          "goals": 0
+        },
+        {
+          "month": "06.09",
+          "date": "2026-09-06",
+          "visits": 58,
+          "goals": 0
+        },
+        {
+          "month": "07.09",
+          "date": "2026-09-07",
+          "visits": 70,
+          "goals": 0
+        },
+        {
+          "month": "08.09",
+          "date": "2026-09-08",
+          "visits": 59,
+          "goals": 0
+        },
+        {
+          "month": "09.09",
+          "date": "2026-09-09",
+          "visits": 71,
+          "goals": 0
+        },
+        {
+          "month": "10.09",
+          "date": "2026-09-10",
+          "visits": 30,
+          "goals": 0
+        }
+      ],
+      "weekly": [
+        {
+          "month": "01.04-05.04",
+          "date": "2026-04-01",
+          "visits": 122,
+          "goals": 0
+        },
+        {
+          "month": "06.04-12.04",
+          "date": "2026-04-06",
+          "visits": 86,
+          "goals": 0
+        },
+        {
+          "month": "13.04-19.04",
+          "date": "2026-04-13",
+          "visits": 98,
+          "goals": 0
+        },
+        {
+          "month": "20.04-26.04",
+          "date": "2026-04-20",
+          "visits": 92,
+          "goals": 0
+        },
+        {
+          "month": "27.04-03.05",
+          "date": "2026-04-27",
+          "visits": 93,
+          "goals": 0
+        },
+        {
+          "month": "04.05-10.05",
+          "date": "2026-05-04",
+          "visits": 44,
+          "goals": 0
+        },
+        {
+          "month": "11.05-17.05",
+          "date": "2026-05-11",
+          "visits": 85,
+          "goals": 0
+        },
+        {
+          "month": "18.05-24.05",
+          "date": "2026-05-18",
+          "visits": 105,
+          "goals": 0
+        },
+        {
+          "month": "25.05-31.05",
+          "date": "2026-05-25",
+          "visits": 91,
+          "goals": 0
+        },
+        {
+          "month": "01.06-07.06",
+          "date": "2026-06-01",
+          "visits": 40,
+          "goals": 0
+        },
+        {
+          "month": "08.06-14.06",
+          "date": "2026-06-08",
+          "visits": 31,
+          "goals": 0
+        },
+        {
+          "month": "15.06-21.06",
+          "date": "2026-06-15",
+          "visits": 54,
+          "goals": 0
+        },
+        {
+          "month": "22.06-28.06",
+          "date": "2026-06-22",
+          "visits": 94,
+          "goals": 0
+        },
+        {
+          "month": "29.06-05.07",
+          "date": "2026-06-29",
+          "visits": 118,
+          "goals": 0
+        },
+        {
+          "month": "06.07-12.07",
+          "date": "2026-07-06",
+          "visits": 135,
+          "goals": 0
+        },
+        {
+          "month": "13.07-19.07",
+          "date": "2026-07-13",
+          "visits": 159,
+          "goals": 0
+        },
+        {
+          "month": "20.07-26.07",
+          "date": "2026-07-20",
+          "visits": 148,
+          "goals": 0
+        },
+        {
+          "month": "27.07-02.08",
+          "date": "2026-07-27",
+          "visits": 144,
+          "goals": 0
+        },
+        {
+          "month": "03.08-09.08",
+          "date": "2026-08-03",
+          "visits": 162,
+          "goals": 0
+        },
+        {
+          "month": "10.08-16.08",
+          "date": "2026-08-10",
+          "visits": 220,
+          "goals": 0
+        },
+        {
+          "month": "17.08-23.08",
+          "date": "2026-08-17",
+          "visits": 430,
+          "goals": 0
+        },
+        {
+          "month": "24.08-30.08",
+          "date": "2026-08-24",
+          "visits": 446,
+          "goals": 0
+        },
+        {
+          "month": "31.08-06.09",
+          "date": "2026-08-31",
+          "visits": 490,
+          "goals": 0
+        },
+        {
+          "month": "07.09-10.09",
+          "date": "2026-09-07",
+          "visits": 230,
+          "goals": 0
+        }
+      ],
+      "monthly": [
+        {
+          "month": "апр",
+          "date": "2026-04-01",
+          "visits": 448,
+          "goals": 0
+        },
+        {
+          "month": "май",
+          "date": "2026-05-01",
+          "visits": 368,
+          "goals": 0
+        },
+        {
+          "month": "июнь",
+          "date": "2026-06-01",
+          "visits": 265,
+          "goals": 0
+        },
+        {
+          "month": "июль",
+          "date": "2026-07-01",
+          "visits": 621,
+          "goals": 0
+        },
+        {
+          "month": "авг",
+          "date": "2026-08-01",
+          "visits": 1361,
+          "goals": 0
+        },
+        {
+          "month": "сент",
+          "date": "2026-09-01",
+          "visits": 654,
+          "goals": 0
+        }
+      ]
+    },
+    {
       "projectName": "Смартстрой",
       "clientName": "СмартСтрой",
       "counterId": 107615431,
@@ -3708,9 +4946,11 @@
       "timezone": "+03:00",
       "dataStatus": "ok",
       "fullCoverageDate": "2026-09-10",
-      "visits": 1011,
-      "users": 933,
+      "visits": 1679,
+      "users": 1432,
       "goalCount": 0,
+      "queryVisits": 1011,
+      "queryGoalCount": 0,
       "uniqueQueries": 754,
       "goalRows": 0,
       "sampleQueries": [
@@ -4938,9 +6178,11 @@
       "timezone": "+03:00",
       "dataStatus": "ok",
       "fullCoverageDate": "2026-09-10",
-      "visits": 185,
-      "users": 169,
+      "visits": 797,
+      "users": 729,
       "goalCount": 0,
+      "queryVisits": 185,
+      "queryGoalCount": 0,
       "uniqueQueries": 93,
       "goalRows": 0,
       "sampleQueries": [
@@ -6168,10 +7410,12 @@
       "timezone": "+03:00",
       "dataStatus": "ok",
       "fullCoverageDate": "2026-09-10",
-      "visits": 511,
-      "users": 501,
+      "visits": 622,
+      "users": 591,
       "goalCount": 0,
-      "uniqueQueries": 369,
+      "queryVisits": 512,
+      "queryGoalCount": 0,
+      "uniqueQueries": 370,
       "goalRows": 0,
       "sampleQueries": [
         "ломбард музыкальных инструментов саксофон",
@@ -7196,7 +8440,7 @@
         {
           "month": "10.09",
           "date": "2026-09-10",
-          "visits": 12,
+          "visits": 13,
           "goals": 0
         }
       ],
@@ -7342,7 +8586,7 @@
         {
           "month": "07.09-10.09",
           "date": "2026-09-07",
-          "visits": 75,
+          "visits": 76,
           "goals": 0
         }
       ],
@@ -7380,7 +8624,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 197,
+          "visits": 198,
           "goals": 0
         }
       ]
