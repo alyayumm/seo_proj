@@ -19,6 +19,11 @@ export type MetrikaProjectStats = {
   uniqueQueries: number;
   goalRows: number;
   sampleQueries: string[];
+  queries: Array<{
+    query: string;
+    visits: number;
+    goals: number;
+  }>;
   topQueries: Array<{
     query: string;
     visits: number;
@@ -86,10 +91,24 @@ function normalizeTrendPoints(value: unknown) {
     : [];
 }
 
+function normalizeQueryStats(value: unknown) {
+  return Array.isArray(value)
+    ? value
+        .map((item) => ({
+          query: String(item?.query ?? ''),
+          visits: normalizeNumber(item?.visits),
+          goals: normalizeNumber(item?.goals),
+        }))
+        .filter((item) => item.query)
+    : [];
+}
+
 function normalizeMetrikaProjectStats(value: unknown): MetrikaProjectStats | null {
   if (!value || typeof value !== 'object') return null;
   const source = value as Partial<MetrikaProjectStats>;
   if (!source.projectName) return null;
+  const queries = normalizeQueryStats(source.queries);
+  const topQueries = normalizeQueryStats(source.topQueries);
 
   return {
     projectName: String(source.projectName),
@@ -110,15 +129,8 @@ function normalizeMetrikaProjectStats(value: unknown): MetrikaProjectStats | nul
     uniqueQueries: normalizeNumber(source.uniqueQueries),
     goalRows: normalizeNumber(source.goalRows),
     sampleQueries: Array.isArray(source.sampleQueries) ? source.sampleQueries.map(String).filter(Boolean) : [],
-    topQueries: Array.isArray(source.topQueries)
-      ? source.topQueries
-          .map((item) => ({
-            query: String(item?.query ?? ''),
-            visits: normalizeNumber(item?.visits),
-            goals: normalizeNumber(item?.goals),
-          }))
-          .filter((item) => item.query)
-      : [],
+    queries,
+    topQueries,
     daily: normalizeTrendPoints(source.daily),
     weekly: normalizeTrendPoints(source.weekly),
     monthly: normalizeTrendPoints(source.monthly),
@@ -150,6 +162,7 @@ function buildGoalAnalytics(stats: MetrikaProjectStats): PromotionGoalAnalytics 
     uniqueQueries: stats.uniqueQueries,
     goalRows: stats.goalRows,
     goalCount: stats.goalCount,
+    queries: stats.queries,
     topQueries: stats.topQueries,
     daily: stats.daily ?? [],
     weekly: stats.weekly ?? [],

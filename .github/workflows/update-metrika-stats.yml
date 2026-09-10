@@ -42,6 +42,8 @@ jobs:
           METRIKA_PROJECTS: ${{ secrets.METRIKA_PROJECTS }}
           METRIKA_DATE1: ${{ vars.METRIKA_DATE1 }}
           METRIKA_DATE2: ${{ vars.METRIKA_DATE2 }}
+          METRIKA_QUERY_ROW_LIMIT: ${{ vars.METRIKA_QUERY_ROW_LIMIT }}
+          METRIKA_QUERY_PAGE_SIZE: ${{ vars.METRIKA_QUERY_PAGE_SIZE }}
 
       - name: Commit stats
         run: |

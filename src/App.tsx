@@ -83,6 +83,7 @@ import {
 import {
   PROMOTION_RESULT_SOURCES,
   type PromotionGoalAnalytics,
+  type PromotionGoalQueryStat,
   type PromotionGoalTrendPoint,
   type PromotionResultSource,
 } from './promotionResults';
@@ -99,7 +100,7 @@ type CalendarMode = 'plan' | 'fact';
 type ThemeMode = 'dark' | 'light';
 type AdminTab = 'projects' | 'people' | 'tasks' | 'sources' | 'payments';
 type ProjectTab = 'tasks' | 'links' | 'plans' | 'content' | 'results' | 'audit';
-type SeoProjectTab = 'analytics' | 'tasks' | 'links' | 'content' | 'plans' | 'audit' | 'reports' | 'payments';
+type SeoProjectTab = 'analytics' | 'queries' | 'tasks' | 'links' | 'content' | 'plans' | 'audit' | 'reports' | 'payments';
 type SeoTrendMode = 'daily' | 'weekly' | 'monthly';
 type SeoPeriodPreset = '30d' | '3m' | '6m' | 'custom';
 type SeoCompareMode = 'previous' | 'lastYear' | 'custom' | 'none';
@@ -107,6 +108,7 @@ type SeoTrafficSystem = 'all' | 'yandex' | 'google' | 'other';
 type SeoLeadMetricMode = 'all' | 'target';
 type SeoImpactTab = 'pages' | 'queries';
 type SeoImpactDirection = 'growth' | 'drop';
+type SeoQuerySort = 'goals' | 'visits' | 'query';
 type ReportMode = 'tasks' | 'logic' | 'metrics';
 type TaskReportFilter =
   | 'all'
@@ -2512,6 +2514,33 @@ function getGoalTrendPoints(goalAnalytics: PromotionGoalAnalytics | undefined, m
   if (mode === 'daily') return goalAnalytics.daily ?? [];
   if (mode === 'weekly') return goalAnalytics.weekly ?? [];
   return goalAnalytics.monthly;
+}
+
+function getGoalQueryRows(goalAnalytics: PromotionGoalAnalytics | undefined): PromotionGoalQueryStat[] {
+  if (!goalAnalytics) return [];
+  return goalAnalytics.queries?.length ? goalAnalytics.queries : goalAnalytics.topQueries;
+}
+
+function mergePromotionQueryRows(sources: PromotionResultSource[]) {
+  const rowsByQuery = new Map<string, PromotionGoalQueryStat>();
+
+  sources.forEach((source) => {
+    getGoalQueryRows(source.goalAnalytics).forEach((row) => {
+      const query = row.query.trim();
+      const key = normalizeSearchText(query);
+      if (!query || !key) return;
+      const current = rowsByQuery.get(key) ?? { query, visits: 0, goals: 0 };
+      current.visits += row.visits;
+      current.goals += row.goals;
+      rowsByQuery.set(key, current);
+    });
+  });
+
+  return [...rowsByQuery.values()];
+}
+
+function getQueryGoalRate(query: PromotionGoalQueryStat) {
+  return query.visits > 0 ? (query.goals / query.visits) * 100 : null;
 }
 
 function getVisibleGoalTrendPoints(points: PromotionGoalTrendPoint[], _mode: SeoTrendMode) {
@@ -9488,6 +9517,10 @@ function SeoProjectsView({
     (row) => normalizeProjectName(row.projectName) === selectedKey,
   );
   const selectedSources = promotionSources.filter((source) => normalizeProjectName(source.projectName) === selectedKey);
+  const selectedMetrikaQueryCount = selectedSources.reduce(
+    (sum, source) => sum + getGoalQueryRows(source.goalAnalytics).length,
+    0,
+  );
   const selectedLeadAnalytics = leadAnalyticsByProject.get(selectedKey);
   const selectedLeadError = leadErrorsByProject.get(selectedKey) ?? leadError;
   const selectedTasks = selectedProject ? tasks.filter((task) => task.projectId === selectedProject.id) : [];
@@ -9500,6 +9533,7 @@ function SeoProjectsView({
   const reportResourcesCount = selectedResources.filter((resource) => resource.tab === 'report').length;
   const seoTabs: Array<{ id: SeoProjectTab; label: string; count?: number }> = [
     { id: 'analytics', label: 'Аналитика' },
+    { id: 'queries', label: 'Запросы Метрики', count: selectedMetrikaQueryCount },
     { id: 'tasks', label: 'Задачи', count: activeTasks },
     { id: 'links', label: 'Закуп ссылок', count: selectedLinkRows.length },
     { id: 'content', label: 'Контент', count: selectedContentTopics.length },
@@ -9590,6 +9624,10 @@ function SeoProjectsView({
                 selectedProjectId={selectedProject.id}
                 onProjectChange={onProjectChange}
               />
+            )}
+
+            {effectiveActiveTab === 'queries' && (
+              <SeoMetrikaQueriesPanel project={selectedProject} promotionSources={selectedSources} />
             )}
 
             {effectiveActiveTab === 'tasks' && (
@@ -9901,6 +9939,130 @@ function SeoProjectTasksTab({
           )}
           <Bitrix24ProjectTaskList tasks={visibleBitrixTasks} taskMode={taskMode} />
         </>
+      )}
+    </section>
+  );
+}
+
+function SeoMetrikaQueriesPanel({
+  project,
+  promotionSources,
+}: {
+  project: Project;
+  promotionSources: PromotionResultSource[];
+}) {
+  const [search, setSearch] = useState('');
+  const [sortMode, setSortMode] = useStoredState<SeoQuerySort>('task-seo-metrika-query-sort', 'goals');
+  const [visibleLimit, setVisibleLimit] = useState(150);
+  const sourceWithAnalytics = promotionSources.find((source) => source.goalAnalytics);
+  const hasFullQueryList = promotionSources.some((source) => Boolean(source.goalAnalytics?.queries?.length));
+  const queryRows = useMemo(() => mergePromotionQueryRows(promotionSources), [promotionSources]);
+  const totalVisits = queryRows.reduce((sum, row) => sum + row.visits, 0);
+  const totalGoals = queryRows.reduce((sum, row) => sum + row.goals, 0);
+  const rowsWithGoals = queryRows.filter((row) => row.goals > 0).length;
+  const maxGoals = Math.max(...queryRows.map((row) => row.goals), 1);
+  const normalizedSearch = normalizeSearchText(search);
+  const filteredRows = queryRows
+    .filter((row) => !normalizedSearch || normalizeSearchText(row.query).includes(normalizedSearch))
+    .sort((left, right) => {
+      if (sortMode === 'query') return left.query.localeCompare(right.query, 'ru');
+      if (sortMode === 'visits') return right.visits - left.visits || right.goals - left.goals;
+      return right.goals - left.goals || right.visits - left.visits || left.query.localeCompare(right.query, 'ru');
+    });
+  const visibleRows = filteredRows.slice(0, visibleLimit);
+
+  useEffect(() => {
+    setVisibleLimit(150);
+  }, [project.id, normalizedSearch, sortMode]);
+
+  return (
+    <section className="panel seo-inner-panel seo-metrika-query-panel">
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>Поисковые запросы из Метрики: {project.name}</h2>
+          <p>
+            Органический поиск: каждая фраза, количество переходов и достижения целей по данным backend-снимка.
+          </p>
+        </div>
+        <Target size={20} />
+      </div>
+
+      <div className="metrika-query-stats">
+        <Metric label="Запросы" value={formatInteger(queryRows.length)} compact />
+        <Metric label="Переходы" value={formatInteger(totalVisits)} compact />
+        <Metric label="С целями" value={formatInteger(rowsWithGoals)} compact tone={rowsWithGoals ? 'success' : undefined} />
+        <Metric label="Достижения целей" value={formatInteger(totalGoals)} compact tone={totalGoals ? 'success' : undefined} />
+      </div>
+
+      <div className="metrika-query-toolbar">
+        <label className="field">
+          <span>Поиск по запросу</span>
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Например: очистные сооружения"
+          />
+        </label>
+        <div className="segmented" role="group" aria-label="Сортировка поисковых запросов">
+          {[
+            ['goals', 'По целям'],
+            ['visits', 'По переходам'],
+            ['query', 'А-Я'],
+          ].map(([id, label]) => (
+            <button
+              className={sortMode === id ? 'is-active' : ''}
+              key={id}
+              type="button"
+              onClick={() => setSortMode(id as SeoQuerySort)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className={`metrika-query-source-note ${hasFullQueryList ? 'is-ready' : ''}`}>
+        <RefreshCw size={16} />
+        <span>
+          {sourceWithAnalytics
+            ? hasFullQueryList
+              ? `${sourceWithAnalytics.spreadsheetTitle} · полный список из Метрики`
+              : `${sourceWithAnalytics.spreadsheetTitle} · пока доступен текущий топ, полный список появится после backend-обновления`
+            : 'источник Метрики не подключен'}
+        </span>
+      </div>
+
+      {queryRows.length === 0 ? (
+        <div className="empty-row">поисковые запросы в снимке Метрики пока пустые</div>
+      ) : (
+        <div className="metrika-query-table" role="table" aria-label={`Поисковые запросы Метрики ${project.name}`}>
+          <div className="metrika-query-row metrika-query-head" role="row">
+            <span>Запрос</span>
+            <span>Переходы</span>
+            <span>Достижения целей</span>
+            <span>CR</span>
+          </div>
+          {visibleRows.map((row) => {
+            const goalRate = getQueryGoalRate(row);
+            return (
+              <div className="metrika-query-row" key={row.query} role="row">
+                <strong>{row.query}</strong>
+                <span>{formatInteger(row.visits)}</span>
+                <div className="metrika-query-goals">
+                  <i style={{ width: `${row.goals > 0 ? Math.max(8, (row.goals / maxGoals) * 100) : 0}%` }} />
+                  <em>{formatInteger(row.goals)}</em>
+                </div>
+                <span>{formatConversionRate(goalRate)}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {visibleRows.length < filteredRows.length && (
+        <button className="ghost-button metrika-query-more" type="button" onClick={() => setVisibleLimit((current) => current + 150)}>
+          Показать еще {Math.min(150, filteredRows.length - visibleRows.length)}
+        </button>
       )}
     </section>
   );

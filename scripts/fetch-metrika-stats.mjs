@@ -9,6 +9,8 @@ const DATE_2 = process.env.METRIKA_DATE2 || todayIso();
 const ORGANIC_FILTER = "ym:s:trafficSource=='organic'";
 const ATTRIBUTION = 'lastsign';
 const SOURCE_TIMEZONE = '+03:00';
+const QUERY_ROW_LIMIT = parsePositiveIntegerEnv('METRIKA_QUERY_ROW_LIMIT', 100000);
+const QUERY_PAGE_SIZE = Math.min(parsePositiveIntegerEnv('METRIKA_QUERY_PAGE_SIZE', 10000), QUERY_ROW_LIMIT);
 
 const DEFAULT_PROJECTS = [
   { projectName: 'Часы', clientName: 'WatchStore', siteUrls: ['https://watchstoree.ru'] },
@@ -37,6 +39,11 @@ function normalizeProjectName(value) {
 function numberValue(value) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function parsePositiveIntegerEnv(name, fallback) {
+  const value = Number.parseInt(process.env[name] || '', 10);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
 function formatRuMonth(value) {
@@ -166,45 +173,68 @@ async function fetchSummaryStats(counterId, token, includeGoals = true) {
 
 async function fetchTableStats(counterId, token, includeGoals = true) {
   const metrics = includeGoals ? 'ym:s:visits,ym:s:users,ym:s:goalReachesAny' : 'ym:s:visits,ym:s:users';
-  const result = await apiGet(
-    '/stat/v1/data',
-    {
-      ids: counterId,
-      date1: DATE_1,
-      date2: DATE_2,
-      metrics,
-      dimensions: 'ym:s:lastsignSearchPhrase',
-      sort: '-ym:s:visits',
-      limit: 100,
-      accuracy: 'full',
-      lang: 'ru',
-      filters: ORGANIC_FILTER,
-      attribution: ATTRIBUTION,
-    },
-    token,
-  );
+  const queryRowsByName = new Map();
+  let totals = [];
+  let totalRows = 0;
 
-  const rows = Array.isArray(result.data) ? result.data : [];
-  const queryRows = rows
-    .map((row) => {
-      const query = row.dimensions?.[0]?.name || '';
-      const visits = numberValue(row.metrics?.[0]);
-      const goals = includeGoals ? numberValue(row.metrics?.[2]) : 0;
-      return { query, visits, goals };
-    })
-    .filter((row) => row.query && row.query !== 'undefined');
+  for (let offset = 1; offset <= QUERY_ROW_LIMIT; offset += QUERY_PAGE_SIZE) {
+    const result = await apiGet(
+      '/stat/v1/data',
+      {
+        ids: counterId,
+        date1: DATE_1,
+        date2: DATE_2,
+        metrics,
+        dimensions: 'ym:s:lastsignSearchPhrase',
+        sort: '-ym:s:visits',
+        limit: QUERY_PAGE_SIZE,
+        offset,
+        accuracy: 'full',
+        lang: 'ru',
+        filters: ORGANIC_FILTER,
+        attribution: ATTRIBUTION,
+      },
+      token,
+    );
+
+    if (!totals.length) totals = Array.isArray(result.totals) ? result.totals : [];
+    totalRows = numberValue(result.total_rows) || totalRows;
+
+    const rows = Array.isArray(result.data) ? result.data : [];
+    rows
+      .map((row) => {
+        const query = row.dimensions?.[0]?.name || '';
+        const visits = numberValue(row.metrics?.[0]);
+        const goals = includeGoals ? numberValue(row.metrics?.[2]) : 0;
+        return { query, visits, goals };
+      })
+      .filter((row) => row.query && row.query !== 'undefined')
+      .forEach((row) => {
+        const current = queryRowsByName.get(row.query) || { query: row.query, visits: 0, goals: 0 };
+        current.visits += row.visits;
+        current.goals += row.goals;
+        queryRowsByName.set(row.query, current);
+      });
+
+    if (rows.length < QUERY_PAGE_SIZE || (totalRows && offset + rows.length > totalRows)) break;
+  }
+
+  const queryRows = [...queryRowsByName.values()].sort(
+    (left, right) => right.goals - left.goals || right.visits - left.visits || left.query.localeCompare(right.query, 'ru'),
+  );
 
   const topQueries = [...queryRows]
     .sort((left, right) => right.goals - left.goals || right.visits - left.visits)
     .slice(0, 8);
 
   return {
-    visits: numberValue(result.totals?.[0]),
-    users: numberValue(result.totals?.[1]),
-    goalCount: includeGoals ? numberValue(result.totals?.[2]) : 0,
-    uniqueQueries: numberValue(result.total_rows) || queryRows.length,
+    visits: numberValue(totals?.[0]),
+    users: numberValue(totals?.[1]),
+    goalCount: includeGoals ? numberValue(totals?.[2]) : 0,
+    uniqueQueries: totalRows || queryRows.length,
     goalRows: queryRows.filter((row) => row.goals > 0).length,
     sampleQueries: queryRows.slice(0, 3).map((row) => row.query),
+    queries: queryRows,
     topQueries,
   };
 }
@@ -291,6 +321,7 @@ async function fetchProjectStats(project, counter, token) {
     uniqueQueries: table.uniqueQueries,
     goalRows: table.goalRows,
     sampleQueries: table.sampleQueries,
+    queries: table.queries,
     topQueries: table.topQueries,
     daily,
     weekly,

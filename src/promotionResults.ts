@@ -16,6 +16,7 @@ export type PromotionGoalAnalytics = {
   uniqueQueries: number;
   goalRows: number;
   goalCount: number;
+  queries?: PromotionGoalQueryStat[];
   topQueries: PromotionGoalQueryStat[];
   daily?: PromotionGoalTrendPoint[];
   weekly?: PromotionGoalTrendPoint[];

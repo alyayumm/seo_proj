@@ -4734,6 +4734,122 @@ p {
   background: rgba(255, 142, 130, 0.08);
 }
 
+.seo-metrika-query-panel {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.metrika-query-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metrika-query-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.metrika-query-toolbar .field {
+  flex: 1 1 280px;
+  max-width: 520px;
+}
+
+.metrika-query-source-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 225, 211, 0.25);
+  border-radius: 12px;
+  color: var(--muted);
+  background: rgba(255, 225, 211, 0.08);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.metrika-query-source-note.is-ready {
+  border-color: rgba(126, 231, 241, 0.24);
+  background: rgba(126, 231, 241, 0.08);
+}
+
+.metrika-query-source-note svg {
+  flex: 0 0 auto;
+  color: var(--cyan);
+}
+
+.metrika-query-table {
+  display: grid;
+  min-width: 720px;
+  overflow: hidden;
+  border: 1px solid rgba(216, 238, 243, 0.12);
+  border-radius: 16px;
+  background: rgba(216, 238, 243, 0.05);
+}
+
+.metrika-query-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 100px 180px 72px;
+  gap: 12px;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(216, 238, 243, 0.1);
+}
+
+.metrika-query-row:last-child {
+  border-bottom: 0;
+}
+
+.metrika-query-head {
+  min-height: 34px;
+  background: rgba(216, 238, 243, 0.07);
+}
+
+.metrika-query-head span,
+.metrika-query-row > span,
+.metrika-query-goals em {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.metrika-query-head span {
+  text-transform: none;
+}
+
+.metrika-query-row strong {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.metrika-query-goals {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.metrika-query-goals i {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: #ffe1d3;
+}
+
+.metrika-query-more {
+  justify-self: start;
+}
+
 .seo-single-report {
   display: grid;
   gap: 14px;
@@ -7029,6 +7145,9 @@ p {
 :root[data-theme='light'] .bitrix-block,
 :root[data-theme='light'] .bitrix-task-row,
 :root[data-theme='light'] .bitrix-deal-list div,
+:root[data-theme='light'] .metrika-query-source-note,
+:root[data-theme='light'] .metrika-query-table,
+:root[data-theme='light'] .metrika-query-head,
 :root[data-theme='light'] .report-summary-table,
 :root[data-theme='light'] .report-analytics-panel,
 :root[data-theme='light'] .report-project-filter-panel,
@@ -7498,6 +7617,20 @@ p {
 
   .seo-trend-toolbar > div:last-child {
     justify-content: flex-start;
+  }
+
+  .metrika-query-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metrika-query-toolbar .segmented {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .metrika-query-toolbar .segmented button {
+    flex: 0 0 auto;
   }
 
   .aquaguard-analytics-head,
