@@ -140,6 +140,30 @@ async function fetchCounters(token) {
   return Array.isArray(result.counters) ? result.counters : [];
 }
 
+async function fetchSummaryStats(counterId, token, includeGoals = true) {
+  const metrics = includeGoals ? 'ym:s:visits,ym:s:users,ym:s:goalReachesAny' : 'ym:s:visits,ym:s:users';
+  const result = await apiGet(
+    '/stat/v1/data',
+    {
+      ids: counterId,
+      date1: DATE_1,
+      date2: DATE_2,
+      metrics,
+      accuracy: 'full',
+      lang: 'ru',
+      filters: ORGANIC_FILTER,
+      attribution: ATTRIBUTION,
+    },
+    token,
+  );
+
+  return {
+    visits: numberValue(result.totals?.[0]),
+    users: numberValue(result.totals?.[1]),
+    goalCount: includeGoals ? numberValue(result.totals?.[2]) : 0,
+  };
+}
+
 async function fetchTableStats(counterId, token, includeGoals = true) {
   const metrics = includeGoals ? 'ym:s:visits,ym:s:users,ym:s:goalReachesAny' : 'ym:s:visits,ym:s:users';
   const result = await apiGet(
@@ -225,18 +249,21 @@ async function fetchTimeStats(counterId, token, group, includeGoals = true) {
 }
 
 async function fetchProjectStats(project, counter, token) {
+  let summary;
   let table;
   let daily;
   let weekly;
   let monthly;
 
   try {
+    summary = await fetchSummaryStats(counter.id, token, true);
     table = await fetchTableStats(counter.id, token, true);
     daily = await fetchTimeStats(counter.id, token, 'day', true);
     weekly = await fetchTimeStats(counter.id, token, 'week', true);
     monthly = await fetchTimeStats(counter.id, token, 'month', true);
   } catch (error) {
     if (!String(error.message).includes('goalReachesAny')) throw error;
+    summary = await fetchSummaryStats(counter.id, token, false);
     table = await fetchTableStats(counter.id, token, false);
     daily = await fetchTimeStats(counter.id, token, 'day', false);
     weekly = await fetchTimeStats(counter.id, token, 'week', false);
@@ -256,9 +283,11 @@ async function fetchProjectStats(project, counter, token) {
     timezone: SOURCE_TIMEZONE,
     dataStatus: 'ok',
     fullCoverageDate: DATE_2,
-    visits: table.visits,
-    users: table.users,
-    goalCount: table.goalCount,
+    visits: summary.visits,
+    users: summary.users,
+    goalCount: summary.goalCount,
+    queryVisits: table.visits,
+    queryGoalCount: table.goalCount,
     uniqueQueries: table.uniqueQueries,
     goalRows: table.goalRows,
     sampleQueries: table.sampleQueries,
