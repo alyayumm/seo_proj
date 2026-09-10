@@ -4539,6 +4539,97 @@ p {
   overflow-x: auto;
 }
 
+.bitrix-sync-strip {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(126, 231, 241, 0.22);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 6% 0%, rgba(126, 231, 241, 0.12), transparent 34%),
+    rgba(216, 238, 243, 0.06);
+}
+
+.bitrix-sync-strip.is-empty {
+  border-color: rgba(255, 225, 211, 0.36);
+  background: rgba(255, 225, 211, 0.08);
+}
+
+.bitrix-sync-status {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 230px;
+}
+
+.bitrix-sync-status svg {
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  border-radius: 12px;
+  color: #061111;
+  background: linear-gradient(145deg, var(--sky), var(--cyan));
+}
+
+.bitrix-sync-strip.is-empty .bitrix-sync-status svg {
+  background: #ffe1d3;
+}
+
+.bitrix-sync-status div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.bitrix-sync-status strong {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.bitrix-sync-status span,
+.bitrix-sync-status em,
+.bitrix-sync-strip dt {
+  color: var(--muted);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.bitrix-sync-status em {
+  color: var(--danger);
+  overflow-wrap: anywhere;
+}
+
+.bitrix-sync-strip dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, 1fr));
+  gap: 8px;
+  margin: 0;
+  min-width: min(100%, 520px);
+}
+
+.bitrix-sync-strip dl div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(216, 238, 243, 0.08);
+}
+
+.bitrix-sync-strip dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
 .seo-inner-panel {
   display: grid;
   gap: 16px;
@@ -4575,22 +4666,30 @@ p {
 
 .seo-task-filters {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   min-width: 0;
 }
 
+.seo-task-mode-switch {
+  flex: 0 0 auto;
+}
+
 .seo-task-filter-group {
+  flex: 1 1 360px;
   max-width: 100%;
   overflow-x: auto;
 }
 
+.seo-task-mode-switch button,
 .seo-task-filter-group button {
   gap: 6px;
   min-width: max-content;
 }
 
+.seo-task-mode-switch button em,
 .seo-task-filter-group button em {
   display: inline-grid;
   place-items: center;
@@ -4604,8 +4703,35 @@ p {
 }
 
 .seo-owner-filter {
+  margin-left: auto;
   min-width: 190px;
   max-width: 240px;
+}
+
+.bitrix-project-task-list {
+  display: grid;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.bitrix-project-task-list .tile-heading {
+  justify-content: flex-start;
+}
+
+.tile-heading span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.bitrix-project-task-stack {
+  display: grid;
+  gap: 9px;
+}
+
+.bitrix-task-row.is-overdue {
+  border-color: rgba(255, 142, 130, 0.45);
+  background: rgba(255, 142, 130, 0.08);
 }
 
 .seo-single-report {
@@ -6898,6 +7024,7 @@ p {
 :root[data-theme='light'] .timeline-item.editable,
 :root[data-theme='light'] .admin-row,
 :root[data-theme='light'] .dashboard-card,
+:root[data-theme='light'] .bitrix-sync-strip,
 :root[data-theme='light'] .bitrix-health,
 :root[data-theme='light'] .bitrix-block,
 :root[data-theme='light'] .bitrix-task-row,
@@ -7127,6 +7254,14 @@ p {
     grid-template-columns: 1fr;
   }
 
+  .bitrix-sync-strip {
+    flex-direction: column;
+  }
+
+  .bitrix-sync-strip dl {
+    min-width: 0;
+  }
+
   .bitrix-metrics {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -7220,6 +7355,7 @@ p {
   }
 
   .bitrix-metrics,
+  .bitrix-sync-strip dl,
   .bitrix-task-row dl,
   .bitrix-crm-summary {
     grid-template-columns: 1fr;

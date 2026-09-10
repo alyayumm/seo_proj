@@ -118,6 +118,7 @@ type TaskReportFilter =
   | 'overdue'
   | 'lateDone'
   | 'withoutDeadline';
+type SeoProjectTaskMode = 'open' | 'done';
 type TaskLogicCategory = 'carried' | 'added' | 'done' | 'lateDone' | 'deadlineMoved' | 'stuck';
 type TaskScoreMetric = 'done' | 'overdue' | 'lateDone' | 'carried' | 'risk' | 'withoutDeadline';
 type LinkLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -347,7 +348,7 @@ const ruMonthNames = [
 
 const managedResourceTabLabels: Record<ManagedResourceTab, string> = {
   site: 'Сайт',
-  report: 'Отчет',
+  report: 'Отчет клиенту',
   links: 'Закуп ссылок',
   plans: 'План работ',
   content: 'Контент-план',
@@ -1943,9 +1944,7 @@ const requiredTaskSeedById = new Map(requiredTaskSeeds.map((task) => [task.id, t
 const initialTasks: Task[] = requiredTaskSeeds.map((task) => ensureTaskDefaults(task));
 
 const navItems = [
-  { id: 'tasks' as const, label: 'Список задач', icon: LayoutList },
   { id: 'admin' as const, label: 'Админка', icon: SlidersHorizontal },
-  { id: 'dashboard' as const, label: 'Общий дашборд', icon: BarChart3 },
   { id: 'seo' as const, label: 'SEO-проекты', icon: Target },
   { id: 'payments' as const, label: 'Оплаты', icon: CreditCard },
   { id: 'report' as const, label: 'Отчет', icon: FileSpreadsheet },
@@ -2203,6 +2202,8 @@ type SeoImpactRow = {
   note: string;
 };
 
+type Bitrix24ProjectTask = Bitrix24Snapshot['tasks'][number];
+
 function todayIso() {
   return toLocalIso(new Date());
 }
@@ -2322,6 +2323,107 @@ function isCountableTask(task: Task) {
 
 function normalizeProjectName(value: string) {
   return value.trim().toLowerCase();
+}
+
+function normalizeSearchText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^a-zа-я0-9]+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function compactExternalText(value: string, limit = 220) {
+  const text = value
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\[[^\]]+\]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text.length > limit ? `${text.slice(0, limit).trim()}...` : text;
+}
+
+function getProjectSearchAliases(projectName: string) {
+  const normalized = normalizeSearchText(projectName);
+  const aliases = new Set([normalized]);
+
+  if (normalized.includes('аквагард')) aliases.add('aquaguard');
+  if (normalized.includes('промтех')) {
+    aliases.add('промтехмакулатура');
+    aliases.add('макулатура');
+  }
+  if (normalized.includes('смартстрой')) {
+    aliases.add('смартстрой');
+    aliases.add('smartstroy');
+    aliases.add('smart build');
+    aliases.add('смартбилд');
+  }
+  if (normalized.includes('балт') || normalized.includes('pallet')) {
+    aliases.add('балт паллет');
+    aliases.add('balt pallet');
+    aliases.add('balt-pallet');
+    aliases.add('паллет');
+  }
+  if (normalized.includes('часы')) {
+    aliases.add('watchstore');
+    aliases.add('watchstoree');
+  }
+  if (normalized.includes('аш')) {
+    aliases.add('автошколы');
+    aliases.add('автоправо');
+    aliases.add('автосити');
+  }
+  if (normalized.includes('ректоп')) aliases.add('rectop');
+  if (normalized.includes('ломбард')) aliases.add('ломбард банка');
+  if (normalized.includes('профскиллс')) aliases.add('profskills');
+  if (normalized.includes('свич')) aliases.add('switch');
+
+  return [...aliases].filter(Boolean);
+}
+
+function isBitrix24TaskDone(task: Bitrix24ProjectTask) {
+  const statusLabel = normalizeSearchText(task.statusLabel);
+  return task.status === '5' || statusLabel === 'готово' || statusLabel.includes('заверш');
+}
+
+function getBitrixTaskIso(value: string) {
+  if (!value) return '';
+  return value.includes('T') ? value.slice(0, 10) : value.slice(0, 10);
+}
+
+function isBitrix24TaskOverdue(task: Bitrix24ProjectTask, today = todayIso()) {
+  const deadline = getBitrixTaskIso(task.deadline);
+  return !isBitrix24TaskDone(task) && Boolean(deadline) && deadline < today;
+}
+
+function isBitrix24TaskLateDone(task: Bitrix24ProjectTask) {
+  const deadline = getBitrixTaskIso(task.deadline);
+  const closedDate = getBitrixTaskIso(task.closedDate);
+  return isBitrix24TaskDone(task) && Boolean(deadline) && Boolean(closedDate) && closedDate > deadline;
+}
+
+function bitrixTaskMatchesProject(task: Bitrix24ProjectTask, project: Project) {
+  const haystack = normalizeSearchText(
+    [task.title, task.description, task.groupName, task.responsibleName, task.creatorName].filter(Boolean).join(' '),
+  );
+  if (!haystack) return false;
+  return getProjectSearchAliases(project.name).some((alias) => alias && haystack.includes(normalizeSearchText(alias)));
+}
+
+function bitrixTaskMatchesFilter(task: Bitrix24ProjectTask, filter: TaskReportFilter, today = todayIso()) {
+  const done = isBitrix24TaskDone(task);
+  const statusLabel = normalizeSearchText(task.statusLabel);
+  const deadline = getBitrixTaskIso(task.deadline);
+
+  if (filter === 'done') return done;
+  if (filter === 'lateDone') return isBitrix24TaskLateDone(task);
+  if (filter === 'open') return !done;
+  if (filter === 'overdue') return isBitrix24TaskOverdue(task, today);
+  if (filter === 'withoutDeadline') return !done && !deadline;
+  if (filter === 'active') return !done && (task.status === '3' || statusLabel.includes('работ'));
+  if (filter === 'planned') return !done && (task.status === '1' || task.status === '2' || statusLabel.includes('план'));
+  if (filter === 'risk') return !done && statusLabel.includes('риск');
+  return true;
 }
 
 function getDays(count = 14) {
@@ -3030,7 +3132,7 @@ function App() {
     'task-seo-external-project-additions',
     {},
   );
-  const [activeView, setActiveView] = useState<View>('tasks');
+  const [activeView, setActiveView] = useState<View>('seo');
   const [seoProjectId, setSeoProjectId] = useStoredState<string>('task-seo-selected-project-analytics', initialProjects[0].id);
   const [themeMode, setThemeMode] = useStoredState<ThemeMode>('task-seo-theme-mode', 'dark');
   const [calendarMode, setCalendarMode] = useState<CalendarMode>('plan');
@@ -3482,7 +3584,7 @@ function App() {
         .filter((resource) => resource.tab === 'report')
         .map((resource) => ({
           id: resource.id,
-          label: resource.note || 'Отчет',
+          label: resource.note || 'Отчет клиенту',
           reportDate: resource.dateLabel || 'без даты',
           title: resource.title,
           url: resource.url,
@@ -3822,7 +3924,7 @@ function App() {
               <section className="panel task-panel">
                 <div className="section-heading">
                   <div>
-                    <h2>Список задач</h2>
+                    <h2>Рабочие задачи</h2>
                     <p>Задачи сгруппированы по проектам. Хронология раскрывается только там, где нужна детализация.</p>
                   </div>
                   <span className="soft-count">{tasks.length} задач</span>
@@ -6197,7 +6299,7 @@ function DashboardCard({ completion, overdueCount, collisions }: DashboardCardPr
     <section className="panel dashboard-card">
       <div className="section-heading compact-heading">
         <div>
-          <h2>Общий дашборд</h2>
+          <h2>Сводка управления</h2>
           <p>Сводка по всем разделам.</p>
         </div>
         <BarChart3 size={20} />
@@ -8059,7 +8161,7 @@ function WeeklyReportDrilldown({
     <section className="panel report-drilldown-panel">
       <div className="section-heading compact-heading">
         <div>
-          <h2>{title || 'Список задач'}</h2>
+          <h2>{title || 'Рабочие задачи'}</h2>
           <p>Раскрывай строку, чтобы увидеть сроки, факт, описание, источник и этапы.</p>
         </div>
         <button className="task-action-button" type="button" onClick={onClose}>
@@ -9389,19 +9491,21 @@ function SeoProjectsView({
   const selectedLeadAnalytics = leadAnalyticsByProject.get(selectedKey);
   const selectedLeadError = leadErrorsByProject.get(selectedKey) ?? leadError;
   const selectedTasks = selectedProject ? tasks.filter((task) => task.projectId === selectedProject.id) : [];
-  const activeTasks = selectedTasks.filter((task) => task.status !== 'done').length;
+  const selectedBitrixTasks = selectedProject
+    ? bitrix24Snapshot.tasks.filter((task) => bitrixTaskMatchesProject(task, selectedProject))
+    : [];
+  const activeTasks =
+    selectedTasks.filter((task) => task.status !== 'done').length +
+    selectedBitrixTasks.filter((task) => !isBitrix24TaskDone(task)).length;
+  const reportResourcesCount = selectedResources.filter((resource) => resource.tab === 'report').length;
   const seoTabs: Array<{ id: SeoProjectTab; label: string; count?: number }> = [
     { id: 'analytics', label: 'Аналитика' },
-    { id: 'tasks', label: 'Задачи', count: selectedTasks.length },
+    { id: 'tasks', label: 'Задачи', count: activeTasks },
     { id: 'links', label: 'Закуп ссылок', count: selectedLinkRows.length },
     { id: 'content', label: 'Контент', count: selectedContentTopics.length },
     { id: 'plans', label: 'План работ', count: selectedWorkPlans.length },
     { id: 'audit', label: 'Аудит', count: selectedAuditSources.length + 1 },
-    {
-      id: 'reports',
-      label: 'Отчеты',
-      count: selectedResources.filter((resource) => resource.tab === 'report' || resource.tab === 'site').length,
-    },
+    { id: 'reports', label: 'Отчет клиенту', count: reportResourcesCount },
     { id: 'payments', label: 'Оплаты', count: selectedPaymentRows.length + selectedPaymentCashflowRows.length },
   ];
   const effectiveActiveTab = seoTabs.some((item) => item.id === activeTab) ? activeTab : 'analytics';
@@ -9416,7 +9520,7 @@ function SeoProjectsView({
           <div className="dashboard-hero panel seo-projects-hero">
             <div>
               <h2>SEO-проекты</h2>
-              <p>Разверни одного клиента: аналитика, закуп ссылок, аудит, контент, отчеты и график оплат.</p>
+              <p>Разверни одного клиента: аналитика, закуп ссылок, аудит, контент, отчет перед клиентом и график оплат.</p>
             </div>
             <div className="hero-metrics">
               <Metric label="Проекты" value={String(projects.length)} />
@@ -9467,6 +9571,8 @@ function SeoProjectsView({
               ))}
             </div>
 
+            <Bitrix24SyncStrip snapshot={bitrix24Snapshot} project={selectedProject} />
+
             {effectiveActiveTab === 'analytics' && (
               <ProjectSeoAnalyticsTiles
                 project={selectedProject}
@@ -9493,6 +9599,7 @@ function SeoProjectsView({
                 tasks={selectedTasks}
                 people={people}
                 peopleById={peopleById}
+                bitrix24Snapshot={bitrix24Snapshot}
                 expanded={expanded}
                 onToggleExpanded={onToggleExpanded}
                 onToggleTimeline={onToggleTimeline}
@@ -9620,6 +9727,7 @@ function SeoProjectTasksTab({
   tasks,
   people,
   peopleById,
+  bitrix24Snapshot,
   expanded,
   onToggleExpanded,
   onToggleTimeline,
@@ -9632,6 +9740,7 @@ function SeoProjectTasksTab({
   tasks: Task[];
   people: Person[];
   peopleById: Map<string, Person>;
+  bitrix24Snapshot: Bitrix24Snapshot;
   expanded: Set<string>;
   onToggleExpanded: (taskId: string) => void;
   onToggleTimeline: (taskId: string, checked: boolean) => void;
@@ -9639,56 +9748,117 @@ function SeoProjectTasksTab({
   onTimelineStatusChange: (taskId: string, itemId: string, status: Status) => void;
   onTaskUpdate: (taskId: string, updater: (task: Task) => Task, action?: string) => void;
 }) {
-  const [taskFilter, setTaskFilter] = useStoredState<TaskReportFilter>('task-seo-project-task-filter', 'all');
+  const [taskMode, setTaskMode] = useStoredState<SeoProjectTaskMode>('task-seo-project-task-mode', 'open');
+  const [taskFilter, setTaskFilter] = useStoredState<TaskReportFilter>('task-seo-project-task-filter', 'open');
   const [ownerFilter, setOwnerFilter] = useStoredState<string>('task-seo-project-owner-filter', 'all');
   const today = todayIso();
   const summary = buildProjectTaskSummary(project, tasks, peopleById, today);
-  const filterOptions: TaskReportFilter[] = ['all', 'open', 'active', 'planned', 'risk', 'overdue', 'lateDone', 'withoutDeadline', 'done'];
+  const projectBitrixTasks = useMemo(
+    () => bitrix24Snapshot.tasks.filter((task) => bitrixTaskMatchesProject(task, project)),
+    [bitrix24Snapshot.tasks, project],
+  );
+  const openBitrixTasks = projectBitrixTasks.filter((task) => !isBitrix24TaskDone(task));
+  const doneBitrixTasks = projectBitrixTasks.filter((task) => isBitrix24TaskDone(task));
+  const overdueBitrixTasks = projectBitrixTasks.filter((task) => isBitrix24TaskOverdue(task, today));
+  const filterOptions: TaskReportFilter[] =
+    taskMode === 'done' ? ['done', 'lateDone'] : ['open', 'active', 'planned', 'risk', 'overdue', 'withoutDeadline'];
+  const effectiveTaskFilter = filterOptions.includes(taskFilter) ? taskFilter : taskMode === 'done' ? 'done' : 'open';
+  const selectedOwnerName = ownerFilter === 'all' ? '' : peopleById.get(ownerFilter)?.name ?? '';
+
+  useEffect(() => {
+    if (effectiveTaskFilter !== taskFilter) setTaskFilter(effectiveTaskFilter);
+  }, [effectiveTaskFilter, setTaskFilter, taskFilter]);
+
   const ownerOptions = people.filter((person) => tasks.some((task) => task.ownerIds.includes(person.id)));
+  const getFilterCount = (filter: TaskReportFilter) =>
+    summary.itemsByFilter[filter].length +
+    projectBitrixTasks.filter((task) => bitrixTaskMatchesFilter(task, filter, today)).length;
   const filteredTasks = tasks
     .filter((task) => {
       if (ownerFilter !== 'all' && !task.ownerIds.includes(ownerFilter)) return false;
-      if (taskFilter === 'all') return true;
-      if (taskFilter === 'open') return task.status !== 'done';
-      if (taskFilter === 'done') return task.status === 'done';
-      if (taskFilter === 'overdue') return task.status !== 'done' && Boolean(task.deadline) && task.deadline < today;
-      if (taskFilter === 'lateDone') {
+      if (effectiveTaskFilter === 'open') return task.status !== 'done';
+      if (effectiveTaskFilter === 'done') return task.status === 'done';
+      if (effectiveTaskFilter === 'overdue') return task.status !== 'done' && Boolean(task.deadline) && task.deadline < today;
+      if (effectiveTaskFilter === 'lateDone') {
         return task.status === 'done' && Boolean(task.deadline) && typeof task.completedAt === 'string' && task.completedAt > task.deadline;
       }
-      if (taskFilter === 'withoutDeadline') return !task.deadline;
-      return task.status === taskFilter;
+      if (effectiveTaskFilter === 'withoutDeadline') return task.status !== 'done' && !task.deadline;
+      return task.status === effectiveTaskFilter;
     })
     .sort((a, b) => {
-      if (taskFilter === 'done') return (b.completedAt ?? b.createdAt).localeCompare(a.completedAt ?? a.createdAt);
-      if (taskFilter === 'overdue') return a.deadline.localeCompare(b.deadline);
+      if (effectiveTaskFilter === 'done' || effectiveTaskFilter === 'lateDone') {
+        return (b.completedAt ?? b.createdAt).localeCompare(a.completedAt ?? a.createdAt);
+      }
+      if (effectiveTaskFilter === 'overdue') return a.deadline.localeCompare(b.deadline);
       return b.createdAt.localeCompare(a.createdAt) || a.deadline.localeCompare(b.deadline);
     });
+  const visibleBitrixTasks = projectBitrixTasks
+    .filter((task) => {
+      if (selectedOwnerName && !normalizeSearchText(task.responsibleName).includes(normalizeSearchText(selectedOwnerName))) return false;
+      return bitrixTaskMatchesFilter(task, effectiveTaskFilter, today);
+    })
+    .sort((left, right) => {
+      if (effectiveTaskFilter === 'done' || effectiveTaskFilter === 'lateDone') {
+        return (right.closedDate || right.createdDate).localeCompare(left.closedDate || left.createdDate);
+      }
+      if (effectiveTaskFilter === 'overdue') {
+        return getBitrixTaskIso(left.deadline).localeCompare(getBitrixTaskIso(right.deadline));
+      }
+      return (right.createdDate || '').localeCompare(left.createdDate || '');
+    });
+  const hasVisibleTasks = filteredTasks.length > 0 || visibleBitrixTasks.length > 0;
 
   return (
     <section className="panel seo-inner-panel seo-project-tasks-tab">
       <div className="section-heading compact-heading">
         <div>
-          <h2>Задачи: {project.name}</h2>
+          <h2>{taskMode === 'done' ? 'Выполнено' : 'Задачи в работе'}: {project.name}</h2>
           <p>Статусы, дедлайны, хронология, редактирование и история изменений по выбранному SEO-проекту.</p>
         </div>
         <div className="seo-task-summary-strip">
-          <span>{summary.done}/{summary.total} выполнено</span>
-          <span>{summary.open} не выполнено</span>
-          <span className={summary.overdue ? 'is-danger' : ''}>{summary.overdue} просрочено</span>
+          <span>{summary.open + openBitrixTasks.length} в работе</span>
+          <span className={summary.overdue + overdueBitrixTasks.length ? 'is-danger' : ''}>
+            {summary.overdue + overdueBitrixTasks.length} просрочено
+          </span>
+          <span>{summary.done + doneBitrixTasks.length} выполнено</span>
         </div>
       </div>
 
       <div className="seo-task-filters">
+        <div className="segmented seo-task-mode-switch" role="group" aria-label="Режим задач SEO-проекта">
+          <button
+            className={taskMode === 'open' ? 'is-active' : ''}
+            type="button"
+            onClick={() => {
+              setTaskMode('open');
+              setTaskFilter('open');
+            }}
+          >
+            Задачи в работе
+            <em>{summary.open + openBitrixTasks.length}</em>
+          </button>
+          <button
+            className={taskMode === 'done' ? 'is-active' : ''}
+            type="button"
+            onClick={() => {
+              setTaskMode('done');
+              setTaskFilter('done');
+            }}
+          >
+            Выполнено
+            <em>{summary.done + doneBitrixTasks.length}</em>
+          </button>
+        </div>
         <div className="segmented seo-task-filter-group" role="group" aria-label="Фильтр задач SEO-проекта">
           {filterOptions.map((filter) => (
             <button
-              className={taskFilter === filter ? 'is-active' : ''}
+              className={effectiveTaskFilter === filter ? 'is-active' : ''}
               key={filter}
               type="button"
               onClick={() => setTaskFilter(filter)}
             >
               {taskReportFilterLabels[filter]}
-              <em>{summary.itemsByFilter[filter].length}</em>
+              <em>{getFilterCount(filter)}</em>
             </button>
           ))}
         </div>
@@ -9705,28 +9875,134 @@ function SeoProjectTasksTab({
         </label>
       </div>
 
-      {filteredTasks.length === 0 ? (
+      {!hasVisibleTasks ? (
         <div className="empty-row">По выбранным фильтрам задач нет.</div>
       ) : (
-        <div className="task-list">
-          {filteredTasks.map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              project={project}
-              projects={projects}
-              people={people}
-              peopleById={peopleById}
-              expanded={expanded.has(task.id)}
-              onToggleExpanded={onToggleExpanded}
-              onToggleTimeline={onToggleTimeline}
-              onStatusChange={onStatusChange}
-              onTimelineStatusChange={onTimelineStatusChange}
-              onTaskUpdate={onTaskUpdate}
-            />
-          ))}
-        </div>
+        <>
+          {filteredTasks.length > 0 && (
+            <div className="task-list">
+              {filteredTasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  project={project}
+                  projects={projects}
+                  people={people}
+                  peopleById={peopleById}
+                  expanded={expanded.has(task.id)}
+                  onToggleExpanded={onToggleExpanded}
+                  onToggleTimeline={onToggleTimeline}
+                  onStatusChange={onStatusChange}
+                  onTimelineStatusChange={onTimelineStatusChange}
+                  onTaskUpdate={onTaskUpdate}
+                />
+              ))}
+            </div>
+          )}
+          <Bitrix24ProjectTaskList tasks={visibleBitrixTasks} taskMode={taskMode} />
+        </>
       )}
+    </section>
+  );
+}
+
+function Bitrix24SyncStrip({ snapshot, project }: { snapshot: Bitrix24Snapshot; project: Project }) {
+  const clientCount = snapshot.crm.leads.length + snapshot.crm.contacts.length + snapshot.crm.companies.length;
+  const projectTasks = snapshot.tasks.filter((task) => bitrixTaskMatchesProject(task, project));
+  const activeProjectTasks = projectTasks.filter((task) => !isBitrix24TaskDone(task));
+  const doneProjectTasks = projectTasks.filter((task) => isBitrix24TaskDone(task));
+  const hasLoadedRows = Boolean(snapshot.updatedAt || snapshot.tasks.length || clientCount || snapshot.crm.deals.length);
+  const statusText = hasLoadedRows
+    ? `backend snapshot · обновлено ${formatDateTime(snapshot.updatedAt)}`
+    : 'backend snapshot ожидает первую успешную выгрузку';
+
+  return (
+    <section className={`bitrix-sync-strip ${hasLoadedRows ? 'is-ready' : 'is-empty'}`} aria-label="Синхронизация Bitrix24">
+      <div className="bitrix-sync-status">
+        {hasLoadedRows ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}
+        <div>
+          <strong>Bitrix24 API</strong>
+          <span>{statusText}</span>
+          {snapshot.errors[0] && <em>{snapshot.errors[0]}</em>}
+        </div>
+      </div>
+      <dl>
+        <div>
+          <dt>SEO-задачи</dt>
+          <dd>{snapshot.tasks.length}</dd>
+        </div>
+        <div>
+          <dt>{project.name}</dt>
+          <dd>{activeProjectTasks.length} в работе</dd>
+        </div>
+        <div>
+          <dt>Выполнено</dt>
+          <dd>{doneProjectTasks.length}</dd>
+        </div>
+        <div>
+          <dt>CRM</dt>
+          <dd>{clientCount + snapshot.crm.deals.length}</dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
+function Bitrix24ProjectTaskList({
+  tasks,
+  taskMode,
+}: {
+  tasks: Bitrix24ProjectTask[];
+  taskMode: SeoProjectTaskMode;
+}) {
+  if (tasks.length === 0) return null;
+
+  return (
+    <section className="bitrix-project-task-list" aria-label="Задачи проекта из Bitrix24">
+      <div className="tile-heading">
+        <Layers3 size={18} />
+        <h3>Задачи из Bitrix24</h3>
+        <span>{taskMode === 'done' ? 'выполненные' : 'в работе'} · {tasks.length}</span>
+      </div>
+      <div className="bitrix-project-task-stack">
+        {tasks.slice(0, 12).map((task) => (
+          <article
+            className={`bitrix-task-row ${isBitrix24TaskOverdue(task) ? 'is-overdue' : ''}`}
+            key={`bitrix-project-${task.id}`}
+          >
+            <div>
+              <span>#{task.id} · {task.statusLabel || (isBitrix24TaskDone(task) ? 'готово' : 'в работе')}</span>
+              <strong>{task.title}</strong>
+              {task.description && <p>{compactExternalText(task.description)}</p>}
+            </div>
+            <dl>
+              <div>
+                <dt>Ответственный</dt>
+                <dd>{task.responsibleName || 'не указан'}</dd>
+              </div>
+              <div>
+                <dt>Постановщик</dt>
+                <dd>{task.creatorName || 'не указан'}</dd>
+              </div>
+              <div>
+                <dt>Создана</dt>
+                <dd>{formatDateTime(task.createdDate)}</dd>
+              </div>
+              <div>
+                <dt>Дедлайн</dt>
+                <dd>{formatDateTime(task.deadline)}</dd>
+              </div>
+              {task.closedDate && (
+                <div>
+                  <dt>Закрыта</dt>
+                  <dd>{formatDateTime(task.closedDate)}</dd>
+                </div>
+              )}
+            </dl>
+          </article>
+        ))}
+      </div>
+      {tasks.length > 12 && <div className="empty-row">Показаны последние 12 задач из Bitrix24 по выбранному фильтру.</div>}
     </section>
   );
 }
@@ -10070,7 +10346,7 @@ function GenericProjectSeoAnalyticsTiles({
             <p>
               {hasGoalField
                 ? 'Поле “Достижение цели” есть в таблице результатов продвижения.'
-                : 'Когда появится таблица целей, она попадет в эту часть отчета.'}
+                : 'Когда появится таблица целей, она попадет в часть отчета перед клиентом.'}
             </p>
           </>
         )}
@@ -10972,13 +11248,13 @@ function SeoProjectReportsPanel({
     <div className="seo-report-panel">
       <div className="link-panel-head">
         <div>
-          <strong>Ссылки и отчеты: {project.name}</strong>
-          <p>Кнопки на сайт, документы отчетности и дополнительные материалы из админки.</p>
+          <strong>Сайт и отчет перед клиентом: {project.name}</strong>
+          <p>Кнопки на сайт, клиентские отчетные документы и дополнительные материалы из админки.</p>
         </div>
       </div>
 
       <div className="seo-report-mode-switch">
-        <div className="segmented" role="group" aria-label={`Режим отчета SEO-проекта ${project.name}`}>
+        <div className="segmented" role="group" aria-label={`Режим отчета перед клиентом SEO-проекта ${project.name}`}>
           {(Object.keys(reportModeLabels) as ReportMode[]).map((mode) => (
             <button
               className={reportMode === mode ? 'is-active' : ''}
@@ -11022,14 +11298,14 @@ function SeoProjectReportsPanel({
           <WeeklyReportProjectCard report={report} />
         </div>
       ) : (
-        <div className="empty-row">По задачам этого проекта пока нет данных для недельного отчета.</div>
+        <div className="empty-row">По задачам этого проекта пока нет данных для недельного отчета перед клиентом.</div>
       )}
 
       <ManagedResourcesList title="Сайты" resources={siteResources} />
-      <ManagedResourcesList title="Отчеты" resources={reportResources} />
+      <ManagedResourcesList title="Отчеты перед клиентом" resources={reportResources} />
 
       {resources.length === 0 && (
-        <div className="empty-row">Для этого проекта пока нет сайта или отчетов. Добавить можно в админке.</div>
+        <div className="empty-row">Для этого проекта пока нет сайта или отчетов перед клиентом. Добавить можно в админке.</div>
       )}
     </div>
   );
