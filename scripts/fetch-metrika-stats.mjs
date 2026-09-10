@@ -6,6 +6,9 @@ const API_BASE = 'https://api-metrika.yandex.net';
 const OUTPUT_PATH = fileURLToPath(new URL('../public/data/metrika-stats.json', import.meta.url));
 const DATE_1 = process.env.METRIKA_DATE1 || defaultDate1();
 const DATE_2 = process.env.METRIKA_DATE2 || todayIso();
+const ORGANIC_FILTER = "ym:s:trafficSource=='organic'";
+const ATTRIBUTION = 'lastsign';
+const SOURCE_TIMEZONE = '+03:00';
 
 const DEFAULT_PROJECTS = [
   { projectName: 'Часы', clientName: 'WatchStore', siteUrls: ['https://watchstoree.ru'] },
@@ -151,6 +154,8 @@ async function fetchTableStats(counterId, token, includeGoals = true) {
       limit: 100,
       accuracy: 'full',
       lang: 'ru',
+      filters: ORGANIC_FILTER,
+      attribution: ATTRIBUTION,
     },
     token,
   );
@@ -201,6 +206,8 @@ async function fetchTimeStats(counterId, token, group, includeGoals = true) {
       group,
       accuracy: 'full',
       lang: 'ru',
+      filters: ORGANIC_FILTER,
+      attribution: ATTRIBUTION,
     },
     token,
   );
@@ -243,6 +250,12 @@ async function fetchProjectStats(project, counter, token) {
     counterName: counter.name || counter.site || '',
     siteUrl: project.siteUrls[0],
     periodLabel: `${formatRuDate(DATE_1)} - ${formatRuDate(DATE_2)}`,
+    metricScope: 'organic_search',
+    filter: ORGANIC_FILTER,
+    attribution: ATTRIBUTION,
+    timezone: SOURCE_TIMEZONE,
+    dataStatus: 'ok',
+    fullCoverageDate: DATE_2,
     visits: table.visits,
     users: table.users,
     goalCount: table.goalCount,

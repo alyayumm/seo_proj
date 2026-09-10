@@ -101,6 +101,12 @@ type AdminTab = 'projects' | 'people' | 'tasks' | 'sources' | 'payments';
 type ProjectTab = 'tasks' | 'links' | 'plans' | 'content' | 'results' | 'audit';
 type SeoProjectTab = 'analytics' | 'tasks' | 'links' | 'content' | 'plans' | 'audit' | 'reports' | 'payments';
 type SeoTrendMode = 'daily' | 'weekly' | 'monthly';
+type SeoPeriodPreset = '30d' | '3m' | '6m' | 'custom';
+type SeoCompareMode = 'previous' | 'lastYear' | 'custom' | 'none';
+type SeoTrafficSystem = 'all' | 'yandex' | 'google' | 'other';
+type SeoLeadMetricMode = 'all' | 'target';
+type SeoImpactTab = 'pages' | 'queries';
+type SeoImpactDirection = 'growth' | 'drop';
 type ReportMode = 'tasks' | 'logic' | 'metrics';
 type TaskReportFilter =
   | 'all'
@@ -260,6 +266,32 @@ const seoTrendModeShortLabels: Record<SeoTrendMode, string> = {
   daily: 'дни',
   weekly: 'недели',
   monthly: 'месяцы',
+};
+
+const seoPeriodPresetLabels: Record<SeoPeriodPreset, string> = {
+  '30d': '30 дней',
+  '3m': '3 месяца',
+  '6m': '6 месяцев',
+  custom: 'Свой период',
+};
+
+const seoCompareModeLabels: Record<SeoCompareMode, string> = {
+  previous: 'предыдущий период',
+  lastYear: 'год к году',
+  custom: 'свой период',
+  none: 'без сравнения',
+};
+
+const seoTrafficSystemLabels: Record<SeoTrafficSystem, string> = {
+  all: 'Все системы',
+  yandex: 'Яндекс',
+  google: 'Google',
+  other: 'Другие',
+};
+
+const seoImpactTabLabels: Record<SeoImpactTab, string> = {
+  pages: 'Страницы входа',
+  queries: 'Поисковые запросы',
 };
 
 const reportModeLabels: Record<ReportMode, string> = {
@@ -2129,6 +2161,48 @@ type WeeklyReportArchiveFolder = {
   externalPlanned: number;
 };
 
+type AnalyticsDateRange = {
+  start: string;
+  end: string;
+};
+
+type AnalyticsSeriesPoint = {
+  key: string;
+  label: string;
+  startDate: string;
+  endDate: string;
+  value: number;
+  secondary?: number;
+};
+
+type AnalyticsMarker = {
+  date: string;
+  title: string;
+  kind: string;
+  sourceUrl?: string;
+};
+
+type SeoKpiCardModel = {
+  title: string;
+  value: string;
+  meta: string;
+  deltaLabel: string;
+  tone: 'positive' | 'negative' | 'neutral' | 'warning';
+  statusLabel: string;
+  icon: 'leaf' | 'users' | 'target' | 'funnel';
+};
+
+type SeoImpactRow = {
+  id: string;
+  label: string;
+  visits: number | null;
+  previousVisits: number | null;
+  change: number | null;
+  conversionVisits: number | null;
+  cr: number | null;
+  note: string;
+};
+
 function todayIso() {
   return toLocalIso(new Date());
 }
@@ -2338,9 +2412,8 @@ function getGoalTrendPoints(goalAnalytics: PromotionGoalAnalytics | undefined, m
   return goalAnalytics.monthly;
 }
 
-function getVisibleGoalTrendPoints(points: PromotionGoalTrendPoint[], mode: SeoTrendMode) {
-  if (mode === 'daily') return points.slice(-30);
-  if (mode === 'weekly') return points.slice(-12);
+function getVisibleGoalTrendPoints(points: PromotionGoalTrendPoint[], _mode: SeoTrendMode) {
+  void _mode;
   return points;
 }
 
@@ -2351,10 +2424,298 @@ function getLeadTrendPoints(leadAnalytics: LeadAnalyticsSummary | undefined, mod
   return leadAnalytics.monthly;
 }
 
-function getVisibleLeadTrendPoints(points: LeadTrendPoint[], mode: SeoTrendMode) {
-  if (mode === 'daily') return points.slice(-30);
-  if (mode === 'weekly') return points.slice(-12);
+function getVisibleLeadTrendPoints(points: LeadTrendPoint[], _mode: SeoTrendMode) {
+  void _mode;
   return points;
+}
+
+function isValidIsoDate(value?: string) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  return !Number.isNaN(new Date(`${value}T12:00:00`).getTime());
+}
+
+function formatInteger(value: number) {
+  return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(value);
+}
+
+function formatPercentValue(value: number, digits = 0) {
+  return `${new Intl.NumberFormat('ru-RU', {
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
+  }).format(value)}%`;
+}
+
+function formatConversionRate(value: number | null) {
+  if (value === null) return '—';
+  return `${new Intl.NumberFormat('ru-RU', {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+  }).format(value)}%`;
+}
+
+function formatInputRange(range: AnalyticsDateRange) {
+  return `${formatNumericDate(range.start)}-${formatNumericDate(range.end)}`;
+}
+
+function addMonthsToIso(value: string, months: number) {
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return '';
+  date.setMonth(date.getMonth() + months);
+  return toLocalIso(date);
+}
+
+function addYearsToIso(value: string, years: number) {
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return '';
+  date.setFullYear(date.getFullYear() + years);
+  return toLocalIso(date);
+}
+
+function sortGoalPoints(points: PromotionGoalTrendPoint[]) {
+  return points
+    .filter((point) => isValidIsoDate(point.date))
+    .sort((left, right) => String(left.date).localeCompare(String(right.date)));
+}
+
+function getLatestAnalyticsDate(goalAnalytics?: PromotionGoalAnalytics, leadAnalytics?: LeadAnalyticsSummary) {
+  const dates = [
+    ...(goalAnalytics?.daily ?? []).map((point) => point.date ?? ''),
+    ...(leadAnalytics?.daily ?? []).map((point) => point.period),
+  ].filter(isValidIsoDate);
+  return dates.sort().at(-1) ?? todayIso();
+}
+
+function resolveSeoDateRange(preset: SeoPeriodPreset, customRange: AnalyticsDateRange, sourceEndDate: string) {
+  if (preset === 'custom' && isValidIsoDate(customRange.start) && isValidIsoDate(customRange.end)) {
+    return customRange.start <= customRange.end
+      ? customRange
+      : { start: customRange.end, end: customRange.start };
+  }
+
+  const end = isValidIsoDate(sourceEndDate) ? sourceEndDate : todayIso();
+  if (preset === '3m') return { start: addDaysToIso(addMonthsToIso(end, -3), 1), end };
+  if (preset === '6m') return { start: addDaysToIso(addMonthsToIso(end, -6), 1), end };
+  return { start: addDaysToIso(end, -29), end };
+}
+
+function resolveSeoCompareRange(mode: SeoCompareMode, range: AnalyticsDateRange, customRange: AnalyticsDateRange) {
+  if (mode === 'none') return undefined;
+  if (mode === 'custom' && isValidIsoDate(customRange.start) && isValidIsoDate(customRange.end)) {
+    return customRange.start <= customRange.end
+      ? customRange
+      : { start: customRange.end, end: customRange.start };
+  }
+  if (mode === 'lastYear') {
+    return {
+      start: addYearsToIso(range.start, -1),
+      end: addYearsToIso(range.end, -1),
+    };
+  }
+
+  const periodDays = daysBetweenIso(range.start, range.end) + 1;
+  const end = addDaysToIso(range.start, -1);
+  return {
+    start: addDaysToIso(end, -periodDays + 1),
+    end,
+  };
+}
+
+function filterGoalDailyPoints(goalAnalytics: PromotionGoalAnalytics | undefined, range: AnalyticsDateRange) {
+  return sortGoalPoints(goalAnalytics?.daily ?? []).filter(
+    (point) => point.date && point.date >= range.start && point.date <= range.end,
+  );
+}
+
+function getSeriesKey(dateIso: string, mode: SeoTrendMode) {
+  if (mode === 'daily') return dateIso;
+  if (mode === 'monthly') return dateIso.slice(0, 7);
+  return getWeekStartIso(dateIso);
+}
+
+function getSeriesLabel(key: string, mode: SeoTrendMode) {
+  if (mode === 'daily') return formatNumericDate(key);
+  if (mode === 'monthly') {
+    const month = Number(key.slice(5, 7));
+    return month ? ruMonthNames[month - 1] ?? key : key;
+  }
+  return formatNumericDate(key);
+}
+
+function buildGoalSeries(points: PromotionGoalTrendPoint[], mode: SeoTrendMode, metric: 'visits' | 'goals') {
+  const map = new Map<string, AnalyticsSeriesPoint>();
+  points.forEach((point) => {
+    const date = point.date ?? '';
+    if (!isValidIsoDate(date)) return;
+    const key = getSeriesKey(date, mode);
+    const current =
+      map.get(key) ??
+      ({
+        key,
+        label: getSeriesLabel(key, mode),
+        startDate: date,
+        endDate: date,
+        value: 0,
+        secondary: 0,
+      } satisfies AnalyticsSeriesPoint);
+    current.startDate = current.startDate < date ? current.startDate : date;
+    current.endDate = current.endDate > date ? current.endDate : date;
+    current.value += point[metric];
+    current.secondary = (current.secondary ?? 0) + (metric === 'goals' ? point.visits : point.goals);
+    map.set(key, current);
+  });
+
+  return Array.from(map.values())
+    .sort((left, right) => left.startDate.localeCompare(right.startDate))
+    .map((point) => ({
+      ...point,
+      label: mode === 'weekly' ? `${formatNumericDate(point.startDate)}-${formatNumericDate(point.endDate)}` : point.label,
+    }));
+}
+
+function filterLeadDailyPoints(leadAnalytics: LeadAnalyticsSummary | undefined, range: AnalyticsDateRange) {
+  return (leadAnalytics?.daily ?? [])
+    .filter((point) => isValidIsoDate(point.period) && point.period >= range.start && point.period <= range.end)
+    .sort((left, right) => left.period.localeCompare(right.period));
+}
+
+function buildLeadSeries(points: LeadTrendPoint[], mode: SeoTrendMode, metric: SeoLeadMetricMode) {
+  const map = new Map<string, AnalyticsSeriesPoint>();
+  points.forEach((point) => {
+    const date = point.period;
+    if (!isValidIsoDate(date)) return;
+    const key = getSeriesKey(date, mode);
+    const current =
+      map.get(key) ??
+      ({
+        key,
+        label: getSeriesLabel(key, mode),
+        startDate: date,
+        endDate: date,
+        value: 0,
+        secondary: 0,
+      } satisfies AnalyticsSeriesPoint);
+    current.startDate = current.startDate < date ? current.startDate : date;
+    current.endDate = current.endDate > date ? current.endDate : date;
+    current.value += metric === 'target' ? point.quality : point.leads;
+    current.secondary = (current.secondary ?? 0) + point.quality;
+    map.set(key, current);
+  });
+
+  return Array.from(map.values())
+    .sort((left, right) => left.startDate.localeCompare(right.startDate))
+    .map((point) => ({
+      ...point,
+      label: mode === 'weekly' ? `${formatNumericDate(point.startDate)}-${formatNumericDate(point.endDate)}` : point.label,
+    }));
+}
+
+function buildConversionSeries(visitSeries: AnalyticsSeriesPoint[], leadSeries: AnalyticsSeriesPoint[]) {
+  const leadsByKey = new Map(leadSeries.map((point) => [point.key, point.value]));
+  return visitSeries.map((point) => {
+    const leads = leadsByKey.get(point.key) ?? 0;
+    const rate = point.value > 0 ? (leads / point.value) * 100 : 0;
+    return {
+      ...point,
+      value: rate,
+      secondary: point.value,
+    };
+  });
+}
+
+function sumSeries(points: AnalyticsSeriesPoint[]) {
+  return points.reduce((total, point) => total + point.value, 0);
+}
+
+function getSeriesRate(numerator: number | null, denominator: number | null) {
+  if (numerator === null || denominator === null || denominator <= 0) return null;
+  return (numerator / denominator) * 100;
+}
+
+function getDeltaLabel(current: number | null, previous: number | null, options: { percentPoint?: boolean } = {}) {
+  if (current === null) return { label: 'нет данных', tone: 'neutral' as const };
+  if (previous === null) return { label: 'нет базы сравнения', tone: 'neutral' as const };
+  const diff = current - previous;
+  const sign = diff > 0 ? '+' : diff < 0 ? '−' : '';
+  const absolute = Math.abs(diff);
+  const formattedAbsolute = options.percentPoint
+    ? `${sign}${absolute.toFixed(2).replace('.', ',')} п. п.`
+    : `${sign}${formatInteger(Math.round(absolute))}`;
+  if (previous === 0) {
+    return {
+      label: `${formattedAbsolute} · нет базы для %`,
+      tone: diff >= 0 ? ('positive' as const) : ('negative' as const),
+    };
+  }
+  const percent = Math.abs((diff / previous) * 100);
+  return {
+    label: `${formattedAbsolute} · ${sign}${formatPercentValue(percent, 0)}`,
+    tone: diff > 0 ? ('positive' as const) : diff < 0 ? ('negative' as const) : ('neutral' as const),
+  };
+}
+
+function getAnalyticsMarkers(tasks: Task[], range: AnalyticsDateRange) {
+  const markers: AnalyticsMarker[] = [];
+  tasks.forEach((task) => {
+    if (task.completedAt && task.completedAt >= range.start && task.completedAt <= range.end) {
+      markers.push({
+        date: task.completedAt,
+        title: task.title,
+        kind: task.sourceLabel || 'задача',
+        sourceUrl: task.sourceUrl,
+      });
+    }
+    task.timeline.forEach((item) => {
+      if (item.completedAt && item.completedAt >= range.start && item.completedAt <= range.end) {
+        markers.push({
+          date: item.completedAt,
+          title: item.title,
+          kind: 'этап',
+          sourceUrl: task.sourceUrl,
+        });
+      }
+    });
+  });
+
+  return markers
+    .sort((left, right) => left.date.localeCompare(right.date) || left.title.localeCompare(right.title))
+    .slice(0, 12);
+}
+
+function getLeadDataIssue(leadAnalytics: LeadAnalyticsSummary | undefined, leadPoints: LeadTrendPoint[]) {
+  if (!leadAnalytics) return 'данные по заявкам не загружены';
+  if (leadAnalytics.total > 0 && leadPoints.length === 0) {
+    return `нельзя построить динамику: у ${leadAnalytics.total} обращений не распознана дата`;
+  }
+  if (leadAnalytics.unknown > 0) return `${leadAnalytics.unknown} обращений без понятного статуса качества`;
+  return '';
+}
+
+function downloadCsv(filename: string, rows: SeoImpactRow[]) {
+  const headers = ['Показатель', 'Визиты', 'Ранее', 'Изменение', 'Конв. визиты', 'CR', 'Ограничение'];
+  const escapeCell = (value: string | number | null) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+  const csv = [
+    headers.map(escapeCell).join(';'),
+    ...rows.map((row) =>
+      [
+        row.label,
+        row.visits,
+        row.previousVisits,
+        row.change,
+        row.conversionVisits,
+        row.cr === null ? '' : `${row.cr.toFixed(2)}%`,
+        row.note,
+      ]
+        .map(escapeCell)
+        .join(';'),
+    ),
+  ].join('\n');
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 function isWeeklyReportTask(task: Task) {
@@ -6785,6 +7146,7 @@ function WeeklyReportView({
   );
   const selectedMetricsLeadAnalytics = leadAnalyticsByProject.get(selectedMetricsProjectKey);
   const selectedMetricsLeadError = leadErrorsByProject.get(selectedMetricsProjectKey) ?? leadError;
+  const selectedMetricsTasks = tasks.filter((task) => task.projectId === selectedMetricsProject?.id);
   const selectedDrilldownReport = selectedDrilldown
     ? visibleSeoReports.find((report) => report.id === selectedDrilldown.projectId)
     : undefined;
@@ -6892,6 +7254,7 @@ function WeeklyReportView({
           leadError={selectedMetricsLeadError}
           leadUpdatedAt={leadUpdatedAt}
           onReloadLeads={onReloadLeads}
+          tasks={selectedMetricsTasks}
           onProjectChange={setReportProjectId}
         />
       ) : reportMode === 'logic' ? (
@@ -7200,6 +7563,7 @@ function ReportMetricsMode({
   leadError,
   leadUpdatedAt,
   onReloadLeads,
+  tasks,
   onProjectChange,
 }: {
   projects: Project[];
@@ -7212,6 +7576,7 @@ function ReportMetricsMode({
   leadError: string;
   leadUpdatedAt: string;
   onReloadLeads: () => void;
+  tasks: Task[];
   onProjectChange: (projectId: string) => void;
 }) {
   return (
@@ -7246,6 +7611,7 @@ function ReportMetricsMode({
         leadError={leadError}
         leadUpdatedAt={leadUpdatedAt}
         onReloadLeads={onReloadLeads}
+        tasks={tasks}
       />
     </section>
   );
@@ -9039,46 +9405,53 @@ function SeoProjectsView({
     { id: 'payments', label: 'Оплаты', count: selectedPaymentRows.length + selectedPaymentCashflowRows.length },
   ];
   const effectiveActiveTab = seoTabs.some((item) => item.id === activeTab) ? activeTab : 'analytics';
+  const showSideTaskPanel = effectiveActiveTab !== 'analytics';
+  const isAquaguardAnalytics =
+    effectiveActiveTab === 'analytics' && normalizeProjectName(selectedProject?.name ?? '') === 'аквагард';
 
   return (
-    <section className="seo-projects-view">
-      <div className="dashboard-hero panel seo-projects-hero">
-        <div>
-          <h2>SEO-проекты</h2>
-          <p>Разверни одного клиента: аналитика, закуп ссылок, аудит, контент, отчеты и график оплат.</p>
-        </div>
-        <div className="hero-metrics">
-          <Metric label="Проекты" value={String(projects.length)} />
-          <Metric label="Выбрано" value={selectedProject?.name ?? '—'} />
-          <Metric label="Задачи" value={String(activeTasks)} />
-          <Metric label="Источники" value={String(selectedSources.length + (selectedLeadAnalytics?.sourceCount ?? 0))} />
-        </div>
-      </div>
-
-      <section className="panel seo-project-picker-panel">
-        <div className="section-heading compact-heading">
-          <div>
-            <h2>Выбор проекта</h2>
-            <p>Карточки ниже перестраиваются под выбранного клиента.</p>
+    <section className={`seo-projects-view ${isAquaguardAnalytics ? 'is-analytics-focused' : ''}`}>
+      {!isAquaguardAnalytics && (
+        <>
+          <div className="dashboard-hero panel seo-projects-hero">
+            <div>
+              <h2>SEO-проекты</h2>
+              <p>Разверни одного клиента: аналитика, закуп ссылок, аудит, контент, отчеты и график оплат.</p>
+            </div>
+            <div className="hero-metrics">
+              <Metric label="Проекты" value={String(projects.length)} />
+              <Metric label="Выбрано" value={selectedProject?.name ?? '—'} />
+              <Metric label="Задачи" value={String(activeTasks)} />
+              <Metric label="Источники" value={String(selectedSources.length + (selectedLeadAnalytics?.sourceCount ?? 0))} />
+            </div>
           </div>
-        </div>
-        <div className="seo-project-picker" role="group" aria-label="Выбрать SEO-проект">
-          {projects.map((project) => (
-            <button
-              className={project.id === selectedProject?.id ? 'is-active' : ''}
-              key={project.id}
-              type="button"
-              onClick={() => onProjectChange(project.id)}
-            >
-              <span className="mini-dot" style={{ background: project.color }} />
-              {project.name}
-            </button>
-          ))}
-        </div>
-      </section>
+
+          <section className="panel seo-project-picker-panel">
+            <div className="section-heading compact-heading">
+              <div>
+                <h2>Выбор проекта</h2>
+                <p>Карточки ниже перестраиваются под выбранного клиента.</p>
+              </div>
+            </div>
+            <div className="seo-project-picker" role="group" aria-label="Выбрать SEO-проект">
+              {projects.map((project) => (
+                <button
+                  className={project.id === selectedProject?.id ? 'is-active' : ''}
+                  key={project.id}
+                  type="button"
+                  onClick={() => onProjectChange(project.id)}
+                >
+                  <span className="mini-dot" style={{ background: project.color }} />
+                  {project.name}
+                </button>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
 
       {selectedProject ? (
-        <div className="seo-project-layout">
+        <div className={`seo-project-layout ${showSideTaskPanel ? '' : 'is-full'}`}>
           <div className="seo-project-main">
             <div className="project-tabs seo-inner-tabs" role="group" aria-label={`Разделы SEO-проекта ${selectedProject.name}`}>
               {seoTabs.map((item) => (
@@ -9104,6 +9477,12 @@ function SeoProjectsView({
                 leadError={selectedLeadError}
                 leadUpdatedAt={leadUpdatedAt}
                 onReloadLeads={onReloadLeads}
+                tasks={selectedTasks}
+                peopleById={peopleById}
+                onOpenTasks={() => setActiveTab('tasks')}
+                allProjects={projects}
+                selectedProjectId={selectedProject.id}
+                onProjectChange={onProjectChange}
               />
             )}
 
@@ -9224,7 +9603,9 @@ function SeoProjectsView({
               </div>
             )}
           </div>
-          <SeoProjectTaskPanel project={selectedProject} tasks={selectedTasks} peopleById={peopleById} />
+          {showSideTaskPanel && (
+            <SeoProjectTaskPanel project={selectedProject} tasks={selectedTasks} peopleById={peopleById} />
+          )}
         </div>
       ) : (
         <div className="empty-row">Пока нет проектов для аналитики.</div>
@@ -9359,6 +9740,72 @@ function ProjectSeoAnalyticsTiles({
   leadError,
   leadUpdatedAt,
   onReloadLeads,
+  tasks = [],
+  peopleById,
+  onOpenTasks,
+  allProjects,
+  selectedProjectId,
+  onProjectChange,
+}: {
+  project: Project;
+  linkRows: LinkPurchase[];
+  promotionSources: PromotionResultSource[];
+  leadAnalytics?: LeadAnalyticsSummary;
+  leadLoadStatus: LinkLoadStatus;
+  leadError: string;
+  leadUpdatedAt: string;
+  onReloadLeads: () => void;
+  tasks?: Task[];
+  peopleById?: Map<string, Person>;
+  onOpenTasks?: () => void;
+  allProjects?: Project[];
+  selectedProjectId?: string;
+  onProjectChange?: (projectId: string) => void;
+}) {
+  if (normalizeProjectName(project.name) === 'аквагард') {
+    return (
+      <AquaguardSeoAnalyticsScreen
+        project={project}
+        linkRows={linkRows}
+        promotionSources={promotionSources}
+        leadAnalytics={leadAnalytics}
+        leadLoadStatus={leadLoadStatus}
+        leadError={leadError}
+        leadUpdatedAt={leadUpdatedAt}
+        onReloadLeads={onReloadLeads}
+        tasks={tasks}
+        peopleById={peopleById}
+        onOpenTasks={onOpenTasks}
+        allProjects={allProjects}
+        selectedProjectId={selectedProjectId}
+        onProjectChange={onProjectChange}
+      />
+    );
+  }
+
+  return (
+    <GenericProjectSeoAnalyticsTiles
+      project={project}
+      linkRows={linkRows}
+      promotionSources={promotionSources}
+      leadAnalytics={leadAnalytics}
+      leadLoadStatus={leadLoadStatus}
+      leadError={leadError}
+      leadUpdatedAt={leadUpdatedAt}
+      onReloadLeads={onReloadLeads}
+    />
+  );
+}
+
+function GenericProjectSeoAnalyticsTiles({
+  project,
+  linkRows,
+  promotionSources,
+  leadAnalytics,
+  leadLoadStatus,
+  leadError,
+  leadUpdatedAt,
+  onReloadLeads,
 }: {
   project: Project;
   linkRows: LinkPurchase[];
@@ -9457,7 +9904,7 @@ function ProjectSeoAnalyticsTiles({
           <div className="analytics-trend-chart" aria-label={`Динамика переходов: ${seoTrendModeLabels[trendMode]}`}>
             {visibleTrendPoints.map((point) => (
               <div key={`${point.date ?? point.month}-${point.visits}-${point.goals}`}>
-                <span style={{ height: `${Math.max(8, (point.visits / trendVisitsMax) * 100)}%` }} />
+                <span style={{ height: point.visits > 0 ? `${Math.max(8, (point.visits / trendVisitsMax) * 100)}%` : '0%' }} />
                 <em>{point.month}</em>
                 <small>{point.visits}</small>
               </div>
@@ -9523,7 +9970,7 @@ function ProjectSeoAnalyticsTiles({
               <div className="lead-trend-chart" aria-label={`Динамика лидов: ${seoTrendModeLabels[trendMode]}`}>
                 {leadTrendPoints.map((point) => (
                   <div key={`${point.period}-${point.leads}-${point.quality}`}>
-                    <span style={{ height: `${Math.max(10, (point.leads / leadTrendMax) * 100)}%` }} />
+                    <span style={{ height: point.leads > 0 ? `${Math.max(10, (point.leads / leadTrendMax) * 100)}%` : '0%' }} />
                     <em>{point.label}</em>
                     <small>{point.leads}/{point.quality}</small>
                   </div>
@@ -9596,7 +10043,7 @@ function ProjectSeoAnalyticsTiles({
                 {visibleTrendPoints.map((point) => (
                   <div key={`${point.date ?? point.month}-${point.visits}-${point.goals}`}>
                     <strong>{point.goals}</strong>
-                    <span style={{ height: `${Math.max(10, (point.goals / goalTrendMax) * 100)}%` }} />
+                    <span style={{ height: point.goals > 0 ? `${Math.max(10, (point.goals / goalTrendMax) * 100)}%` : '0%' }} />
                     <em>{point.month}</em>
                     <small>{point.visits} пер.</small>
                   </div>
@@ -9652,6 +10099,745 @@ function ProjectSeoAnalyticsTiles({
         )}
       </article>
     </section>
+  );
+}
+
+function AquaguardSeoAnalyticsScreen({
+  project,
+  linkRows,
+  promotionSources,
+  leadAnalytics,
+  leadLoadStatus,
+  leadError,
+  leadUpdatedAt,
+  onReloadLeads,
+  tasks = [],
+  peopleById,
+  onOpenTasks,
+  allProjects = [],
+  selectedProjectId,
+  onProjectChange,
+}: {
+  project: Project;
+  linkRows: LinkPurchase[];
+  promotionSources: PromotionResultSource[];
+  leadAnalytics?: LeadAnalyticsSummary;
+  leadLoadStatus: LinkLoadStatus;
+  leadError: string;
+  leadUpdatedAt: string;
+  onReloadLeads: () => void;
+  tasks?: Task[];
+  peopleById?: Map<string, Person>;
+  onOpenTasks?: () => void;
+  allProjects?: Project[];
+  selectedProjectId?: string;
+  onProjectChange?: (projectId: string) => void;
+}) {
+  const source = promotionSources[0];
+  const goalAnalytics = source?.goalAnalytics;
+  const sourceEndDate = getLatestAnalyticsDate(goalAnalytics, leadAnalytics);
+  const defaultRange = resolveSeoDateRange('30d', { start: '', end: '' }, sourceEndDate);
+  const [periodPreset, setPeriodPreset] = useStoredState<SeoPeriodPreset>('task-seo-aquaguard-period-preset', '30d');
+  const [trendMode, setTrendMode] = useStoredState<SeoTrendMode>('task-seo-aquaguard-trend-mode', 'daily');
+  const [compareMode, setCompareMode] = useStoredState<SeoCompareMode>('task-seo-aquaguard-compare-mode', 'previous');
+  const [trafficSystem, setTrafficSystem] = useStoredState<SeoTrafficSystem>('task-seo-aquaguard-traffic-system', 'all');
+  const [leadMetricMode, setLeadMetricMode] = useStoredState<SeoLeadMetricMode>('task-seo-aquaguard-lead-mode', 'target');
+  const [showMarkers, setShowMarkers] = useStoredState<boolean>('task-seo-aquaguard-show-markers', true);
+  const [impactTab, setImpactTab] = useStoredState<SeoImpactTab>('task-seo-aquaguard-impact-tab', 'queries');
+  const [impactDirection, setImpactDirection] = useStoredState<SeoImpactDirection>('task-seo-aquaguard-impact-direction', 'growth');
+  const [customRange, setCustomRange] = useStoredState<AnalyticsDateRange>('task-seo-aquaguard-custom-range', defaultRange);
+  const [customCompareRange, setCustomCompareRange] = useStoredState<AnalyticsDateRange>(
+    'task-seo-aquaguard-custom-compare-range',
+    { start: addDaysToIso(defaultRange.start, -30), end: addDaysToIso(defaultRange.start, -1) },
+  );
+  const [impactSearch, setImpactSearch] = useState('');
+
+  const currentRange = resolveSeoDateRange(periodPreset, customRange, sourceEndDate);
+  const compareRange = resolveSeoCompareRange(compareMode, currentRange, customCompareRange);
+  const currentGoalDaily = filterGoalDailyPoints(goalAnalytics, currentRange);
+  const previousGoalDaily = compareRange ? filterGoalDailyPoints(goalAnalytics, compareRange) : [];
+  const currentLeadDaily = filterLeadDailyPoints(leadAnalytics, currentRange);
+  const previousLeadDaily = compareRange ? filterLeadDailyPoints(leadAnalytics, compareRange) : [];
+  const trafficBreakdownMissing = trafficSystem !== 'all';
+  const trafficSeries = trafficBreakdownMissing ? [] : buildGoalSeries(currentGoalDaily, trendMode, 'visits');
+  const previousTrafficSeries =
+    compareRange && !trafficBreakdownMissing ? buildGoalSeries(previousGoalDaily, trendMode, 'visits') : [];
+  const goalSeries = trafficBreakdownMissing ? [] : buildGoalSeries(currentGoalDaily, trendMode, 'goals');
+  const previousGoalSeries = compareRange && !trafficBreakdownMissing ? buildGoalSeries(previousGoalDaily, trendMode, 'goals') : [];
+  const leadSeries = buildLeadSeries(currentLeadDaily, trendMode, leadMetricMode);
+  const previousLeadSeries = compareRange ? buildLeadSeries(previousLeadDaily, trendMode, leadMetricMode) : [];
+  const targetLeadSeries = buildLeadSeries(currentLeadDaily, trendMode, 'target');
+  const previousTargetLeadSeries = compareRange ? buildLeadSeries(previousLeadDaily, trendMode, 'target') : [];
+  const conversionSeries = buildConversionSeries(trafficSeries, goalSeries);
+  const previousConversionSeries = buildConversionSeries(previousTrafficSeries, previousGoalSeries);
+  const organicVisits = trafficBreakdownMissing ? null : currentGoalDaily.length ? sumSeries(trafficSeries) : null;
+  const previousOrganicVisits =
+    compareRange && !trafficBreakdownMissing && previousGoalDaily.length ? sumSeries(previousTrafficSeries) : null;
+  const conversionVisits = trafficBreakdownMissing ? null : currentGoalDaily.length ? sumSeries(goalSeries) : null;
+  const previousConversionVisits =
+    compareRange && !trafficBreakdownMissing && previousGoalDaily.length ? sumSeries(previousGoalSeries) : null;
+  const targetSeoLeads = currentLeadDaily.length ? sumSeries(targetLeadSeries) : leadAnalytics ? null : null;
+  const previousTargetSeoLeads = compareRange && previousLeadDaily.length ? sumSeries(previousTargetLeadSeries) : null;
+  const conversionRate = getSeriesRate(conversionVisits, organicVisits);
+  const previousConversionRate = getSeriesRate(previousConversionVisits, previousOrganicVisits);
+  const leadIssue = getLeadDataIssue(leadAnalytics, currentLeadDaily);
+  const linkSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
+  const markers = getAnalyticsMarkers(tasks, currentRange);
+  const activeTasks = tasks
+    .filter((task) => task.status !== 'done')
+    .sort((left, right) => left.deadline.localeCompare(right.deadline) || right.createdAt.localeCompare(left.createdAt))
+    .slice(0, 5);
+  const peopleMap = peopleById ?? new Map<string, Person>();
+  const allDailySum = (goalAnalytics?.daily ?? []).reduce((sum, point) => sum + point.visits, 0);
+  const hasMetrikaMismatch = Boolean(goalAnalytics?.daily?.length && goalAnalytics.visits !== allDailySum);
+  const impactRows = useMemo<SeoImpactRow[]>(() => {
+    if (impactTab === 'pages') return [];
+    return (goalAnalytics?.topQueries ?? []).map((item, index) => ({
+      id: `query-${index}`,
+      label: item.query,
+      visits: item.visits,
+      previousVisits: null,
+      change: null,
+      conversionVisits: item.goals,
+      cr: item.visits > 0 ? (item.goals / item.visits) * 100 : null,
+      note: 'В текущем снимке есть топ запросов без периодного сравнения.',
+    }));
+  }, [goalAnalytics, impactTab]);
+  const visibleImpactRows = impactRows
+    .filter((row) => row.label.toLowerCase().includes(impactSearch.trim().toLowerCase()))
+    .filter((row) => (impactDirection === 'drop' ? (row.change ?? 0) < 0 : (row.change ?? 0) >= 0 || row.change === null))
+    .sort((left, right) => {
+      if (left.change !== null || right.change !== null) return Math.abs(right.change ?? 0) - Math.abs(left.change ?? 0);
+      return (right.visits ?? 0) - (left.visits ?? 0);
+    });
+
+  const kpiCards: SeoKpiCardModel[] = [
+    {
+      title: 'Органические визиты',
+      value: organicVisits === null ? '—' : formatInteger(organicVisits),
+      meta: `за ${formatInputRange(currentRange)}`,
+      deltaLabel: getDeltaLabel(organicVisits, previousOrganicVisits).label,
+      tone: trafficBreakdownMissing ? 'warning' : getDeltaLabel(organicVisits, previousOrganicVisits).tone,
+      statusLabel: trafficBreakdownMissing ? 'разбивка по системам не выгружена' : 'по временному ряду Метрики',
+      icon: 'leaf',
+    },
+    {
+      title: 'Конверсионные визиты',
+      value: conversionVisits === null ? '—' : formatInteger(conversionVisits),
+      meta: 'достижения целей Метрики',
+      deltaLabel: getDeltaLabel(conversionVisits, previousConversionVisits).label,
+      tone: getDeltaLabel(conversionVisits, previousConversionVisits).tone,
+      statusLabel: conversionVisits === 0 ? 'подтвержденный 0 в выбранном периоде' : 'по целям Метрики',
+      icon: 'users',
+    },
+    {
+      title: 'Целевые SEO-лиды',
+      value: targetSeoLeads === null ? '—' : formatInteger(targetSeoLeads),
+      meta: leadUpdatedAt || leadAnalytics?.periodLabel || 'Google Sheets',
+      deltaLabel: getDeltaLabel(targetSeoLeads, previousTargetSeoLeads).label,
+      tone: leadIssue ? 'warning' : getDeltaLabel(targetSeoLeads, previousTargetSeoLeads).tone,
+      statusLabel: leadIssue || 'по распознанным датам заявок',
+      icon: 'target',
+    },
+    {
+      title: 'Конверсия в обращение',
+      value: formatConversionRate(conversionRate),
+      meta: 'конв. визиты / органика',
+      deltaLabel: getDeltaLabel(conversionRate, previousConversionRate, { percentPoint: true }).label,
+      tone: conversionVisits === 0 ? 'warning' : getDeltaLabel(conversionRate, previousConversionRate, { percentPoint: true }).tone,
+      statusLabel: conversionVisits === 0 ? 'учет обращений в целях не настроен' : 'отношение сумм за период',
+      icon: 'funnel',
+    },
+  ];
+
+  const sourceWarnings = [
+    hasMetrikaMismatch
+      ? `Снимок Метрики требует перевыгрузки: итог ${formatInteger(goalAnalytics?.visits ?? 0)}, сумма ряда ${formatInteger(allDailySum)}.`
+      : '',
+    trafficBreakdownMissing
+      ? `${seoTrafficSystemLabels[trafficSystem]} пока не выделены отдельной выгрузкой, показан пустой режим.`
+      : '',
+    leadIssue && leadAnalytics ? leadIssue : '',
+    leadError && leadLoadStatus === 'error'
+      ? 'Заявки не обновились: Google Sheets недоступен или закрыт для текущей сессии.'
+      : '',
+  ].filter(Boolean);
+
+  return (
+    <section className="aquaguard-analytics" aria-label="Аналитика SEO-проекта Аквагард">
+      <header className="aquaguard-analytics-head glass-inner">
+        <div>
+          <p>
+            task-SEO <span>/</span> SEO-проекты <span>/</span> <strong>{project.name}</strong> <span>/</span> Аналитика
+          </p>
+          <h2>Аквагард: динамика SEO-результата</h2>
+        </div>
+        {allProjects.length > 0 && onProjectChange && (
+          <label className="aquaguard-project-select">
+            <span>Проект</span>
+            <select value={selectedProjectId ?? project.id} onChange={(event) => onProjectChange(event.target.value)}>
+              {allProjects.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <div className="aquaguard-freshness">
+          <span>Данные до {formatDate(sourceEndDate)}</span>
+          <button type="button" onClick={onReloadLeads} disabled={leadLoadStatus === 'loading'}>
+            <RefreshCw className={leadLoadStatus === 'loading' ? 'spin' : undefined} size={16} />
+            Обновить
+          </button>
+        </div>
+      </header>
+
+      <div className="aquaguard-filter-panel glass-inner">
+        <div className="segmented aquaguard-periods" role="group" aria-label="Период аналитики">
+          {(Object.keys(seoPeriodPresetLabels) as SeoPeriodPreset[]).map((preset) => (
+            <button
+              className={periodPreset === preset ? 'is-active' : ''}
+              key={preset}
+              type="button"
+              onClick={() => setPeriodPreset(preset)}
+            >
+              {seoPeriodPresetLabels[preset]}
+            </button>
+          ))}
+        </div>
+        <div className="aquaguard-date-controls">
+          <label>
+            <span>Период</span>
+            <input
+              type="date"
+              value={currentRange.start}
+              onChange={(event) => {
+                setPeriodPreset('custom');
+                setCustomRange((current) => ({ ...current, start: event.target.value }));
+              }}
+            />
+          </label>
+          <label>
+            <span>до</span>
+            <input
+              type="date"
+              value={currentRange.end}
+              onChange={(event) => {
+                setPeriodPreset('custom');
+                setCustomRange((current) => ({ ...current, end: event.target.value }));
+              }}
+            />
+          </label>
+        </div>
+        <label className="aquaguard-select">
+          <span>Сравнить</span>
+          <select value={compareMode} onChange={(event) => setCompareMode(event.target.value as SeoCompareMode)}>
+            {(Object.keys(seoCompareModeLabels) as SeoCompareMode[]).map((mode) => (
+              <option key={mode} value={mode}>
+                {seoCompareModeLabels[mode]}
+              </option>
+            ))}
+          </select>
+        </label>
+        {compareMode === 'custom' && (
+          <div className="aquaguard-date-controls compact">
+            <label>
+              <span>сравнение</span>
+              <input
+                type="date"
+                value={customCompareRange.start}
+                onChange={(event) => setCustomCompareRange((current) => ({ ...current, start: event.target.value }))}
+              />
+            </label>
+            <label>
+              <span>до</span>
+              <input
+                type="date"
+                value={customCompareRange.end}
+                onChange={(event) => setCustomCompareRange((current) => ({ ...current, end: event.target.value }))}
+              />
+            </label>
+          </div>
+        )}
+        <div className="segmented aquaguard-granularity" role="group" aria-label="Детализация графиков">
+          {(Object.keys(seoTrendModeLabels) as SeoTrendMode[]).map((mode) => (
+            <button
+              className={trendMode === mode ? 'is-active' : ''}
+              key={mode}
+              type="button"
+              onClick={() => setTrendMode(mode)}
+            >
+              {seoTrendModeShortLabels[mode]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="aquaguard-context-row">
+        <span>{source ? `${source.spreadsheetTitle} · ${source.periodLabel}` : 'источник Метрики не подключен'}</span>
+        {compareRange ? <span>Сравнение: {formatInputRange(compareRange)}</span> : <span>Сравнение выключено</span>}
+        <span>{leadUpdatedAt ? `Заявки обновлены: ${leadUpdatedAt}` : 'Заявки: последняя успешная дата не сохранена'}</span>
+      </div>
+
+      {sourceWarnings.length > 0 && (
+        <div className="aquaguard-warning-list">
+          {sourceWarnings.map((warning) => (
+            <span key={warning}>
+              <AlertTriangle size={14} />
+              {warning}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="aquaguard-kpi-grid">
+        {kpiCards.map((card) => (
+          <SeoAnalyticsKpiCard card={card} key={card.title} />
+        ))}
+      </div>
+
+      <article className="aquaguard-chart-panel aquaguard-chart-panel-main">
+        <div className="aquaguard-chart-toolbar">
+          <div>
+            <h3>Органический трафик</h3>
+            <p>Визиты из поиска · текущий период и сравнение на единой оси.</p>
+          </div>
+          <label className="aquaguard-checkbox">
+            <input
+              type="checkbox"
+              checked={showMarkers}
+              onChange={(event) => setShowMarkers(event.target.checked)}
+            />
+            <span>Показать внедрения</span>
+          </label>
+          <label className="aquaguard-select compact">
+            <span>Система</span>
+            <select value={trafficSystem} onChange={(event) => setTrafficSystem(event.target.value as SeoTrafficSystem)}>
+              {(Object.keys(seoTrafficSystemLabels) as SeoTrafficSystem[]).map((system) => (
+                <option key={system} value={system}>
+                  {seoTrafficSystemLabels[system]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <SeoAnalyticsLineChart
+          current={trafficSeries}
+          emptyLabel={
+            trafficBreakdownMissing
+              ? 'разбивка по выбранной поисковой системе пока не выгружена'
+              : 'источник Метрики не подключен'
+          }
+          markers={showMarkers ? markers : []}
+          previous={previousTrafficSeries}
+          previousLabel={compareRange ? formatInputRange(compareRange) : ''}
+          title="Органические визиты"
+          unitLabel="визитов"
+          valueFormatter={formatInteger}
+        />
+      </article>
+
+      <div className="aquaguard-chart-grid">
+        <article className="aquaguard-chart-panel">
+          <div className="aquaguard-chart-toolbar">
+            <div>
+              <h3>Обращения из SEO</h3>
+              <p>Дата создания заявки · только распознанные записи.</p>
+            </div>
+            <div className="segmented aquaguard-mini-switch" role="group" aria-label="Тип лидов">
+              <button
+                className={leadMetricMode === 'all' ? 'is-active' : ''}
+                type="button"
+                onClick={() => setLeadMetricMode('all')}
+              >
+                Все
+              </button>
+              <button
+                className={leadMetricMode === 'target' ? 'is-active' : ''}
+                type="button"
+                onClick={() => setLeadMetricMode('target')}
+              >
+                Целевые
+              </button>
+            </div>
+          </div>
+          <SeoAnalyticsGroupedBarChart
+            current={leadSeries}
+            currentLabel="Текущий период"
+            emptyLabel={leadIssue || 'данных пока нет'}
+            previous={previousLeadSeries}
+            previousLabel={compareRange ? 'Предыдущий период' : ''}
+            valueFormatter={formatInteger}
+          />
+        </article>
+
+        <article className="aquaguard-chart-panel">
+          <div className="aquaguard-chart-toolbar">
+            <div>
+              <h3>Конверсия в обращение</h3>
+              <p>
+                {conversionVisits ?? 0} конверсионных визитов из {organicVisits ?? 0} органических.
+              </p>
+            </div>
+            <span className="aquaguard-info-link">Какие цели учитываются</span>
+          </div>
+          <SeoAnalyticsLineChart
+            current={conversionSeries}
+            emptyLabel="Не настроен учет обращений в целях"
+            previous={previousConversionSeries}
+            previousLabel={compareRange ? formatInputRange(compareRange) : ''}
+            title="CR"
+            unitLabel="%"
+            valueFormatter={(value) => formatConversionRate(value)}
+          />
+        </article>
+      </div>
+
+      <section className="aquaguard-impact-panel">
+        <div className="aquaguard-chart-toolbar">
+          <div>
+            <h3>Что повлияло на изменение</h3>
+            <p>Детализация использует те же период, сравнение и фильтры, где источник это поддерживает.</p>
+          </div>
+          <div className="segmented aquaguard-impact-tabs" role="group" aria-label="Тип детализации">
+            {(Object.keys(seoImpactTabLabels) as SeoImpactTab[]).map((tab) => (
+              <button className={impactTab === tab ? 'is-active' : ''} key={tab} type="button" onClick={() => setImpactTab(tab)}>
+                {seoImpactTabLabels[tab]}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="aquaguard-impact-actions">
+          <div className="segmented aquaguard-mini-switch" role="group" aria-label="Рост или падение">
+            <button
+              className={impactDirection === 'growth' ? 'is-active' : ''}
+              type="button"
+              onClick={() => setImpactDirection('growth')}
+            >
+              Рост
+            </button>
+            <button
+              className={impactDirection === 'drop' ? 'is-active' : ''}
+              type="button"
+              onClick={() => setImpactDirection('drop')}
+            >
+              Падение
+            </button>
+          </div>
+          <input
+            aria-label="Поиск по детализации"
+            placeholder="Поиск..."
+            value={impactSearch}
+            onChange={(event) => setImpactSearch(event.target.value)}
+          />
+          <button type="button" onClick={() => downloadCsv('aquaguard-seo-impact.csv', visibleImpactRows)}>
+            <FileSpreadsheet size={16} />
+            CSV
+          </button>
+        </div>
+        <SeoImpactTable rows={visibleImpactRows} tab={impactTab} />
+      </section>
+
+      <section className="aquaguard-work-strip glass-inner">
+        <div className="tile-heading">
+          <LayoutList size={18} />
+          <h3>Выполненные работы и расходы</h3>
+        </div>
+        <div className="aquaguard-work-chips">
+          <span>
+            Внедрения <em>{markers.length}</em>
+          </span>
+          <span>
+            Размещено ссылок <em>{linkSummary.placed}</em>
+          </span>
+          <span>
+            Факт закупа <em>{formatMoney(linkSummary.factCost)}</em>
+          </span>
+          <span>
+            План закупа <em>{formatMoney(linkSummary.planCost)}</em>
+          </span>
+        </div>
+        <button type="button" onClick={onOpenTasks}>
+          Открыть задачи
+          <ChevronRight size={16} />
+        </button>
+      </section>
+
+      {activeTasks.length > 0 && (
+        <details className="aquaguard-open-tasks">
+          <summary>Актуальные задачи Аквагарда</summary>
+          <div>
+            {activeTasks.map((task) => (
+              <article key={task.id}>
+                <strong>{task.title}</strong>
+                <span>
+                  {task.ownerIds
+                    .map((ownerId) => peopleMap.get(ownerId)?.name)
+                    .filter(Boolean)
+                    .join(', ') || 'Без ответственного'}{' '}
+                  · {statusLabels[task.status]} · дедлайн {formatDate(task.deadline)}
+                </span>
+              </article>
+            ))}
+          </div>
+        </details>
+      )}
+    </section>
+  );
+}
+
+function SeoAnalyticsKpiCard({ card }: { card: SeoKpiCardModel }) {
+  const Icon =
+    card.icon === 'users' ? Users : card.icon === 'target' ? Target : card.icon === 'funnel' ? SlidersHorizontal : BarChart3;
+  return (
+    <article className={`aquaguard-kpi-card ${card.tone}`}>
+      <div>
+        <Icon size={20} />
+      </div>
+      <section>
+        <span>{card.title}</span>
+        <strong>{card.value}</strong>
+        <em>{card.deltaLabel}</em>
+        <p>{card.statusLabel}</p>
+      </section>
+      <small>{card.meta}</small>
+    </article>
+  );
+}
+
+function SeoAnalyticsLineChart({
+  current,
+  previous,
+  previousLabel,
+  title,
+  unitLabel,
+  valueFormatter,
+  markers = [],
+  emptyLabel,
+}: {
+  current: AnalyticsSeriesPoint[];
+  previous: AnalyticsSeriesPoint[];
+  previousLabel: string;
+  title: string;
+  unitLabel: string;
+  valueFormatter: (value: number) => string;
+  markers?: AnalyticsMarker[];
+  emptyLabel: string;
+}) {
+  if (current.length === 0) return <div className="aquaguard-chart-empty">{emptyLabel}</div>;
+
+  const width = 880;
+  const height = 320;
+  const padding = { top: 24, right: 24, bottom: 48, left: 48 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const chartLength = Math.max(current.length, previous.length, 2);
+  const maxValue = Math.max(...current.map((point) => point.value), ...previous.map((point) => point.value), 1);
+  const xFor = (index: number) => padding.left + (plotWidth * index) / Math.max(chartLength - 1, 1);
+  const yFor = (value: number) => padding.top + plotHeight - (plotHeight * value) / maxValue;
+  const pathFor = (points: AnalyticsSeriesPoint[]) => {
+    if (points.length === 0) return '';
+    const path = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${xFor(index)} ${yFor(point.value)}`).join(' ');
+    return points.length === 1 ? `${path} L ${xFor(0) + 0.1} ${yFor(points[0].value)}` : path;
+  };
+  const labelEvery = Math.max(1, Math.ceil(current.length / 6));
+  const labels = current.filter((_, index) => index === 0 || index === current.length - 1 || index % labelEvery === 0);
+  const markerItems = markers
+    .map((marker) => {
+      const index = current.findIndex((point) => marker.date >= point.startDate && marker.date <= point.endDate);
+      return index >= 0 ? { ...marker, x: xFor(index) } : null;
+    })
+    .filter((marker): marker is AnalyticsMarker & { x: number } => Boolean(marker));
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map((part) => ({
+    y: padding.top + plotHeight - plotHeight * part,
+    value: maxValue * part,
+  }));
+
+  return (
+    <div className="aquaguard-line-chart">
+      <svg role="img" viewBox={`0 0 ${width} ${height}`} aria-label={title}>
+        <title>{title}</title>
+        {ticks.map((tick) => (
+          <g key={tick.y}>
+            <line x1={padding.left} x2={width - padding.right} y1={tick.y} y2={tick.y} />
+            <text x={padding.left - 10} y={tick.y + 4}>
+              {valueFormatter(tick.value)}
+            </text>
+          </g>
+        ))}
+        {labels.map((point, index) => {
+          const pointIndex = current.indexOf(point);
+          return (
+            <text className="axis-label" key={`${point.key}-${index}`} x={xFor(pointIndex)} y={height - 18}>
+              {point.label}
+            </text>
+          );
+        })}
+        {previous.length > 0 && <path className="previous-line" d={pathFor(previous)} />}
+        <path className="current-line" d={pathFor(current)} />
+        {previous.map((point, index) => (
+          <circle className="previous-point" cx={xFor(index)} cy={yFor(point.value)} key={`prev-${point.key}`} r="3" />
+        ))}
+        {current.map((point, index) => (
+          <circle className="current-point" cx={xFor(index)} cy={yFor(point.value)} key={point.key} r="4">
+            <title>
+              {point.label}: {valueFormatter(point.value)} {unitLabel}
+            </title>
+          </circle>
+        ))}
+        {markerItems.map((marker) => (
+          <g className="chart-marker" key={`${marker.date}-${marker.title}`}>
+            <line x1={marker.x} x2={marker.x} y1={padding.top} y2={height - padding.bottom} />
+            <circle cx={marker.x} cy={padding.top + 4} r="5" />
+          </g>
+        ))}
+      </svg>
+      <div className="aquaguard-chart-legend">
+        <span className="current">Текущий период</span>
+        {previous.length > 0 && <span className="previous">{previousLabel}</span>}
+      </div>
+      {markerItems.length > 0 && (
+        <div className="aquaguard-marker-list">
+          {markerItems.slice(0, 4).map((marker) => (
+            <span key={`${marker.date}-${marker.title}`}>
+              {formatDate(marker.date)} · {marker.title}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SeoAnalyticsGroupedBarChart({
+  current,
+  previous,
+  currentLabel,
+  previousLabel,
+  valueFormatter,
+  emptyLabel,
+}: {
+  current: AnalyticsSeriesPoint[];
+  previous: AnalyticsSeriesPoint[];
+  currentLabel: string;
+  previousLabel: string;
+  valueFormatter: (value: number) => string;
+  emptyLabel: string;
+}) {
+  if (current.length === 0) return <div className="aquaguard-chart-empty">{emptyLabel}</div>;
+
+  const width = 620;
+  const height = 260;
+  const padding = { top: 18, right: 18, bottom: 42, left: 38 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const chartLength = Math.max(current.length, 1);
+  const maxValue = Math.max(...current.map((point) => point.value), ...previous.map((point) => point.value), 1);
+  const groupWidth = plotWidth / chartLength;
+  const barWidth = Math.min(24, Math.max(7, groupWidth * 0.28));
+  const yFor = (value: number) => padding.top + plotHeight - (plotHeight * value) / maxValue;
+  const previousByIndex = new Map(previous.map((point, index) => [index, point]));
+  const labelEvery = Math.max(1, Math.ceil(current.length / 5));
+
+  return (
+    <div className="aquaguard-bar-chart">
+      <svg role="img" viewBox={`0 0 ${width} ${height}`} aria-label={currentLabel}>
+        {[0, 0.5, 1].map((part) => {
+          const y = padding.top + plotHeight - plotHeight * part;
+          return (
+            <g key={part}>
+              <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} />
+              <text x={padding.left - 8} y={y + 4}>
+                {valueFormatter(Math.round(maxValue * part))}
+              </text>
+            </g>
+          );
+        })}
+        {current.map((point, index) => {
+          const x = padding.left + groupWidth * index + groupWidth / 2;
+          const previousPoint = previousByIndex.get(index);
+          const currentHeight = point.value > 0 ? plotHeight - (yFor(point.value) - padding.top) : 0;
+          const previousHeight =
+            previousPoint && previousPoint.value > 0 ? plotHeight - (yFor(previousPoint.value) - padding.top) : 0;
+          return (
+            <g key={point.key}>
+              {previousPoint && (
+                <rect
+                  className="previous-bar"
+                  height={previousHeight}
+                  rx="3"
+                  width={barWidth}
+                  x={x - barWidth - 2}
+                  y={padding.top + plotHeight - previousHeight}
+                />
+              )}
+              <rect
+                className="current-bar"
+                height={currentHeight}
+                rx="3"
+                width={barWidth}
+                x={x + 2}
+                y={padding.top + plotHeight - currentHeight}
+              >
+                <title>
+                  {point.label}: {valueFormatter(point.value)}
+                </title>
+              </rect>
+              {(index === 0 || index === current.length - 1 || index % labelEvery === 0) && (
+                <text className="axis-label" x={x} y={height - 16}>
+                  {point.label}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+      <div className="aquaguard-chart-legend">
+        <span className="current">{currentLabel}</span>
+        {previous.length > 0 && <span className="previous">{previousLabel}</span>}
+      </div>
+    </div>
+  );
+}
+
+function SeoImpactTable({ rows, tab }: { rows: SeoImpactRow[]; tab: SeoImpactTab }) {
+  if (rows.length === 0) {
+    return (
+      <div className="aquaguard-impact-empty">
+        {tab === 'pages'
+          ? 'Посадочные страницы в текущем снимке Метрики не выгружены.'
+          : 'По выбранному направлению нет строк с доступным сравнением.'}
+      </div>
+    );
+  }
+
+  return (
+    <div className="aquaguard-impact-table" role="table" aria-label={seoImpactTabLabels[tab]}>
+      <div className="aquaguard-impact-row head" role="row">
+        <span>{tab === 'pages' ? 'Страница' : 'Запрос'}</span>
+        <span>Визиты</span>
+        <span>Ранее</span>
+        <span>Изменение</span>
+        <span>Конв. визиты</span>
+        <span>CR</span>
+      </div>
+      {rows.map((row) => (
+        <div className="aquaguard-impact-row" key={row.id} role="row">
+          <div>
+            <strong>{row.label}</strong>
+            <em>{row.note}</em>
+          </div>
+          <span>{row.visits === null ? '—' : formatInteger(row.visits)}</span>
+          <span>{row.previousVisits === null ? '—' : formatInteger(row.previousVisits)}</span>
+          <span className={row.change && row.change < 0 ? 'negative' : 'positive'}>
+            {row.change === null ? 'нет сравнения' : formatInteger(row.change)}
+          </span>
+          <span>{row.conversionVisits === null ? '—' : formatInteger(row.conversionVisits)}</span>
+          <span>{formatConversionRate(row.cr)}</span>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -9816,6 +11002,7 @@ function SeoProjectReportsPanel({
           leadError={leadError}
           leadUpdatedAt={leadUpdatedAt}
           onReloadLeads={onReloadLeads}
+          tasks={tasks.filter((task) => task.projectId === project.id)}
         />
       ) : reportMode === 'logic' ? (
         <>

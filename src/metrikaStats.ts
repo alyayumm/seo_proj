@@ -7,6 +7,12 @@ export type MetrikaProjectStats = {
   counterName?: string;
   siteUrl?: string;
   periodLabel: string;
+  metricScope?: string;
+  filter?: string;
+  attribution?: string;
+  timezone?: string;
+  dataStatus?: 'ok' | 'partial' | 'missing' | 'error' | 'stale';
+  fullCoverageDate?: string;
   visits: number;
   users: number;
   goalCount: number;
@@ -92,6 +98,12 @@ function normalizeMetrikaProjectStats(value: unknown): MetrikaProjectStats | nul
     counterName: source.counterName ? String(source.counterName) : undefined,
     siteUrl: source.siteUrl ? String(source.siteUrl) : undefined,
     periodLabel: source.periodLabel ? String(source.periodLabel) : 'период Метрики',
+    metricScope: source.metricScope ? String(source.metricScope) : undefined,
+    filter: source.filter ? String(source.filter) : undefined,
+    attribution: source.attribution ? String(source.attribution) : undefined,
+    timezone: source.timezone ? String(source.timezone) : undefined,
+    dataStatus: source.dataStatus ?? 'ok',
+    fullCoverageDate: source.fullCoverageDate ? String(source.fullCoverageDate) : undefined,
     visits: normalizeNumber(source.visits),
     users: normalizeNumber(source.users),
     goalCount: normalizeNumber(source.goalCount),
@@ -150,6 +162,7 @@ function buildMetrikaSource(stats: MetrikaProjectStats, baseSource?: PromotionRe
     baseSource?.url ||
     (stats.counterId ? `https://metrika.yandex.ru/stat/dashboard?id=${stats.counterId}` : stats.siteUrl || '#');
   const updatedLabel = stats.counterId ? `Метрика API · счетчик ${stats.counterId}` : 'Метрика API';
+  const scopeLabel = stats.metricScope === 'organic_search' ? 'органический поиск' : 'источник не уточнен';
 
   return {
     id: baseSource?.id ?? `metrika-${normalizeProjectName(stats.projectName).replace(/\s+/g, '-')}`,
@@ -164,7 +177,7 @@ function buildMetrikaSource(stats: MetrikaProjectStats, baseSource?: PromotionRe
     sampleQueries: stats.sampleQueries.length ? stats.sampleQueries : (baseSource?.sampleQueries ?? []),
     goalExamples: baseSource?.goalExamples?.length ? baseSource.goalExamples : ['Все достижения целей из Метрики'],
     goalAnalytics: buildGoalAnalytics(stats),
-    note: `${updatedLabel}${stats.counterName ? ` · ${stats.counterName}` : ''}`,
+    note: `${updatedLabel}${stats.counterName ? ` · ${stats.counterName}` : ''} · ${scopeLabel}`,
   };
 }
 

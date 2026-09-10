@@ -49,6 +49,7 @@ const TASK_STATUS_LABELS = new Map([
 
 const SENSITIVE_FIELD_PATTERN =
   /(PHONE|EMAIL|IM|WEB|ADDRESS|RQ_|REQUISITE|BANK|PASSPORT|SNILS|INN|KPP|OGRN|BIRTH|телефон|почт|email|e-mail|адрес|паспорт|реквиз|банк|инн|огрн|кпп|снилс|дата рождения)/i;
+const BITRIX_REST_URL_PATTERN = /https?:\/\/[^\s"'<>]+\.bitrix24\.(?:ru|com|by|kz)\/rest\/[^\s"'<>]*/gi;
 
 function parseLimit(name, fallback) {
   const value = Number.parseInt(process.env[name] ?? '', 10);
@@ -84,6 +85,7 @@ function redactText(value) {
   return String(value ?? '')
     .replace(/<[^>]*>/g, ' ')
     .replace(/\[[^\]]+\]/g, ' ')
+    .replace(BITRIX_REST_URL_PATTERN, '[bitrix24 webhook скрыт]')
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email скрыт]')
     .replace(/(?:\+?\d[\d\s().-]{7,}\d)/g, '[телефон скрыт]')
     .replace(/[A-Za-z0-9_-]{28,}/g, '[скрыто]')
