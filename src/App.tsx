@@ -50,6 +50,16 @@ import {
   type LinkPurchaseSummary,
 } from './linkPurchases';
 import {
+  combineLeadAnalyticsSummaries,
+  fetchLeadAnalyticsSummaries,
+  LEAD_ANALYTICS_SOURCES,
+  STATIC_LEAD_ANALYTICS_SUMMARIES,
+  type LeadBreakdownItem,
+  type LeadAnalyticsSourceError,
+  type LeadAnalyticsSummary,
+  type LeadTrendPoint,
+} from './leadAnalytics';
+import {
   fetchPaymentCashflowRows,
   PAYMENT_CASHFLOW_SPREADSHEET_URL,
   summarizePaymentCashflowRows,
@@ -415,6 +425,21 @@ const requiredManagedResourceSeeds: ManagedResource[] = [
     dateLabel: '07.09',
     note: 'FAQ к правкам сайта Ректоп.',
   },
+  ...LEAD_ANALYTICS_SOURCES.flatMap((source) => {
+    const projectId = findInitialProjectId(source.projectName);
+    if (!projectId) return [];
+    return [
+      {
+        id: `resource-results-${source.id}`,
+        projectId,
+        tab: 'results' as const,
+        title: source.title,
+        url: source.url,
+        dateLabel: source.periodLabel,
+        note: source.note,
+      },
+    ];
+  }),
 ];
 
 function findInitialProjectId(projectName: string) {
@@ -476,7 +501,7 @@ function buildInitialManagedResources(): ManagedResource[] {
 
 const initialManagedResources = [...buildInitialManagedResources(), ...requiredManagedResourceSeeds];
 const requiredManagedResourceSeedsById = new Map(requiredManagedResourceSeeds.map((resource) => [resource.id, resource]));
-const managedResourceSeedVersion = 'managed-resources-2026-09-07-v1';
+const managedResourceSeedVersion = 'managed-resources-2026-09-10-leads-v1';
 
 const legacyPersonIdMap: Record<string, string> = {
   'person-vlad': 'person-aleksey',
@@ -2319,6 +2344,19 @@ function getVisibleGoalTrendPoints(points: PromotionGoalTrendPoint[], mode: SeoT
   return points;
 }
 
+function getLeadTrendPoints(leadAnalytics: LeadAnalyticsSummary | undefined, mode: SeoTrendMode) {
+  if (!leadAnalytics) return [];
+  if (mode === 'daily') return leadAnalytics.daily;
+  if (mode === 'weekly') return leadAnalytics.weekly;
+  return leadAnalytics.monthly;
+}
+
+function getVisibleLeadTrendPoints(points: LeadTrendPoint[], mode: SeoTrendMode) {
+  if (mode === 'daily') return points.slice(-30);
+  if (mode === 'weekly') return points.slice(-12);
+  return points;
+}
+
 function isWeeklyReportTask(task: Task) {
   const title = task.title.trim().toLowerCase();
   return task.id.startsWith('weekly-') || title.startsWith('отчет на');
@@ -2648,6 +2686,11 @@ function App() {
   const [contentError, setContentError] = useState('');
   const [contentUpdatedAt, setContentUpdatedAt] = useState('');
   const [contentSourceErrors, setContentSourceErrors] = useState<ContentPlanSourceError[]>([]);
+  const [dynamicLeadAnalytics, setDynamicLeadAnalytics] = useState<LeadAnalyticsSummary[]>([]);
+  const [leadAnalyticsLoadStatus, setLeadAnalyticsLoadStatus] = useState<LinkLoadStatus>('idle');
+  const [leadAnalyticsError, setLeadAnalyticsError] = useState('');
+  const [leadAnalyticsUpdatedAt, setLeadAnalyticsUpdatedAt] = useState('');
+  const [leadAnalyticsSourceErrors, setLeadAnalyticsSourceErrors] = useState<LeadAnalyticsSourceError[]>([]);
   const [paymentCashflowRows, setPaymentCashflowRows] = useState<PaymentCashflowRow[]>([]);
   const [paymentCashflowLoadStatus, setPaymentCashflowLoadStatus] = useState<LinkLoadStatus>('idle');
   const [paymentCashflowError, setPaymentCashflowError] = useState('');
@@ -2852,6 +2895,23 @@ function App() {
     }
   }, []);
 
+  const loadLeadAnalytics = useCallback(async () => {
+    setLeadAnalyticsLoadStatus('loading');
+    setLeadAnalyticsError('');
+    setLeadAnalyticsSourceErrors([]);
+
+    try {
+      const result = await fetchLeadAnalyticsSummaries();
+      setDynamicLeadAnalytics(result.summaries);
+      setLeadAnalyticsSourceErrors(result.errors);
+      setLeadAnalyticsUpdatedAt(new Date().toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }));
+      setLeadAnalyticsLoadStatus('ready');
+    } catch (error) {
+      setLeadAnalyticsError(error instanceof Error ? error.message : 'Не удалось загрузить заявки');
+      setLeadAnalyticsLoadStatus('error');
+    }
+  }, []);
+
   const loadPaymentCashflowRows = useCallback(async () => {
     setPaymentCashflowLoadStatus('loading');
     setPaymentCashflowError('');
@@ -2874,6 +2934,10 @@ function App() {
   useEffect(() => {
     void loadContentTopics();
   }, [loadContentTopics]);
+
+  useEffect(() => {
+    void loadLeadAnalytics();
+  }, [loadLeadAnalytics]);
 
   useEffect(() => {
     void loadPaymentCashflowRows();
@@ -3024,6 +3088,29 @@ function App() {
     });
     return map;
   }, [promotionSources]);
+
+  const leadAnalyticsSummaries = useMemo(
+    () => combineLeadAnalyticsSummaries([...STATIC_LEAD_ANALYTICS_SUMMARIES, ...dynamicLeadAnalytics]),
+    [dynamicLeadAnalytics],
+  );
+
+  const leadAnalyticsByProject = useMemo(() => {
+    const map = new Map<string, LeadAnalyticsSummary>();
+    leadAnalyticsSummaries.forEach((summary) => {
+      map.set(normalizeProjectName(summary.projectName), summary);
+    });
+    return map;
+  }, [leadAnalyticsSummaries]);
+
+  const leadErrorsByProject = useMemo(() => {
+    const map = new Map<string, string>();
+    leadAnalyticsSourceErrors.forEach((error) => {
+      const key = normalizeProjectName(error.projectName);
+      const current = map.get(key);
+      map.set(key, current ? `${current}; ${error.title}: ${error.message}` : `${error.title}: ${error.message}`);
+    });
+    return map;
+  }, [leadAnalyticsSourceErrors]);
 
   const clientLinksByProject = useMemo(() => {
     const map = new Map<string, ClientQuickLinks>();
@@ -3395,6 +3482,7 @@ function App() {
                       workPlans={workPlansByProject.get(normalizeProjectName(project.name)) ?? []}
                       auditSources={auditSourcesByProject.get(normalizeProjectName(project.name)) ?? []}
                       promotionResults={promotionResultsByProject.get(normalizeProjectName(project.name)) ?? []}
+                      leadAnalytics={leadAnalyticsByProject.get(normalizeProjectName(project.name))}
                       clientLinks={clientLinksByProject.get(normalizeProjectName(project.name))}
                       linkLoadStatus={linkLoadStatus}
                       linkError={linkError}
@@ -3402,6 +3490,9 @@ function App() {
                       contentLoadStatus={contentLoadStatus}
                       contentError={contentErrorsByProject.get(normalizeProjectName(project.name)) ?? contentError}
                       contentUpdatedAt={contentUpdatedAt}
+                      leadLoadStatus={leadAnalyticsLoadStatus}
+                      leadError={leadErrorsByProject.get(normalizeProjectName(project.name)) ?? leadAnalyticsError}
+                      leadUpdatedAt={leadAnalyticsUpdatedAt}
                       activeTab={projectTabs[project.id] ?? 'tasks'}
                       collapsed={collapsedProjectIds.has(project.id)}
                       people={people}
@@ -3410,6 +3501,7 @@ function App() {
                       onTabChange={(tab) => setProjectTabs((current) => ({ ...current, [project.id]: tab }))}
                       onReloadLinks={loadLinkRows}
                       onReloadContent={loadContentTopics}
+                      onReloadLeads={loadLeadAnalytics}
                       onToggleCollapsed={() => toggleProjectCollapsed(project.id)}
                       onToggleExpanded={toggleExpanded}
                       onToggleTimeline={toggleTimeline}
@@ -3502,6 +3594,8 @@ function App() {
             paymentCashflowRows={paymentCashflowRows}
             paymentDraft={paymentDraft}
             promotionSources={promotionSources}
+            leadAnalyticsByProject={leadAnalyticsByProject}
+            leadErrorsByProject={leadErrorsByProject}
             selectedProjectId={seoProjectId}
             expanded={expanded}
             reportSnapshots={reportSnapshots}
@@ -3514,11 +3608,15 @@ function App() {
             contentLoadStatus={contentLoadStatus}
             contentError={contentError}
             contentUpdatedAt={contentUpdatedAt}
+            leadLoadStatus={leadAnalyticsLoadStatus}
+            leadError={leadAnalyticsError}
+            leadUpdatedAt={leadAnalyticsUpdatedAt}
             paymentCashflowLoadStatus={paymentCashflowLoadStatus}
             paymentCashflowError={paymentCashflowError}
             paymentCashflowUpdatedAt={paymentCashflowUpdatedAt}
             onReloadLinks={loadLinkRows}
             onReloadContent={loadContentTopics}
+            onReloadLeads={loadLeadAnalytics}
             onReloadPaymentCashflow={loadPaymentCashflowRows}
             onPaymentDraftChange={setPaymentDraft}
             onPaymentAdd={addPaymentRow}
@@ -3559,8 +3657,14 @@ function App() {
             bitrix24Snapshot={bitrix24Snapshot}
             linkRows={linkRows}
             promotionSources={promotionSources}
+            leadAnalyticsByProject={leadAnalyticsByProject}
+            leadErrorsByProject={leadErrorsByProject}
+            leadLoadStatus={leadAnalyticsLoadStatus}
+            leadError={leadAnalyticsError}
+            leadUpdatedAt={leadAnalyticsUpdatedAt}
             externalSource={EXTERNAL_PROJECTS_SOURCE}
             externalAdditions={externalProjectAdditions}
+            onReloadLeads={loadLeadAnalytics}
             onReportSnapshotsChange={setReportSnapshots}
           />
         )}
@@ -4183,6 +4287,7 @@ type ProjectGroupProps = {
   workPlans: WorkPlanSource[];
   auditSources: ClientAuditSource[];
   promotionResults: PromotionResultSource[];
+  leadAnalytics?: LeadAnalyticsSummary;
   clientLinks?: ClientQuickLinks;
   linkLoadStatus: LinkLoadStatus;
   linkError: string;
@@ -4190,6 +4295,9 @@ type ProjectGroupProps = {
   contentLoadStatus: LinkLoadStatus;
   contentError: string;
   contentUpdatedAt: string;
+  leadLoadStatus: LinkLoadStatus;
+  leadError: string;
+  leadUpdatedAt: string;
   activeTab: ProjectTab;
   collapsed: boolean;
   people: Person[];
@@ -4198,6 +4306,7 @@ type ProjectGroupProps = {
   onTabChange: (tab: ProjectTab) => void;
   onReloadLinks: () => void;
   onReloadContent: () => void;
+  onReloadLeads: () => void;
   onToggleCollapsed: () => void;
   onToggleExpanded: (taskId: string) => void;
   onToggleTimeline: (taskId: string, checked: boolean) => void;
@@ -4218,6 +4327,7 @@ function ProjectGroup({
   workPlans,
   auditSources,
   promotionResults,
+  leadAnalytics,
   clientLinks,
   linkLoadStatus,
   linkError,
@@ -4225,6 +4335,9 @@ function ProjectGroup({
   contentLoadStatus,
   contentError,
   contentUpdatedAt,
+  leadLoadStatus,
+  leadError,
+  leadUpdatedAt,
   activeTab,
   collapsed,
   people,
@@ -4233,6 +4346,7 @@ function ProjectGroup({
   onTabChange,
   onReloadLinks,
   onReloadContent,
+  onReloadLeads,
   onToggleCollapsed,
   onToggleExpanded,
   onToggleTimeline,
@@ -4249,7 +4363,7 @@ function ProjectGroup({
     `${linkRows.length} ссылок`,
     `${workPlans.length} планов`,
     `${contentTopics.length} тем`,
-    `${promotionResults.length} результатов`,
+    `${promotionResults.length + (leadAnalytics?.sourceCount ?? 0)} результатов`,
     `${auditSources.length + 1} аудитов`,
   ].join(' · ');
 
@@ -4308,7 +4422,7 @@ function ProjectGroup({
               type="button"
               onClick={() => onTabChange('results')}
             >
-              Результаты <em>{promotionResults.length}</em>
+              Результаты <em>{promotionResults.length + (leadAnalytics?.sourceCount ?? 0)}</em>
             </button>
             <button
               className={activeTab === 'audit' ? 'is-active' : ''}
@@ -4381,7 +4495,17 @@ function ProjectGroup({
             />
           )}
 
-          {activeTab === 'results' && <PromotionResultsPanel project={project} sources={promotionResults} />}
+          {activeTab === 'results' && (
+            <PromotionResultsPanel
+              project={project}
+              sources={promotionResults}
+              leadAnalytics={leadAnalytics}
+              leadLoadStatus={leadLoadStatus}
+              leadError={leadError}
+              leadUpdatedAt={leadUpdatedAt}
+              onReloadLeads={onReloadLeads}
+            />
+          )}
 
           {activeTab === 'audit' && <AuditPanel project={project} sources={auditSources} />}
         </div>
@@ -4740,8 +4864,27 @@ function groupContentTopicsByMonth(topics: ContentPlanTopic[]) {
   return Array.from(map.entries()).map(([month, items]) => ({ month, items }));
 }
 
-function PromotionResultsPanel({ project, sources }: { project: Project; sources: PromotionResultSource[] }) {
+function PromotionResultsPanel({
+  project,
+  sources,
+  leadAnalytics,
+  leadLoadStatus,
+  leadError,
+  leadUpdatedAt,
+  onReloadLeads,
+}: {
+  project: Project;
+  sources: PromotionResultSource[];
+  leadAnalytics?: LeadAnalyticsSummary;
+  leadLoadStatus: LinkLoadStatus;
+  leadError: string;
+  leadUpdatedAt: string;
+  onReloadLeads: () => void;
+}) {
   const source = sources[0];
+  const leadQualityRate = leadAnalytics?.total ? Math.round((leadAnalytics.quality / leadAnalytics.total) * 100) : 0;
+  const leadWorkable = (leadAnalytics?.quality ?? 0) + (leadAnalytics?.inWork ?? 0);
+  const leadWorkableRate = leadAnalytics?.total ? Math.round((leadWorkable / leadAnalytics.total) * 100) : 0;
 
   return (
     <div className="promotion-panel">
@@ -4761,10 +4904,37 @@ function PromotionResultsPanel({ project, sources }: { project: Project; sources
       </div>
 
       <div className="promotion-result-grid">
-        <article className="promotion-result-card is-muted">
+        <article className={leadAnalytics ? 'promotion-result-card' : 'promotion-result-card is-muted'}>
           <span>Заявки</span>
-          <strong>Данных пока нет</strong>
-          <p>Блок уже заложен в отчет. Когда появится источник по заявкам, сюда можно будет добавить цифры и динамику.</p>
+          {leadAnalytics ? (
+            <>
+              <strong>{leadAnalytics.total} лидов</strong>
+              <p>
+                Качественные: {leadAnalytics.quality} ({leadQualityRate}%). Качественные + в работе:{' '}
+                {leadWorkable} ({leadWorkableRate}%).
+              </p>
+              <div className="lead-summary-mini">
+                <em>{leadAnalytics.inWork} в работе</em>
+                <em>{leadAnalytics.rejected} отказ / нецелевые</em>
+                {leadAnalytics.unknown > 0 && <em>{leadAnalytics.unknown} без оценки</em>}
+              </div>
+            </>
+          ) : (
+            <>
+              <strong>{leadLoadStatus === 'loading' ? 'Загрузка' : 'Данных пока нет'}</strong>
+              <p>
+                {leadError
+                  ? `Источник заявок не загрузился: ${leadError}`
+                  : 'Когда появится источник по заявкам, сюда попадут количество и оценка качества лидов.'}
+              </p>
+              <div className="link-actions">
+                <button type="button" onClick={onReloadLeads}>
+                  <RefreshCw size={15} />
+                  Проверить заявки
+                </button>
+              </div>
+            </>
+          )}
         </article>
 
         <article className="promotion-result-card">
@@ -4812,7 +4982,36 @@ function PromotionResultsPanel({ project, sources }: { project: Project; sources
         </article>
       </div>
 
-      {source ? (
+      {leadAnalytics && (
+        <article className="promotion-source-card lead-source-card">
+          <div>
+            <span>{leadAnalytics.clientName}</span>
+            <strong>Источники заявок: {leadAnalytics.sourceCount}</strong>
+            <p>
+              {leadAnalytics.note} {leadUpdatedAt && `Обновлено: ${leadUpdatedAt}.`}
+            </p>
+          </div>
+          <div className="lead-source-grid">
+            {leadAnalytics.sources.map((leadSource) => (
+              <div key={leadSource.id}>
+                <strong>{leadSource.title}</strong>
+                <span>{leadSource.periodLabel}</span>
+                <em>
+                  {leadSource.total} лидов · {leadSource.quality} кач. · {leadSource.inWork} в работе
+                </em>
+                {leadSource.url && (
+                  <a href={leadSource.url} target="_blank" rel="noreferrer">
+                    Открыть таблицу
+                  </a>
+                )}
+                {leadSource.fileName && <small>{leadSource.fileName}</small>}
+              </div>
+            ))}
+          </div>
+        </article>
+      )}
+
+      {source && (
         <article className="promotion-source-card">
           <div>
             <span>{source.clientName}</span>
@@ -4824,9 +5023,29 @@ function PromotionResultsPanel({ project, sources }: { project: Project; sources
             ))}
           </div>
         </article>
-      ) : (
+      )}
+
+      {!source && !leadAnalytics && (
         <div className="empty-row">Для проекта {project.name} пока нет отдельного источника по результатам продвижения.</div>
       )}
+    </div>
+  );
+}
+
+function LeadBreakdownList({ title, items }: { title: string; items: LeadBreakdownItem[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <div className="lead-breakdown-list">
+      <strong>{title}</strong>
+      <div>
+        {items.slice(0, 6).map((item) => (
+          <span key={item.label}>
+            {item.label}
+            <em>{item.count}</em>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -6452,8 +6671,14 @@ function WeeklyReportView({
   bitrix24Snapshot,
   linkRows,
   promotionSources,
+  leadAnalyticsByProject,
+  leadErrorsByProject,
+  leadLoadStatus,
+  leadError,
+  leadUpdatedAt,
   externalSource,
   externalAdditions,
+  onReloadLeads,
   onReportSnapshotsChange,
 }: {
   projects: Project[];
@@ -6463,8 +6688,14 @@ function WeeklyReportView({
   bitrix24Snapshot: Bitrix24Snapshot;
   linkRows: LinkPurchase[];
   promotionSources: PromotionResultSource[];
+  leadAnalyticsByProject: Map<string, LeadAnalyticsSummary>;
+  leadErrorsByProject: Map<string, string>;
+  leadLoadStatus: LinkLoadStatus;
+  leadError: string;
+  leadUpdatedAt: string;
   externalSource: ExternalProjectsSource;
   externalAdditions: ExternalProjectAdditions;
+  onReloadLeads: () => void;
   onReportSnapshotsChange: Dispatch<SetStateAction<TaskReportSnapshot[]>>;
 }) {
   const [reportMode, setReportMode] = useStoredState<ReportMode>('task-seo-report-mode', 'tasks');
@@ -6552,6 +6783,8 @@ function WeeklyReportView({
   const selectedMetricsSources = promotionSources.filter(
     (source) => normalizeProjectName(source.projectName) === selectedMetricsProjectKey,
   );
+  const selectedMetricsLeadAnalytics = leadAnalyticsByProject.get(selectedMetricsProjectKey);
+  const selectedMetricsLeadError = leadErrorsByProject.get(selectedMetricsProjectKey) ?? leadError;
   const selectedDrilldownReport = selectedDrilldown
     ? visibleSeoReports.find((report) => report.id === selectedDrilldown.projectId)
     : undefined;
@@ -6654,6 +6887,11 @@ function WeeklyReportView({
           selectedProjectId={reportProjectId}
           linkRows={selectedMetricsLinkRows}
           promotionSources={selectedMetricsSources}
+          leadAnalytics={selectedMetricsLeadAnalytics}
+          leadLoadStatus={leadLoadStatus}
+          leadError={selectedMetricsLeadError}
+          leadUpdatedAt={leadUpdatedAt}
+          onReloadLeads={onReloadLeads}
           onProjectChange={setReportProjectId}
         />
       ) : reportMode === 'logic' ? (
@@ -6957,6 +7195,11 @@ function ReportMetricsMode({
   selectedProjectId,
   linkRows,
   promotionSources,
+  leadAnalytics,
+  leadLoadStatus,
+  leadError,
+  leadUpdatedAt,
+  onReloadLeads,
   onProjectChange,
 }: {
   projects: Project[];
@@ -6964,6 +7207,11 @@ function ReportMetricsMode({
   selectedProjectId: string;
   linkRows: LinkPurchase[];
   promotionSources: PromotionResultSource[];
+  leadAnalytics?: LeadAnalyticsSummary;
+  leadLoadStatus: LinkLoadStatus;
+  leadError: string;
+  leadUpdatedAt: string;
+  onReloadLeads: () => void;
   onProjectChange: (projectId: string) => void;
 }) {
   return (
@@ -6993,6 +7241,11 @@ function ReportMetricsMode({
         project={selectedProject}
         linkRows={linkRows}
         promotionSources={promotionSources}
+        leadAnalytics={leadAnalytics}
+        leadLoadStatus={leadLoadStatus}
+        leadError={leadError}
+        leadUpdatedAt={leadUpdatedAt}
+        onReloadLeads={onReloadLeads}
       />
     </section>
   );
@@ -8665,6 +8918,8 @@ function SeoProjectsView({
   paymentCashflowRows,
   paymentDraft,
   promotionSources,
+  leadAnalyticsByProject,
+  leadErrorsByProject,
   selectedProjectId,
   reportSnapshots,
   bitrix24Snapshot,
@@ -8676,12 +8931,16 @@ function SeoProjectsView({
   contentLoadStatus,
   contentError,
   contentUpdatedAt,
+  leadLoadStatus,
+  leadError,
+  leadUpdatedAt,
   paymentCashflowLoadStatus,
   paymentCashflowError,
   paymentCashflowUpdatedAt,
   expanded,
   onReloadLinks,
   onReloadContent,
+  onReloadLeads,
   onReloadPaymentCashflow,
   onPaymentDraftChange,
   onPaymentAdd,
@@ -8710,6 +8969,8 @@ function SeoProjectsView({
   paymentCashflowRows: PaymentCashflowRow[];
   paymentDraft: PaymentDraft;
   promotionSources: PromotionResultSource[];
+  leadAnalyticsByProject: Map<string, LeadAnalyticsSummary>;
+  leadErrorsByProject: Map<string, string>;
   selectedProjectId: string;
   reportSnapshots: TaskReportSnapshot[];
   bitrix24Snapshot: Bitrix24Snapshot;
@@ -8721,12 +8982,16 @@ function SeoProjectsView({
   contentLoadStatus: LinkLoadStatus;
   contentError: string;
   contentUpdatedAt: string;
+  leadLoadStatus: LinkLoadStatus;
+  leadError: string;
+  leadUpdatedAt: string;
   paymentCashflowLoadStatus: LinkLoadStatus;
   paymentCashflowError: string;
   paymentCashflowUpdatedAt: string;
   expanded: Set<string>;
   onReloadLinks: () => void;
   onReloadContent: () => void;
+  onReloadLeads: () => void;
   onReloadPaymentCashflow: () => void;
   onPaymentDraftChange: Dispatch<SetStateAction<PaymentDraft>>;
   onPaymentAdd: (projectIdOverride?: string) => void;
@@ -8755,6 +9020,8 @@ function SeoProjectsView({
     (row) => normalizeProjectName(row.projectName) === selectedKey,
   );
   const selectedSources = promotionSources.filter((source) => normalizeProjectName(source.projectName) === selectedKey);
+  const selectedLeadAnalytics = leadAnalyticsByProject.get(selectedKey);
+  const selectedLeadError = leadErrorsByProject.get(selectedKey) ?? leadError;
   const selectedTasks = selectedProject ? tasks.filter((task) => task.projectId === selectedProject.id) : [];
   const activeTasks = selectedTasks.filter((task) => task.status !== 'done').length;
   const seoTabs: Array<{ id: SeoProjectTab; label: string; count?: number }> = [
@@ -8784,7 +9051,7 @@ function SeoProjectsView({
           <Metric label="Проекты" value={String(projects.length)} />
           <Metric label="Выбрано" value={selectedProject?.name ?? '—'} />
           <Metric label="Задачи" value={String(activeTasks)} />
-          <Metric label="Источники" value={String(selectedSources.length)} />
+          <Metric label="Источники" value={String(selectedSources.length + (selectedLeadAnalytics?.sourceCount ?? 0))} />
         </div>
       </div>
 
@@ -8832,6 +9099,11 @@ function SeoProjectsView({
                 project={selectedProject}
                 linkRows={selectedLinkRows}
                 promotionSources={selectedSources}
+                leadAnalytics={selectedLeadAnalytics}
+                leadLoadStatus={leadLoadStatus}
+                leadError={selectedLeadError}
+                leadUpdatedAt={leadUpdatedAt}
+                onReloadLeads={onReloadLeads}
               />
             )}
 
@@ -8916,6 +9188,11 @@ function SeoProjectsView({
                   onReportSnapshotsChange={onReportSnapshotsChange}
                   linkRows={selectedLinkRows}
                   promotionSources={selectedSources}
+                  leadAnalytics={selectedLeadAnalytics}
+                  leadLoadStatus={leadLoadStatus}
+                  leadError={selectedLeadError}
+                  leadUpdatedAt={leadUpdatedAt}
+                  onReloadLeads={onReloadLeads}
                 />
               </section>
             )}
@@ -9077,10 +9354,20 @@ function ProjectSeoAnalyticsTiles({
   project,
   linkRows,
   promotionSources,
+  leadAnalytics,
+  leadLoadStatus,
+  leadError,
+  leadUpdatedAt,
+  onReloadLeads,
 }: {
   project: Project;
   linkRows: LinkPurchase[];
   promotionSources: PromotionResultSource[];
+  leadAnalytics?: LeadAnalyticsSummary;
+  leadLoadStatus: LinkLoadStatus;
+  leadError: string;
+  leadUpdatedAt: string;
+  onReloadLeads: () => void;
 }) {
   const [trendMode, setTrendMode] = useStoredState<SeoTrendMode>('task-seo-analytics-trend-mode', 'monthly');
   const linkSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
@@ -9099,6 +9386,11 @@ function ProjectSeoAnalyticsTiles({
     { label: 'Купить', value: linkSummary.needToBuy },
   ].filter((item) => item.value > 0);
   const maxLinks = Math.max(...linkChartItems.map((item) => item.value), 1);
+  const leadTrendPoints = getVisibleLeadTrendPoints(getLeadTrendPoints(leadAnalytics, trendMode), trendMode);
+  const leadTrendMax = Math.max(...leadTrendPoints.map((item) => item.leads), 1);
+  const leadQualityRate = leadAnalytics?.total ? Math.round((leadAnalytics.quality / leadAnalytics.total) * 100) : 0;
+  const leadWorkable = (leadAnalytics?.quality ?? 0) + (leadAnalytics?.inWork ?? 0);
+  const leadWorkableRate = leadAnalytics?.total ? Math.round((leadWorkable / leadAnalytics.total) * 100) : 0;
 
   return (
     <section className="analytics-tile-grid" aria-label={`Аналитика SEO-проекта ${project.name}`}>
@@ -9201,17 +9493,78 @@ function ProjectSeoAnalyticsTiles({
         <div className="analytics-tile-head">
           <div>
             <span>Динамика лидов</span>
-            <h3>данных пока нет</h3>
+            <h3>
+              {leadAnalytics
+                ? `${leadAnalytics.total} лидов`
+                : leadLoadStatus === 'loading'
+                  ? 'загрузка'
+                  : 'данных пока нет'}
+            </h3>
           </div>
           <Users size={20} />
         </div>
-        <div className="analytics-placeholder-chart" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
-        <p>Слот под заявки уже есть. Когда появится источник, сюда встанут лиды и динамика по периодам.</p>
+        {leadAnalytics ? (
+          <>
+            <div className="lead-summary-grid">
+              <div>
+                <strong>{leadAnalytics.quality}</strong>
+                <span>качественных</span>
+              </div>
+              <div>
+                <strong>{leadAnalytics.inWork}</strong>
+                <span>в работе</span>
+              </div>
+              <div>
+                <strong>{leadAnalytics.rejected}</strong>
+                <span>отказ / нецелевые</span>
+              </div>
+            </div>
+            {leadTrendPoints.length ? (
+              <div className="lead-trend-chart" aria-label={`Динамика лидов: ${seoTrendModeLabels[trendMode]}`}>
+                {leadTrendPoints.map((point) => (
+                  <div key={`${point.period}-${point.leads}-${point.quality}`}>
+                    <span style={{ height: `${Math.max(10, (point.leads / leadTrendMax) * 100)}%` }} />
+                    <em>{point.label}</em>
+                    <small>{point.leads}/{point.quality}</small>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="analytics-empty">{seoTrendModeLabels[trendMode]} пока не распознаны в источнике заявок</div>
+            )}
+            <p>
+              Качественные: {leadQualityRate}%. Качественные + в работе: {leadWorkableRate}%. Источников:{' '}
+              {leadAnalytics.sourceCount}. {leadAnalytics.periodLabel}.
+            </p>
+            <LeadBreakdownList title="Каналы" items={leadAnalytics.byChannel} />
+            <LeadBreakdownList title="Причины отказа" items={leadAnalytics.byReason} />
+            <div className="analytics-tile-footer">
+              {leadUpdatedAt && <span>Обновлено: {leadUpdatedAt}</span>}
+              <button type="button" onClick={onReloadLeads}>
+                Обновить заявки
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="analytics-placeholder-chart" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+            <p>
+              {leadError
+                ? `Источник заявок не загрузился: ${leadError}`
+                : 'данных пока нет'}
+            </p>
+            <div className="analytics-tile-footer">
+              <button type="button" onClick={onReloadLeads}>
+                Проверить источники
+              </button>
+            </div>
+          </>
+        )}
       </article>
 
       <article className="analytics-tile analytics-goal-summary">
@@ -9385,6 +9738,11 @@ function SeoProjectReportsPanel({
   onReportSnapshotsChange,
   linkRows,
   promotionSources,
+  leadAnalytics,
+  leadLoadStatus,
+  leadError,
+  leadUpdatedAt,
+  onReloadLeads,
 }: {
   project: Project;
   resources: ManagedResource[];
@@ -9395,6 +9753,11 @@ function SeoProjectReportsPanel({
   onReportSnapshotsChange: Dispatch<SetStateAction<TaskReportSnapshot[]>>;
   linkRows: LinkPurchase[];
   promotionSources: PromotionResultSource[];
+  leadAnalytics?: LeadAnalyticsSummary;
+  leadLoadStatus: LinkLoadStatus;
+  leadError: string;
+  leadUpdatedAt: string;
+  onReloadLeads: () => void;
 }) {
   const [reportMode, setReportMode] = useStoredState<ReportMode>('task-seo-single-project-report-mode', 'tasks');
   const reportWeek = useMemo(() => getWeekWindow(-1), []);
@@ -9444,7 +9807,16 @@ function SeoProjectReportsPanel({
       </div>
 
       {reportMode === 'metrics' ? (
-        <ProjectSeoAnalyticsTiles project={project} linkRows={linkRows} promotionSources={promotionSources} />
+        <ProjectSeoAnalyticsTiles
+          project={project}
+          linkRows={linkRows}
+          promotionSources={promotionSources}
+          leadAnalytics={leadAnalytics}
+          leadLoadStatus={leadLoadStatus}
+          leadError={leadError}
+          leadUpdatedAt={leadUpdatedAt}
+          onReloadLeads={onReloadLeads}
+        />
       ) : reportMode === 'logic' ? (
         <>
           <TaskLogicMode
