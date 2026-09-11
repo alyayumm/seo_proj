@@ -42,7 +42,10 @@ export default [
       ecmaVersion: 'latest',
       globals: {
         HtmlService: 'readonly',
+        ContentService: 'readonly',
+        PropertiesService: 'readonly',
         SpreadsheetApp: 'readonly',
+        UrlFetchApp: 'readonly',
         Utilities: 'readonly',
       },
       sourceType: 'script',

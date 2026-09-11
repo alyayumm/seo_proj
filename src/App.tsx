@@ -2207,8 +2207,62 @@ type SeoImpactRow = {
 const METRIKA_QUERY_EXPORT_ENDPOINT =
   'https://script.google.com/macros/s/AKfycbzDWHp58G5bsDAKmGFgKd3YKeUiH98fIlLUTULMaWWxangIq8dx8DctYydQ9aVDn2wnoA/exec';
 const METRIKA_QUERY_EXPORT_ROW_LIMIT = 20000;
+const METRIKA_LIVE_STATS_ENDPOINT =
+  'https://script.google.com/macros/s/AKfycbzJ7wCwKnKM9jRrsGEaQaiZBRhTucqyrqqVSP-k-04yt2P1mqA434a_sEKMmNTDMnV3Xw/exec';
+const METRIKA_SAVED_STATS_URL = './data/metrika-stats.json';
+
+type MetrikaStatsLoadMode = 'live' | 'saved';
+type JsonpCallbackWindow = Window &
+  typeof globalThis &
+  Record<string, ((payload: unknown) => void) | undefined>;
 
 type Bitrix24ProjectTask = Bitrix24Snapshot['tasks'][number];
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error && error.message ? error.message : fallback;
+}
+
+async function fetchSavedMetrikaStats() {
+  const response = await fetch(`${METRIKA_SAVED_STATS_URL}?cacheBust=${Date.now()}`, { cache: 'no-store' });
+  if (!response.ok) throw new Error('сохраненные данные Метрики не загрузились');
+  return response.json();
+}
+
+function fetchMetrikaLiveStats() {
+  if (!METRIKA_LIVE_STATS_ENDPOINT) return Promise.resolve(null);
+
+  return new Promise<unknown>((resolve, reject) => {
+    const callbackName = `__taskSeoMetrikaLive_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const callbackWindow = window as JsonpCallbackWindow;
+    const script = document.createElement('script');
+    const separator = METRIKA_LIVE_STATS_ENDPOINT.includes('?') ? '&' : '?';
+    const timeout = window.setTimeout(() => {
+      cleanup();
+      reject(new Error('Метрика не ответила вовремя'));
+    }, 30000);
+
+    function cleanup() {
+      window.clearTimeout(timeout);
+      script.remove();
+      delete callbackWindow[callbackName];
+    }
+
+    callbackWindow[callbackName] = (payload: unknown) => {
+      cleanup();
+      resolve(payload);
+    };
+
+    script.src = `${METRIKA_LIVE_STATS_ENDPOINT}${separator}callback=${encodeURIComponent(
+      callbackName,
+    )}&cacheBust=${Date.now()}`;
+    script.async = true;
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('не удалось обратиться к live-прокси Метрики'));
+    };
+    document.head.append(script);
+  });
+}
 
 function todayIso() {
   return toLocalIso(new Date());
@@ -3552,21 +3606,73 @@ function App() {
   }, [contentSourceErrors]);
 
   const [metrikaStats, setMetrikaStats] = useState<MetrikaStatsPayload>(EMPTY_METRIKA_STATS);
+  const [metrikaLoadStatus, setMetrikaLoadStatus] = useState<LinkLoadStatus>('idle');
+  const [metrikaError, setMetrikaError] = useState('');
+  const [metrikaUpdatedAt, setMetrikaUpdatedAt] = useState('');
+  const loadMetrikaStats = useCallback(async (mode: MetrikaStatsLoadMode = 'live') => {
+    setMetrikaLoadStatus('loading');
+    setMetrikaError('');
+
+    try {
+      let payload: unknown = null;
+
+      if (mode === 'live' && METRIKA_LIVE_STATS_ENDPOINT) {
+        const livePayload = await fetchMetrikaLiveStats();
+        const liveStatus = livePayload && typeof livePayload === 'object' ? (livePayload as { status?: string }) : {};
+        if (liveStatus.status === 'error') {
+          const message =
+            livePayload && typeof livePayload === 'object' && 'message' in livePayload
+              ? String((livePayload as { message?: unknown }).message)
+              : 'live-обновление Метрики вернуло ошибку';
+          throw new Error(message);
+        }
+        payload = livePayload;
+      }
+
+      if (!payload) payload = await fetchSavedMetrikaStats();
+      const normalized = normalizeMetrikaStatsPayload(payload);
+      if (!normalized.projects.length) throw new Error('Метрика вернула пустой ответ');
+
+      setMetrikaStats(normalized);
+      setMetrikaUpdatedAt(normalized.updatedAt ? formatDateTime(normalized.updatedAt) : new Date().toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }));
+      setMetrikaLoadStatus('ready');
+    } catch (error) {
+      const liveMessage = getErrorMessage(error, 'не удалось обновить Метрику');
+
+      if (mode === 'live') {
+        try {
+          const fallbackPayload = await fetchSavedMetrikaStats();
+          const normalized = normalizeMetrikaStatsPayload(fallbackPayload);
+          if (!normalized.projects.length) throw new Error('сохраненные данные Метрики пустые');
+          setMetrikaStats(normalized);
+          setMetrikaUpdatedAt(normalized.updatedAt ? formatDateTime(normalized.updatedAt) : '');
+          setMetrikaError(`${liveMessage}. Показаны последние сохраненные данные.`);
+          setMetrikaLoadStatus('ready');
+          return;
+        } catch (fallbackError) {
+          setMetrikaStats(EMPTY_METRIKA_STATS);
+          setMetrikaError(getErrorMessage(fallbackError, liveMessage));
+          setMetrikaLoadStatus('error');
+          return;
+        }
+      }
+
+      setMetrikaStats(EMPTY_METRIKA_STATS);
+      setMetrikaError(liveMessage);
+      setMetrikaLoadStatus('error');
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
-    void fetch('./data/metrika-stats.json', { cache: 'no-store' })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload) => {
-        if (isMounted && payload) setMetrikaStats(normalizeMetrikaStatsPayload(payload));
-      })
-      .catch(() => {
-        if (isMounted) setMetrikaStats(EMPTY_METRIKA_STATS);
-      });
+    void loadMetrikaStats('saved').then(() => {
+      if (isMounted && METRIKA_LIVE_STATS_ENDPOINT) void loadMetrikaStats('live');
+    });
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [loadMetrikaStats]);
 
   const promotionSources = useMemo(
     () => mergePromotionSourcesWithMetrika(PROMOTION_RESULT_SOURCES, metrikaStats),
@@ -4156,12 +4262,16 @@ function App() {
             leadLoadStatus={leadAnalyticsLoadStatus}
             leadError={leadAnalyticsError}
             leadUpdatedAt={leadAnalyticsUpdatedAt}
+            metrikaLoadStatus={metrikaLoadStatus}
+            metrikaError={metrikaError}
+            metrikaUpdatedAt={metrikaUpdatedAt}
             paymentCashflowLoadStatus={paymentCashflowLoadStatus}
             paymentCashflowError={paymentCashflowError}
             paymentCashflowUpdatedAt={paymentCashflowUpdatedAt}
             onReloadLinks={loadLinkRows}
             onReloadContent={loadContentTopics}
             onReloadLeads={loadLeadAnalytics}
+            onReloadMetrika={loadMetrikaStats}
             onReloadPaymentCashflow={loadPaymentCashflowRows}
             onPaymentDraftChange={setPaymentDraft}
             onPaymentAdd={addPaymentRow}
@@ -4207,9 +4317,13 @@ function App() {
             leadLoadStatus={leadAnalyticsLoadStatus}
             leadError={leadAnalyticsError}
             leadUpdatedAt={leadAnalyticsUpdatedAt}
+            metrikaLoadStatus={metrikaLoadStatus}
+            metrikaError={metrikaError}
+            metrikaUpdatedAt={metrikaUpdatedAt}
             externalSource={EXTERNAL_PROJECTS_SOURCE}
             externalAdditions={externalProjectAdditions}
             onReloadLeads={loadLeadAnalytics}
+            onReloadMetrika={loadMetrikaStats}
             onReportSnapshotsChange={setReportSnapshots}
           />
         )}
@@ -7203,9 +7317,13 @@ function WeeklyReportView({
   leadLoadStatus,
   leadError,
   leadUpdatedAt,
+  metrikaLoadStatus,
+  metrikaError,
+  metrikaUpdatedAt,
   externalSource,
   externalAdditions,
   onReloadLeads,
+  onReloadMetrika,
   onReportSnapshotsChange,
 }: {
   projects: Project[];
@@ -7220,9 +7338,13 @@ function WeeklyReportView({
   leadLoadStatus: LinkLoadStatus;
   leadError: string;
   leadUpdatedAt: string;
+  metrikaLoadStatus: LinkLoadStatus;
+  metrikaError: string;
+  metrikaUpdatedAt: string;
   externalSource: ExternalProjectsSource;
   externalAdditions: ExternalProjectAdditions;
   onReloadLeads: () => void;
+  onReloadMetrika: (mode?: MetrikaStatsLoadMode) => void;
   onReportSnapshotsChange: Dispatch<SetStateAction<TaskReportSnapshot[]>>;
 }) {
   const [reportMode, setReportMode] = useStoredState<ReportMode>('task-seo-report-mode', 'tasks');
@@ -7419,7 +7541,11 @@ function WeeklyReportView({
           leadLoadStatus={leadLoadStatus}
           leadError={selectedMetricsLeadError}
           leadUpdatedAt={leadUpdatedAt}
+          metrikaLoadStatus={metrikaLoadStatus}
+          metrikaError={metrikaError}
+          metrikaUpdatedAt={metrikaUpdatedAt}
           onReloadLeads={onReloadLeads}
+          onReloadMetrika={onReloadMetrika}
           tasks={selectedMetricsTasks}
           onProjectChange={setReportProjectId}
         />
@@ -7728,7 +7854,11 @@ function ReportMetricsMode({
   leadLoadStatus,
   leadError,
   leadUpdatedAt,
+  metrikaLoadStatus,
+  metrikaError,
+  metrikaUpdatedAt,
   onReloadLeads,
+  onReloadMetrika,
   tasks,
   onProjectChange,
 }: {
@@ -7741,7 +7871,11 @@ function ReportMetricsMode({
   leadLoadStatus: LinkLoadStatus;
   leadError: string;
   leadUpdatedAt: string;
+  metrikaLoadStatus: LinkLoadStatus;
+  metrikaError: string;
+  metrikaUpdatedAt: string;
   onReloadLeads: () => void;
+  onReloadMetrika: (mode?: MetrikaStatsLoadMode) => void;
   tasks: Task[];
   onProjectChange: (projectId: string) => void;
 }) {
@@ -7776,7 +7910,11 @@ function ReportMetricsMode({
         leadLoadStatus={leadLoadStatus}
         leadError={leadError}
         leadUpdatedAt={leadUpdatedAt}
+        metrikaLoadStatus={metrikaLoadStatus}
+        metrikaError={metrikaError}
+        metrikaUpdatedAt={metrikaUpdatedAt}
         onReloadLeads={onReloadLeads}
+        onReloadMetrika={onReloadMetrika}
         tasks={tasks}
       />
     </section>
@@ -9466,6 +9604,9 @@ function SeoProjectsView({
   leadLoadStatus,
   leadError,
   leadUpdatedAt,
+  metrikaLoadStatus,
+  metrikaError,
+  metrikaUpdatedAt,
   paymentCashflowLoadStatus,
   paymentCashflowError,
   paymentCashflowUpdatedAt,
@@ -9473,6 +9614,7 @@ function SeoProjectsView({
   onReloadLinks,
   onReloadContent,
   onReloadLeads,
+  onReloadMetrika,
   onReloadPaymentCashflow,
   onPaymentDraftChange,
   onPaymentAdd,
@@ -9517,6 +9659,9 @@ function SeoProjectsView({
   leadLoadStatus: LinkLoadStatus;
   leadError: string;
   leadUpdatedAt: string;
+  metrikaLoadStatus: LinkLoadStatus;
+  metrikaError: string;
+  metrikaUpdatedAt: string;
   paymentCashflowLoadStatus: LinkLoadStatus;
   paymentCashflowError: string;
   paymentCashflowUpdatedAt: string;
@@ -9524,6 +9669,7 @@ function SeoProjectsView({
   onReloadLinks: () => void;
   onReloadContent: () => void;
   onReloadLeads: () => void;
+  onReloadMetrika: (mode?: MetrikaStatsLoadMode) => void;
   onReloadPaymentCashflow: () => void;
   onPaymentDraftChange: Dispatch<SetStateAction<PaymentDraft>>;
   onPaymentAdd: (projectIdOverride?: string) => void;
@@ -9650,7 +9796,11 @@ function SeoProjectsView({
                 leadLoadStatus={leadLoadStatus}
                 leadError={selectedLeadError}
                 leadUpdatedAt={leadUpdatedAt}
+                metrikaLoadStatus={metrikaLoadStatus}
+                metrikaError={metrikaError}
+                metrikaUpdatedAt={metrikaUpdatedAt}
                 onReloadLeads={onReloadLeads}
+                onReloadMetrika={onReloadMetrika}
                 tasks={selectedTasks}
                 peopleById={peopleById}
                 onOpenTasks={() => setActiveTab('tasks')}
@@ -9661,7 +9811,14 @@ function SeoProjectsView({
             )}
 
             {effectiveActiveTab === 'queries' && (
-              <SeoMetrikaQueriesPanel project={selectedProject} promotionSources={selectedSources} />
+              <SeoMetrikaQueriesPanel
+                project={selectedProject}
+                promotionSources={selectedSources}
+                metrikaLoadStatus={metrikaLoadStatus}
+                metrikaError={metrikaError}
+                metrikaUpdatedAt={metrikaUpdatedAt}
+                onReloadMetrika={onReloadMetrika}
+              />
             )}
 
             {effectiveActiveTab === 'tasks' && (
@@ -9750,7 +9907,11 @@ function SeoProjectsView({
                   leadLoadStatus={leadLoadStatus}
                   leadError={selectedLeadError}
                   leadUpdatedAt={leadUpdatedAt}
+                  metrikaLoadStatus={metrikaLoadStatus}
+                  metrikaError={metrikaError}
+                  metrikaUpdatedAt={metrikaUpdatedAt}
                   onReloadLeads={onReloadLeads}
+                  onReloadMetrika={onReloadMetrika}
                 />
               </section>
             )}
@@ -9981,9 +10142,17 @@ function SeoProjectTasksTab({
 function SeoMetrikaQueriesPanel({
   project,
   promotionSources,
+  metrikaLoadStatus,
+  metrikaError,
+  metrikaUpdatedAt,
+  onReloadMetrika,
 }: {
   project: Project;
   promotionSources: PromotionResultSource[];
+  metrikaLoadStatus: LinkLoadStatus;
+  metrikaError: string;
+  metrikaUpdatedAt: string;
+  onReloadMetrika: (mode?: MetrikaStatsLoadMode) => void;
 }) {
   const [search, setSearch] = useState('');
   const [sortMode, setSortMode] = useStoredState<SeoQuerySort>('task-seo-metrika-query-sort', 'goals');
@@ -9999,6 +10168,11 @@ function SeoMetrikaQueriesPanel({
   const totalGoals = queryRows.reduce((sum, row) => sum + row.goals, 0);
   const rowsWithGoals = queryRows.filter((row) => row.goals > 0).length;
   const maxGoals = Math.max(...queryRows.map((row) => row.goals), 1);
+  const metrikaSourceText = metrikaError
+    ? `Метрика сейчас не обновилась: ${metrikaError}`
+    : metrikaUpdatedAt
+      ? `данные Метрики от: ${metrikaUpdatedAt}`
+      : 'Метрика: дата live-обновления не сохранена';
   const normalizedSearch = normalizeSearchText(search);
   const filteredRows = queryRows
     .filter((row) => !normalizedSearch || normalizeSearchText(row.query).includes(normalizedSearch))
@@ -10039,10 +10213,14 @@ function SeoMetrikaQueriesPanel({
         <div>
           <h2>Поисковые запросы из Метрики: {project.name}</h2>
           <p>
-            Органический поиск: каждая фраза, количество переходов и достижения целей по данным backend-снимка.
+            Органический поиск: каждая фраза, количество переходов и достижения целей по данным Метрики.
           </p>
         </div>
         <div className="metrika-query-head-actions">
+          <button type="button" onClick={() => onReloadMetrika('live')} disabled={metrikaLoadStatus === 'loading'}>
+            <RefreshCw className={metrikaLoadStatus === 'loading' ? 'spin' : undefined} size={16} />
+            Обновить Метрику
+          </button>
           <button type="button" onClick={handleQueryExport} disabled={!queryRows.length}>
             <FileSpreadsheet size={16} />
             Сделать выгрузку
@@ -10089,8 +10267,8 @@ function SeoMetrikaQueriesPanel({
         <span>
           {sourceWithAnalytics
             ? hasFullQueryList
-              ? `${sourceWithAnalytics.spreadsheetTitle} · полный список из Метрики`
-              : `${sourceWithAnalytics.spreadsheetTitle} · пока доступен текущий топ, полный список появится после backend-обновления`
+              ? `${sourceWithAnalytics.spreadsheetTitle} · полный список из Метрики · ${metrikaSourceText}`
+              : `${sourceWithAnalytics.spreadsheetTitle} · пока доступен текущий топ, полный список появится после обновления Метрики`
             : 'источник Метрики не подключен'}
         </span>
       </div>
@@ -10103,7 +10281,7 @@ function SeoMetrikaQueriesPanel({
       )}
 
       {queryRows.length === 0 ? (
-        <div className="empty-row">поисковые запросы в снимке Метрики пока пустые</div>
+        <div className="empty-row">поисковые запросы в данных Метрики пока пустые</div>
       ) : (
         <div className="metrika-query-table" role="table" aria-label={`Поисковые запросы Метрики ${project.name}`}>
           <div className="metrika-query-row metrika-query-head" role="row">
@@ -10247,7 +10425,11 @@ function ProjectSeoAnalyticsTiles({
   leadLoadStatus,
   leadError,
   leadUpdatedAt,
+  metrikaLoadStatus,
+  metrikaError,
+  metrikaUpdatedAt,
   onReloadLeads,
+  onReloadMetrika,
   tasks = [],
   peopleById,
   onOpenTasks,
@@ -10262,7 +10444,11 @@ function ProjectSeoAnalyticsTiles({
   leadLoadStatus: LinkLoadStatus;
   leadError: string;
   leadUpdatedAt: string;
+  metrikaLoadStatus: LinkLoadStatus;
+  metrikaError: string;
+  metrikaUpdatedAt: string;
   onReloadLeads: () => void;
+  onReloadMetrika: (mode?: MetrikaStatsLoadMode) => void;
   tasks?: Task[];
   peopleById?: Map<string, Person>;
   onOpenTasks?: () => void;
@@ -10279,7 +10465,11 @@ function ProjectSeoAnalyticsTiles({
       leadLoadStatus={leadLoadStatus}
       leadError={leadError}
       leadUpdatedAt={leadUpdatedAt}
+      metrikaLoadStatus={metrikaLoadStatus}
+      metrikaError={metrikaError}
+      metrikaUpdatedAt={metrikaUpdatedAt}
       onReloadLeads={onReloadLeads}
+      onReloadMetrika={onReloadMetrika}
       tasks={tasks}
       peopleById={peopleById}
       onOpenTasks={onOpenTasks}
@@ -10297,7 +10487,11 @@ function ProjectSeoAnalyticsScreen({
   leadLoadStatus,
   leadError,
   leadUpdatedAt,
+  metrikaLoadStatus,
+  metrikaError,
+  metrikaUpdatedAt,
   onReloadLeads,
+  onReloadMetrika,
   tasks = [],
   peopleById,
   onOpenTasks,
@@ -10312,7 +10506,11 @@ function ProjectSeoAnalyticsScreen({
   leadLoadStatus: LinkLoadStatus;
   leadError: string;
   leadUpdatedAt: string;
+  metrikaLoadStatus: LinkLoadStatus;
+  metrikaError: string;
+  metrikaUpdatedAt: string;
   onReloadLeads: () => void;
+  onReloadMetrika: (mode?: MetrikaStatsLoadMode) => void;
   tasks?: Task[];
   peopleById?: Map<string, Person>;
   onOpenTasks?: () => void;
@@ -10377,6 +10575,20 @@ function ProjectSeoAnalyticsScreen({
   const peopleMap = peopleById ?? new Map<string, Person>();
   const allDailySum = (goalAnalytics?.daily ?? []).reduce((sum, point) => sum + point.visits, 0);
   const hasMetrikaMismatch = Boolean(goalAnalytics?.daily?.length && goalAnalytics.visits !== allDailySum);
+  const isMetrikaLoading = metrikaLoadStatus === 'loading';
+  const isAnyAnalyticsLoading = isMetrikaLoading || leadLoadStatus === 'loading';
+  const metrikaStatusText =
+    metrikaLoadStatus === 'loading'
+      ? 'Метрика обновляется'
+      : metrikaError
+        ? 'Метрика: показаны последние доступные данные'
+        : metrikaUpdatedAt
+          ? `Данные Метрики от: ${metrikaUpdatedAt}`
+          : 'Метрика: дата обновления не сохранена';
+  const handleRefreshAnalytics = () => {
+    onReloadMetrika('live');
+    onReloadLeads();
+  };
   const impactRows = useMemo<SeoImpactRow[]>(() => {
     if (impactTab === 'pages') return [];
     return (goalAnalytics?.topQueries ?? []).map((item, index) => ({
@@ -10387,7 +10599,7 @@ function ProjectSeoAnalyticsScreen({
       change: null,
       conversionVisits: item.goals,
       cr: item.visits > 0 ? (item.goals / item.visits) * 100 : null,
-      note: 'В текущем снимке есть топ запросов без периодного сравнения.',
+      note: 'В текущих данных Метрики есть топ запросов без периодного сравнения.',
     }));
   }, [goalAnalytics, impactTab]);
   const visibleImpactRows = impactRows
@@ -10439,8 +10651,9 @@ function ProjectSeoAnalyticsScreen({
 
   const sourceWarnings = [
     hasMetrikaMismatch
-      ? `Снимок Метрики требует перевыгрузки: итог ${formatInteger(goalAnalytics?.visits ?? 0)}, сумма ряда ${formatInteger(allDailySum)}.`
+      ? `Данные Метрики требуют повторного обновления: итог ${formatInteger(goalAnalytics?.visits ?? 0)}, сумма ряда ${formatInteger(allDailySum)}.`
       : '',
+    metrikaError ? `Метрика не обновилась в live-режиме: ${metrikaError}` : '',
     trafficBreakdownMissing
       ? `${seoTrafficSystemLabels[trafficSystem]} пока не выделены отдельной выгрузкой, показан пустой режим.`
       : '',
@@ -10472,10 +10685,10 @@ function ProjectSeoAnalyticsScreen({
           </label>
         )}
         <div className="aquaguard-freshness">
-          <span>Данные до {formatDate(sourceEndDate)}</span>
-          <button type="button" onClick={onReloadLeads} disabled={leadLoadStatus === 'loading'}>
-            <RefreshCw className={leadLoadStatus === 'loading' ? 'spin' : undefined} size={16} />
-            Обновить
+          <span>{metrikaStatusText}</span>
+          <button type="button" onClick={handleRefreshAnalytics} disabled={isAnyAnalyticsLoading}>
+            <RefreshCw className={isAnyAnalyticsLoading ? 'spin' : undefined} size={16} />
+            Обновить сейчас
           </button>
         </div>
       </header>
@@ -10564,6 +10777,7 @@ function ProjectSeoAnalyticsScreen({
       <div className="aquaguard-context-row">
         <span>{source ? `${source.spreadsheetTitle} · ${source.periodLabel}` : 'источник Метрики не подключен'}</span>
         {compareRange ? <span>Сравнение: {formatInputRange(compareRange)}</span> : <span>Сравнение выключено</span>}
+        <span>{metrikaStatusText}</span>
         <span>{leadUpdatedAt ? `Заявки обновлены: ${leadUpdatedAt}` : 'Заявки: последняя успешная дата не сохранена'}</span>
       </div>
 
@@ -10993,7 +11207,7 @@ function SeoImpactTable({ rows, tab }: { rows: SeoImpactRow[]; tab: SeoImpactTab
     return (
       <div className="aquaguard-impact-empty">
         {tab === 'pages'
-          ? 'Посадочные страницы в текущем снимке Метрики не выгружены.'
+          ? 'Посадочные страницы в текущих данных Метрики не выгружены.'
           : 'По выбранному направлению нет строк с доступным сравнением.'}
       </div>
     );
@@ -11115,7 +11329,11 @@ function SeoProjectReportsPanel({
   leadLoadStatus,
   leadError,
   leadUpdatedAt,
+  metrikaLoadStatus,
+  metrikaError,
+  metrikaUpdatedAt,
   onReloadLeads,
+  onReloadMetrika,
 }: {
   project: Project;
   resources: ManagedResource[];
@@ -11130,7 +11348,11 @@ function SeoProjectReportsPanel({
   leadLoadStatus: LinkLoadStatus;
   leadError: string;
   leadUpdatedAt: string;
+  metrikaLoadStatus: LinkLoadStatus;
+  metrikaError: string;
+  metrikaUpdatedAt: string;
   onReloadLeads: () => void;
+  onReloadMetrika: (mode?: MetrikaStatsLoadMode) => void;
 }) {
   const [reportMode, setReportMode] = useStoredState<ReportMode>('task-seo-single-project-report-mode', 'tasks');
   const reportWeek = useMemo(() => getWeekWindow(-1), []);
@@ -11188,7 +11410,11 @@ function SeoProjectReportsPanel({
           leadLoadStatus={leadLoadStatus}
           leadError={leadError}
           leadUpdatedAt={leadUpdatedAt}
+          metrikaLoadStatus={metrikaLoadStatus}
+          metrikaError={metrikaError}
+          metrikaUpdatedAt={metrikaUpdatedAt}
           onReloadLeads={onReloadLeads}
+          onReloadMetrika={onReloadMetrika}
           tasks={tasks.filter((task) => task.projectId === project.id)}
         />
       ) : reportMode === 'logic' ? (

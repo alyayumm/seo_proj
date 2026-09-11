@@ -61,6 +61,7 @@ export type LeadAnalyticsSource = {
   title: string;
   channel: string;
   periodLabel: string;
+  sheetName?: string;
   spreadsheetId: string;
   gid: string;
   url: string;
@@ -573,7 +574,7 @@ function parseLeadRows(response: GvizResponse, source: LeadAnalyticsSource): Lea
       clientName: source.clientName,
       channel: getCell(row, findHeader('источник по телефонии', 'канал')) || source.channel,
       periodLabel: source.periodLabel,
-      isoDate: parseLeadDate(createdAt),
+      isoDate: parseLeadDate(createdAt) || parseLeadDate(source.sheetName ?? source.periodLabel),
       status,
       reason,
       quality,
@@ -722,12 +723,25 @@ function parseLeadDate(value: string) {
     if (day && month && year) return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   }
 
+  const shortRuMatch = clean.match(/(^|\D)(\d{1,2})[.\-/](\d{1,2})(?=\D|$)/);
+  if (shortRuMatch) {
+    const day = Number(shortRuMatch[2]);
+    const month = Number(shortRuMatch[3]);
+    const year = getCurrentYear();
+    if (day && month && year) return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
   const isoMatch = clean.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
   if (isoMatch) {
     return `${isoMatch[1]}-${isoMatch[2].padStart(2, '0')}-${isoMatch[3].padStart(2, '0')}`;
   }
 
   return '';
+}
+
+function getCurrentYear() {
+  const year = new Date().getFullYear();
+  return Number.isFinite(year) ? year : 2026;
 }
 
 function formatGvizCell(cell: GvizCell) {
