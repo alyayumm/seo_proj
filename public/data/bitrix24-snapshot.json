@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-10T10:50:38.909Z",
+  "updatedAt": "2026-09-11T09:55:24.039Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -370,15 +370,15 @@
     {
       "id": "20868",
       "title": "Аквагард.рф - добавить благодарственные письма на сайт",
-      "status": "2",
-      "statusLabel": "Ждет выполнения",
+      "status": "5",
+      "statusLabel": "Готово",
       "responsibleId": "634",
       "responsibleName": "SEO Alex",
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-09-09T17:49:41+03:00",
       "deadline": "2026-09-10T18:00:00+03:00",
-      "closedDate": "",
+      "closedDate": "2026-09-11T11:57:32+03:00",
       "description": "",
       "groupId": "46",
       "groupName": "SEO"
@@ -402,8 +402,8 @@
     {
       "id": "20862",
       "title": "аквагард.рф - составить план работ на 3 месяца",
-      "status": "2",
-      "statusLabel": "Ждет выполнения",
+      "status": "3",
+      "statusLabel": "В работе",
       "responsibleId": "644",
       "responsibleName": "Чернышев Юрий Александрович",
       "creatorId": "634",
@@ -450,15 +450,15 @@
     {
       "id": "20856",
       "title": "promtehmakulatura.ru - составить план работ на 3 месяца",
-      "status": "3",
-      "statusLabel": "В работе",
+      "status": "4",
+      "statusLabel": "Ждет контроля",
       "responsibleId": "644",
       "responsibleName": "Чернышев Юрий Александрович",
       "creatorId": "634",
       "creatorName": "SEO Alex",
       "createdDate": "2026-09-09T15:10:50+03:00",
       "deadline": "2026-09-10T18:00:00+03:00",
-      "closedDate": "",
+      "closedDate": "2026-09-10T17:11:33+03:00",
       "description": "Задача : разработать план работ на 3 месяца по проекту, расписать по пунктам на каждый месяц по аналогии как делали до этого: https://docs.google.com/document/d/[скрыто]/edit?tab=t.0 Результат : оформить в гугл док. обозначить точки роста. каждому пункту дать конкретику, но без портянок текста.",
       "groupId": "46",
       "groupName": "SEO"
@@ -2706,6 +2706,19 @@
   ],
   "comments": [],
   "results": [
+    {
+      "id": "6636",
+      "taskId": "20856",
+      "taskTitle": "promtehmakulatura.ru - составить план работ на 3 месяца",
+      "commentId": "0",
+      "createdById": "644",
+      "createdByName": "Чернышев Юрий Александрович",
+      "createdAt": "2026-09-10T17:11:32+03:00",
+      "updatedAt": "2026-09-10T17:11:32+03:00",
+      "status": "1",
+      "text": "https://docs.google.com/document/d/[скрыто]/edit?usp=sharing переработанный структурированный план",
+      "filesCount": 0
+    },
     {
       "id": "6442",
       "taskId": "20410",
