@@ -1,1794 +1,25 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-10T13:25:41.406Z",
+  "updatedAt": "2026-09-11T09:47:15.440Z",
   "date1": "2026-04-01",
-  "date2": "2026-09-10",
-  "periodLabel": "01.04.26 - 10.09.26",
+  "date2": "2026-09-11",
+  "periodLabel": "01.04.26 - 11.09.26",
   "projects": [
-    {
-      "projectName": "Часы",
-      "clientName": "WatchStore",
-      "counterId": 95877415,
-      "counterName": "watchstoree",
-      "siteUrl": "https://watchstoree.ru",
-      "periodLabel": "01.04.26 - 10.09.26",
-      "metricScope": "organic_search",
-      "filter": "ym:s:trafficSource=='organic'",
-      "attribution": "lastsign",
-      "timezone": "+03:00",
-      "dataStatus": "ok",
-      "fullCoverageDate": "2026-09-10",
-      "visits": 3800,
-      "users": 3772,
-      "goalCount": 21,
-      "queryVisits": 145,
-      "queryGoalCount": 4,
-      "uniqueQueries": 107,
-      "goalRows": 3,
-      "sampleQueries": [
-        "tudor 79230n",
-        "watch store",
-        "tudor часы мужские"
-      ],
-      "queries": [
-        {
-          "query": "tudor 79230n",
-          "visits": 1,
-          "goals": 2
-        },
-        {
-          "query": "watch store",
-          "visits": 11,
-          "goals": 1
-        },
-        {
-          "query": "tudor часы мужские",
-          "visits": 1,
-          "goals": 1
-        },
-        {
-          "query": "дешёвые туры 2026",
-          "visits": 19,
-          "goals": 0
-        },
-        {
-          "query": "онлайн оценка girard perregaux",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "query": "watchstore",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "query": "ватч стор",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "query": "онлайн оценка швейцарских часов",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "query": "часы tudor купить",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "query": "montblanc 1858 geosphere automatic titanium 42mm 125565",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "query": "220.12.41.21.02.002",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "547.NX.0170.LR",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "82000-11-632-fa6a",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "АРИГИНАЛ ВОТЧСТОРИ",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "ватч стор точка вн",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "ватчстор",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "вотчстор",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "Вотчстор",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "все модели часов картьер паша",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "женский белый клатч hermes jic elan 29 сколько стоит оригинал",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "какой кварцевый механизм стоит в часах montblanc tradition",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "кольцо из платины обозначения от тиффани",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "краснодар вотч стор",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "купитт tudor royal 30 москва сасы",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "купить часы tudor 1926",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "лучшие цены для вас",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "Лучшие цены для вас",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "магазин наручных часов",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "магазин часов в спб",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "магазин часов спб",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "Магазин часов watch store",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "монблан геосфер 1858",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "наручные часы longines l4.374.3.27.7",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "оценка часов онлайн",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "оценка часов онлайн в москве",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "тубор часы",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "тудор роял ref-nr. tu080002",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы монблан наручные мужские оригинал купить в москве",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы breguet 2000 bb5460",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы happy sport chrono",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы longines hydroconquest commonwealth games купить",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы montblanc deosphere",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы montblanc tradition chronograph quartz",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы panerai radiomir 8 days table clock pam00581как открыть заднюю крышку со стеклом",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы patek philippe calatrava ref. 5227j с швейцарским механизмом купить в санкт-петербурге",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы tudir",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы tudor 1926 91650.",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "часы tudor ranger",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "швейцарские часы",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "atmos infinite",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "Baume M0A10637",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "big bang gold ceramic",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "big pilot's watch perpetual calendar top gun ceratanium",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "cartier hpi01370 man or female",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "https://watchstories",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "hublot classic fusion chronograph titanium 45mm 521 nx 1171 rx",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "hublot geneve big bang цена",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "iw358312",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "iw376803",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "jaeger-lecoultre reverso grande reserve 8 days 240.8.14",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "l4.312.4.11.6",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "longines conquest vhp l3.716.4.76.4",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "longines conquest vhp l3.728.2.76.9",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "Longines HydroConquest L3.741.4.96.6",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "longines l2.385.4.76.6",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "longines l3.716.2.96.6",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "longines lyre rеf: l4.359.4.12.6.",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "longines record, артикул l2.320.8.92.2",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "lyre l4.860.4.92.6",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "m0a10472",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "m79540",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "montblanc geosphere titanium 1858",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "montblanc U0126106",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "officine panerai pam 01314",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "omega ref: 215.90.44.21.99.001",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "omega seamaster aqua terra gmt 43 mm купить",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "panerai - 01316",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "panerai luminor gmt 42",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "panerai pam 00524",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "panerai radiomir pam 00753 от hwf",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "patek philippe 5270-1r-001",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "patek philippe 5320g-001",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "patek philippe 7041r-001",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "patek philippe 7140g-001",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "patek philippe 7200-200r-001",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "patek philippe 7300-1200r-001",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "ref 126102 montblanc",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "ref.- pam01084",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "rolex day-date",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "rolex milgauss купить",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "rolex oyster perpetual купить",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "seamaster aqua terra артикул: 220.12.41.21.03.005",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "store watch ru",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "the longines elegant collection l4.910.4.92.6",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "the watch store",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "tudor 1926 купить",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "Tudor 1926 M91550-0002 купить",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "tudor glamour double date 42 mm m57103-0001",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "tudor monarch часы купить",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "tudor pelagos 25600tb в наличии",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "tudor ranger купить",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "Watch store",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "Watch Store",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "watch store адрес в москве",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "Watch storee",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "watchstories магазин",
-          "visits": 1,
-          "goals": 0
-        }
-      ],
-      "topQueries": [
-        {
-          "query": "tudor 79230n",
-          "visits": 1,
-          "goals": 2
-        },
-        {
-          "query": "watch store",
-          "visits": 11,
-          "goals": 1
-        },
-        {
-          "query": "tudor часы мужские",
-          "visits": 1,
-          "goals": 1
-        },
-        {
-          "query": "дешёвые туры 2026",
-          "visits": 19,
-          "goals": 0
-        },
-        {
-          "query": "онлайн оценка girard perregaux",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "query": "watchstore",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "query": "ватч стор",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "query": "онлайн оценка швейцарских часов",
-          "visits": 2,
-          "goals": 0
-        }
-      ],
-      "daily": [
-        {
-          "month": "01.04",
-          "date": "2026-04-01",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "month": "02.04",
-          "date": "2026-04-02",
-          "visits": 8,
-          "goals": 0
-        },
-        {
-          "month": "03.04",
-          "date": "2026-04-03",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "04.04",
-          "date": "2026-04-04",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "month": "05.04",
-          "date": "2026-04-05",
-          "visits": 7,
-          "goals": 0
-        },
-        {
-          "month": "06.04",
-          "date": "2026-04-06",
-          "visits": 7,
-          "goals": 0
-        },
-        {
-          "month": "07.04",
-          "date": "2026-04-07",
-          "visits": 5,
-          "goals": 0
-        },
-        {
-          "month": "08.04",
-          "date": "2026-04-08",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "09.04",
-          "date": "2026-04-09",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "month": "10.04",
-          "date": "2026-04-10",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "month": "11.04",
-          "date": "2026-04-11",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "12.04",
-          "date": "2026-04-12",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "13.04",
-          "date": "2026-04-13",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "14.04",
-          "date": "2026-04-14",
-          "visits": 4,
-          "goals": 1
-        },
-        {
-          "month": "15.04",
-          "date": "2026-04-15",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "16.04",
-          "date": "2026-04-16",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "17.04",
-          "date": "2026-04-17",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "18.04",
-          "date": "2026-04-18",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "19.04",
-          "date": "2026-04-19",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "20.04",
-          "date": "2026-04-20",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "21.04",
-          "date": "2026-04-21",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "22.04",
-          "date": "2026-04-22",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "23.04",
-          "date": "2026-04-23",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "24.04",
-          "date": "2026-04-24",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "25.04",
-          "date": "2026-04-25",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "26.04",
-          "date": "2026-04-26",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "27.04",
-          "date": "2026-04-27",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "28.04",
-          "date": "2026-04-28",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "29.04",
-          "date": "2026-04-29",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "30.04",
-          "date": "2026-04-30",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "01.05",
-          "date": "2026-05-01",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "02.05",
-          "date": "2026-05-02",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "03.05",
-          "date": "2026-05-03",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "04.05",
-          "date": "2026-05-04",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "05.05",
-          "date": "2026-05-05",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "06.05",
-          "date": "2026-05-06",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "07.05",
-          "date": "2026-05-07",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "08.05",
-          "date": "2026-05-08",
-          "visits": 2,
-          "goals": 1
-        },
-        {
-          "month": "09.05",
-          "date": "2026-05-09",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "10.05",
-          "date": "2026-05-10",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "11.05",
-          "date": "2026-05-11",
-          "visits": 4,
-          "goals": 1
-        },
-        {
-          "month": "12.05",
-          "date": "2026-05-12",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "13.05",
-          "date": "2026-05-13",
-          "visits": 2,
-          "goals": 3
-        },
-        {
-          "month": "14.05",
-          "date": "2026-05-14",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "15.05",
-          "date": "2026-05-15",
-          "visits": 6,
-          "goals": 7
-        },
-        {
-          "month": "16.05",
-          "date": "2026-05-16",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "17.05",
-          "date": "2026-05-17",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "18.05",
-          "date": "2026-05-18",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "19.05",
-          "date": "2026-05-19",
-          "visits": 5,
-          "goals": 0
-        },
-        {
-          "month": "20.05",
-          "date": "2026-05-20",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "21.05",
-          "date": "2026-05-21",
-          "visits": 6,
-          "goals": 0
-        },
-        {
-          "month": "22.05",
-          "date": "2026-05-22",
-          "visits": 7,
-          "goals": 0
-        },
-        {
-          "month": "23.05",
-          "date": "2026-05-23",
-          "visits": 11,
-          "goals": 0
-        },
-        {
-          "month": "24.05",
-          "date": "2026-05-24",
-          "visits": 7,
-          "goals": 1
-        },
-        {
-          "month": "25.05",
-          "date": "2026-05-25",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "26.05",
-          "date": "2026-05-26",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "27.05",
-          "date": "2026-05-27",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "28.05",
-          "date": "2026-05-28",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "29.05",
-          "date": "2026-05-29",
-          "visits": 8,
-          "goals": 0
-        },
-        {
-          "month": "30.05",
-          "date": "2026-05-30",
-          "visits": 9,
-          "goals": 0
-        },
-        {
-          "month": "31.05",
-          "date": "2026-05-31",
-          "visits": 5,
-          "goals": 0
-        },
-        {
-          "month": "01.06",
-          "date": "2026-06-01",
-          "visits": 14,
-          "goals": 0
-        },
-        {
-          "month": "02.06",
-          "date": "2026-06-02",
-          "visits": 21,
-          "goals": 0
-        },
-        {
-          "month": "03.06",
-          "date": "2026-06-03",
-          "visits": 13,
-          "goals": 0
-        },
-        {
-          "month": "04.06",
-          "date": "2026-06-04",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "05.06",
-          "date": "2026-06-05",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "06.06",
-          "date": "2026-06-06",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "07.06",
-          "date": "2026-06-07",
-          "visits": 4,
-          "goals": 4
-        },
-        {
-          "month": "08.06",
-          "date": "2026-06-08",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "09.06",
-          "date": "2026-06-09",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "10.06",
-          "date": "2026-06-10",
-          "visits": 2,
-          "goals": 0
-        },
-        {
-          "month": "11.06",
-          "date": "2026-06-11",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "12.06",
-          "date": "2026-06-12",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "13.06",
-          "date": "2026-06-13",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "14.06",
-          "date": "2026-06-14",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "15.06",
-          "date": "2026-06-15",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "16.06",
-          "date": "2026-06-16",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "17.06",
-          "date": "2026-06-17",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "18.06",
-          "date": "2026-06-18",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "19.06",
-          "date": "2026-06-19",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "20.06",
-          "date": "2026-06-20",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "21.06",
-          "date": "2026-06-21",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "22.06",
-          "date": "2026-06-22",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "23.06",
-          "date": "2026-06-23",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "24.06",
-          "date": "2026-06-24",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "25.06",
-          "date": "2026-06-25",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "26.06",
-          "date": "2026-06-26",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "27.06",
-          "date": "2026-06-27",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "28.06",
-          "date": "2026-06-28",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "29.06",
-          "date": "2026-06-29",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "30.06",
-          "date": "2026-06-30",
-          "visits": 5,
-          "goals": 0
-        },
-        {
-          "month": "01.07",
-          "date": "2026-07-01",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "02.07",
-          "date": "2026-07-02",
-          "visits": 15,
-          "goals": 0
-        },
-        {
-          "month": "03.07",
-          "date": "2026-07-03",
-          "visits": 25,
-          "goals": 0
-        },
-        {
-          "month": "04.07",
-          "date": "2026-07-04",
-          "visits": 26,
-          "goals": 0
-        },
-        {
-          "month": "05.07",
-          "date": "2026-07-05",
-          "visits": 36,
-          "goals": 0
-        },
-        {
-          "month": "06.07",
-          "date": "2026-07-06",
-          "visits": 45,
-          "goals": 2
-        },
-        {
-          "month": "07.07",
-          "date": "2026-07-07",
-          "visits": 66,
-          "goals": 0
-        },
-        {
-          "month": "08.07",
-          "date": "2026-07-08",
-          "visits": 88,
-          "goals": 0
-        },
-        {
-          "month": "09.07",
-          "date": "2026-07-09",
-          "visits": 102,
-          "goals": 0
-        },
-        {
-          "month": "10.07",
-          "date": "2026-07-10",
-          "visits": 120,
-          "goals": 0
-        },
-        {
-          "month": "11.07",
-          "date": "2026-07-11",
-          "visits": 116,
-          "goals": 0
-        },
-        {
-          "month": "12.07",
-          "date": "2026-07-12",
-          "visits": 101,
-          "goals": 0
-        },
-        {
-          "month": "13.07",
-          "date": "2026-07-13",
-          "visits": 100,
-          "goals": 0
-        },
-        {
-          "month": "14.07",
-          "date": "2026-07-14",
-          "visits": 114,
-          "goals": 0
-        },
-        {
-          "month": "15.07",
-          "date": "2026-07-15",
-          "visits": 108,
-          "goals": 0
-        },
-        {
-          "month": "16.07",
-          "date": "2026-07-16",
-          "visits": 115,
-          "goals": 0
-        },
-        {
-          "month": "17.07",
-          "date": "2026-07-17",
-          "visits": 95,
-          "goals": 0
-        },
-        {
-          "month": "18.07",
-          "date": "2026-07-18",
-          "visits": 111,
-          "goals": 0
-        },
-        {
-          "month": "19.07",
-          "date": "2026-07-19",
-          "visits": 100,
-          "goals": 0
-        },
-        {
-          "month": "20.07",
-          "date": "2026-07-20",
-          "visits": 96,
-          "goals": 0
-        },
-        {
-          "month": "21.07",
-          "date": "2026-07-21",
-          "visits": 74,
-          "goals": 0
-        },
-        {
-          "month": "22.07",
-          "date": "2026-07-22",
-          "visits": 97,
-          "goals": 0
-        },
-        {
-          "month": "23.07",
-          "date": "2026-07-23",
-          "visits": 128,
-          "goals": 0
-        },
-        {
-          "month": "24.07",
-          "date": "2026-07-24",
-          "visits": 78,
-          "goals": 0
-        },
-        {
-          "month": "25.07",
-          "date": "2026-07-25",
-          "visits": 111,
-          "goals": 0
-        },
-        {
-          "month": "26.07",
-          "date": "2026-07-26",
-          "visits": 99,
-          "goals": 0
-        },
-        {
-          "month": "27.07",
-          "date": "2026-07-27",
-          "visits": 88,
-          "goals": 0
-        },
-        {
-          "month": "28.07",
-          "date": "2026-07-28",
-          "visits": 25,
-          "goals": 0
-        },
-        {
-          "month": "29.07",
-          "date": "2026-07-29",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "month": "30.07",
-          "date": "2026-07-30",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "31.07",
-          "date": "2026-07-31",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "01.08",
-          "date": "2026-08-01",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "02.08",
-          "date": "2026-08-02",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "03.08",
-          "date": "2026-08-03",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "04.08",
-          "date": "2026-08-04",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "05.08",
-          "date": "2026-08-05",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "06.08",
-          "date": "2026-08-06",
-          "visits": 3,
-          "goals": 0
-        },
-        {
-          "month": "07.08",
-          "date": "2026-08-07",
-          "visits": 5,
-          "goals": 0
-        },
-        {
-          "month": "08.08",
-          "date": "2026-08-08",
-          "visits": 10,
-          "goals": 0
-        },
-        {
-          "month": "09.08",
-          "date": "2026-08-09",
-          "visits": 10,
-          "goals": 0
-        },
-        {
-          "month": "10.08",
-          "date": "2026-08-10",
-          "visits": 16,
-          "goals": 0
-        },
-        {
-          "month": "11.08",
-          "date": "2026-08-11",
-          "visits": 11,
-          "goals": 0
-        },
-        {
-          "month": "12.08",
-          "date": "2026-08-12",
-          "visits": 9,
-          "goals": 0
-        },
-        {
-          "month": "13.08",
-          "date": "2026-08-13",
-          "visits": 12,
-          "goals": 0
-        },
-        {
-          "month": "14.08",
-          "date": "2026-08-14",
-          "visits": 14,
-          "goals": 0
-        },
-        {
-          "month": "15.08",
-          "date": "2026-08-15",
-          "visits": 14,
-          "goals": 0
-        },
-        {
-          "month": "16.08",
-          "date": "2026-08-16",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "month": "17.08",
-          "date": "2026-08-17",
-          "visits": 11,
-          "goals": 0
-        },
-        {
-          "month": "18.08",
-          "date": "2026-08-18",
-          "visits": 15,
-          "goals": 0
-        },
-        {
-          "month": "19.08",
-          "date": "2026-08-19",
-          "visits": 16,
-          "goals": 0
-        },
-        {
-          "month": "20.08",
-          "date": "2026-08-20",
-          "visits": 17,
-          "goals": 0
-        },
-        {
-          "month": "21.08",
-          "date": "2026-08-21",
-          "visits": 18,
-          "goals": 0
-        },
-        {
-          "month": "22.08",
-          "date": "2026-08-22",
-          "visits": 32,
-          "goals": 0
-        },
-        {
-          "month": "23.08",
-          "date": "2026-08-23",
-          "visits": 29,
-          "goals": 0
-        },
-        {
-          "month": "24.08",
-          "date": "2026-08-24",
-          "visits": 34,
-          "goals": 0
-        },
-        {
-          "month": "25.08",
-          "date": "2026-08-25",
-          "visits": 33,
-          "goals": 0
-        },
-        {
-          "month": "26.08",
-          "date": "2026-08-26",
-          "visits": 23,
-          "goals": 1
-        },
-        {
-          "month": "27.08",
-          "date": "2026-08-27",
-          "visits": 48,
-          "goals": 0
-        },
-        {
-          "month": "28.08",
-          "date": "2026-08-28",
-          "visits": 60,
-          "goals": 0
-        },
-        {
-          "month": "29.08",
-          "date": "2026-08-29",
-          "visits": 55,
-          "goals": 0
-        },
-        {
-          "month": "30.08",
-          "date": "2026-08-30",
-          "visits": 83,
-          "goals": 0
-        },
-        {
-          "month": "31.08",
-          "date": "2026-08-31",
-          "visits": 63,
-          "goals": 0
-        },
-        {
-          "month": "01.09",
-          "date": "2026-09-01",
-          "visits": 57,
-          "goals": 0
-        },
-        {
-          "month": "02.09",
-          "date": "2026-09-02",
-          "visits": 56,
-          "goals": 0
-        },
-        {
-          "month": "03.09",
-          "date": "2026-09-03",
-          "visits": 71,
-          "goals": 0
-        },
-        {
-          "month": "04.09",
-          "date": "2026-09-04",
-          "visits": 62,
-          "goals": 0
-        },
-        {
-          "month": "05.09",
-          "date": "2026-09-05",
-          "visits": 67,
-          "goals": 0
-        },
-        {
-          "month": "06.09",
-          "date": "2026-09-06",
-          "visits": 51,
-          "goals": 0
-        },
-        {
-          "month": "07.09",
-          "date": "2026-09-07",
-          "visits": 65,
-          "goals": 0
-        },
-        {
-          "month": "08.09",
-          "date": "2026-09-08",
-          "visits": 67,
-          "goals": 0
-        },
-        {
-          "month": "09.09",
-          "date": "2026-09-09",
-          "visits": 68,
-          "goals": 0
-        },
-        {
-          "month": "10.09",
-          "date": "2026-09-10",
-          "visits": 46,
-          "goals": 0
-        }
-      ],
-      "weekly": [
-        {
-          "month": "01.04-05.04",
-          "date": "2026-04-01",
-          "visits": 26,
-          "goals": 0
-        },
-        {
-          "month": "06.04-12.04",
-          "date": "2026-04-06",
-          "visits": 24,
-          "goals": 0
-        },
-        {
-          "month": "13.04-19.04",
-          "date": "2026-04-13",
-          "visits": 13,
-          "goals": 1
-        },
-        {
-          "month": "20.04-26.04",
-          "date": "2026-04-20",
-          "visits": 13,
-          "goals": 0
-        },
-        {
-          "month": "27.04-03.05",
-          "date": "2026-04-27",
-          "visits": 8,
-          "goals": 0
-        },
-        {
-          "month": "04.05-10.05",
-          "date": "2026-05-04",
-          "visits": 12,
-          "goals": 1
-        },
-        {
-          "month": "11.05-17.05",
-          "date": "2026-05-11",
-          "visits": 16,
-          "goals": 11
-        },
-        {
-          "month": "18.05-24.05",
-          "date": "2026-05-18",
-          "visits": 40,
-          "goals": 1
-        },
-        {
-          "month": "25.05-31.05",
-          "date": "2026-05-25",
-          "visits": 30,
-          "goals": 0
-        },
-        {
-          "month": "01.06-07.06",
-          "date": "2026-06-01",
-          "visits": 59,
-          "goals": 4
-        },
-        {
-          "month": "08.06-14.06",
-          "date": "2026-06-08",
-          "visits": 7,
-          "goals": 0
-        },
-        {
-          "month": "15.06-21.06",
-          "date": "2026-06-15",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "22.06-28.06",
-          "date": "2026-06-22",
-          "visits": 0,
-          "goals": 0
-        },
-        {
-          "month": "29.06-05.07",
-          "date": "2026-06-29",
-          "visits": 108,
-          "goals": 0
-        },
-        {
-          "month": "06.07-12.07",
-          "date": "2026-07-06",
-          "visits": 638,
-          "goals": 2
-        },
-        {
-          "month": "13.07-19.07",
-          "date": "2026-07-13",
-          "visits": 743,
-          "goals": 0
-        },
-        {
-          "month": "20.07-26.07",
-          "date": "2026-07-20",
-          "visits": 683,
-          "goals": 0
-        },
-        {
-          "month": "27.07-02.08",
-          "date": "2026-07-27",
-          "visits": 121,
-          "goals": 0
-        },
-        {
-          "month": "03.08-09.08",
-          "date": "2026-08-03",
-          "visits": 35,
-          "goals": 0
-        },
-        {
-          "month": "10.08-16.08",
-          "date": "2026-08-10",
-          "visits": 77,
-          "goals": 0
-        },
-        {
-          "month": "17.08-23.08",
-          "date": "2026-08-17",
-          "visits": 138,
-          "goals": 0
-        },
-        {
-          "month": "24.08-30.08",
-          "date": "2026-08-24",
-          "visits": 336,
-          "goals": 1
-        },
-        {
-          "month": "31.08-06.09",
-          "date": "2026-08-31",
-          "visits": 427,
-          "goals": 0
-        },
-        {
-          "month": "07.09-10.09",
-          "date": "2026-09-07",
-          "visits": 246,
-          "goals": 0
-        }
-      ],
-      "monthly": [
-        {
-          "month": "апр",
-          "date": "2026-04-01",
-          "visits": 80,
-          "goals": 1
-        },
-        {
-          "month": "май",
-          "date": "2026-05-01",
-          "visits": 102,
-          "goals": 13
-        },
-        {
-          "month": "июнь",
-          "date": "2026-06-01",
-          "visits": 71,
-          "goals": 4
-        },
-        {
-          "month": "июль",
-          "date": "2026-07-01",
-          "visits": 2286,
-          "goals": 2
-        },
-        {
-          "month": "авг",
-          "date": "2026-08-01",
-          "visits": 651,
-          "goals": 1
-        },
-        {
-          "month": "сент",
-          "date": "2026-09-01",
-          "visits": 610,
-          "goals": 0
-        }
-      ]
-    },
     {
       "projectName": "Свич",
       "clientName": "Свитч",
       "counterId": 99951775,
       "counterName": "Switch-Eng Metrika",
       "siteUrl": "https://switch-eng.ru",
-      "periodLabel": "01.04.26 - 10.09.26",
+      "periodLabel": "01.04.26 - 11.09.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-09-10",
-      "visits": 711,
-      "users": 699,
+      "fullCoverageDate": "2026-09-11",
+      "visits": 712,
+      "users": 700,
       "goalCount": 52,
       "queryVisits": 342,
       "queryGoalCount": 19,
@@ -3744,7 +1975,13 @@
         {
           "month": "10.09",
           "date": "2026-09-10",
-          "visits": 4,
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "month": "11.09",
+          "date": "2026-09-11",
+          "visits": 0,
           "goals": 0
         }
       ],
@@ -3888,9 +2125,9 @@
           "goals": 0
         },
         {
-          "month": "07.09-10.09",
+          "month": "07.09-11.09",
           "date": "2026-09-07",
-          "visits": 8,
+          "visits": 9,
           "goals": 2
         }
       ],
@@ -3928,7 +2165,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 15,
+          "visits": 16,
           "goals": 2
         }
       ]
@@ -3939,19 +2176,19 @@
       "counterId": 103419904,
       "counterName": "Аквагард",
       "siteUrl": "https://аквагард.рф",
-      "periodLabel": "01.04.26 - 10.09.26",
+      "periodLabel": "01.04.26 - 11.09.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-09-10",
-      "visits": 1413,
-      "users": 1220,
+      "fullCoverageDate": "2026-09-11",
+      "visits": 1457,
+      "users": 1255,
       "goalCount": 120,
-      "queryVisits": 1033,
+      "queryVisits": 1067,
       "queryGoalCount": 71,
-      "uniqueQueries": 795,
+      "uniqueQueries": 827,
       "goalRows": 27,
       "sampleQueries": [
         "аквагард",
@@ -3961,7 +2198,7 @@
       "queries": [
         {
           "query": "аквагард",
-          "visits": 82,
+          "visits": 83,
           "goals": 9
         },
         {
@@ -4360,6 +2597,11 @@
           "goals": 0
         },
         {
+          "query": "установка дискового фильтра для очистки воды",
+          "visits": 2,
+          "goals": 0
+        },
+        {
           "query": "установка повышения давления хозяйственно-питьевых нужд",
           "visits": 2,
           "goals": 0
@@ -4585,6 +2827,11 @@
           "goals": 0
         },
         {
+          "query": "баки для ливневой канализации расчет",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "бильтр для стоционарного бассейна какпрочистить",
           "visits": 1,
           "goals": 0
@@ -4606,6 +2853,11 @@
         },
         {
           "query": "блок термического выпаривания",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "блок-контейнер станция повышения давления",
           "visits": 1,
           "goals": 0
         },
@@ -4646,6 +2898,11 @@
         },
         {
           "query": "вакуум выпарная установка теплообменник",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "ввод в эксплуатацию очистных сооружений",
           "visits": 1,
           "goals": 0
         },
@@ -4711,6 +2968,11 @@
         },
         {
           "query": "впс водоподающая станция контейнерная для вахтовых городков",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "время на ремонт колодца",
           "visits": 1,
           "goals": 0
         },
@@ -4790,6 +3052,11 @@
           "goals": 0
         },
         {
+          "query": "дисковый фильтр для очистки воды принцип работы",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "для набора воды из системы обратного осмоса нужен постоянно включенный мотор или нет",
           "visits": 1,
           "goals": 0
@@ -4835,6 +3102,11 @@
           "goals": 0
         },
         {
+          "query": "замывка канализационных колодцев",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "запуск и ноладка лос сколько стоит",
           "visits": 1,
           "goals": 0
@@ -4856,6 +3128,16 @@
         },
         {
           "query": "из чего делают ливневый колодец",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "из чего сделать смотровой колодец для водопровода",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "из чего состоит колодец для приема дождевых стоков",
           "visits": 1,
           "goals": 0
         },
@@ -5100,6 +3382,11 @@
           "goals": 0
         },
         {
+          "query": "как промыть песочный фильтр для бассейна",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "как промыть песочный фильтр перед консервацией",
           "visits": 1,
           "goals": 0
@@ -5126,6 +3413,11 @@
         },
         {
           "query": "как промыть фильтры с кварцевым",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "как прочистить канализационный колодец",
           "visits": 1,
           "goals": 0
         },
@@ -5270,6 +3562,11 @@
           "goals": 0
         },
         {
+          "query": "какой поставить фильтр , чтобы задерживать песок из скважины",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "Какой принцип работы насосов на станции обезжелезо вания в посёлке",
           "visits": 1,
           "goals": 0
@@ -5306,6 +3603,11 @@
         },
         {
           "query": "когда увеличиваю проточность воды она переливается через барабанный фильтр",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "колодец для ливнёвки",
           "visits": 1,
           "goals": 0
         },
@@ -5785,6 +4087,11 @@
           "goals": 0
         },
         {
+          "query": "накопительня емкость дождевых стоков/ как расчитать",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "нарастить по высоте ливневой колодец",
           "visits": 1,
           "goals": 0
@@ -5955,6 +4262,11 @@
           "goals": 0
         },
         {
+          "query": "обоснование для необходимости проведения экспертизы оценки качества работы лос",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "обработка смотровых колодцев канализации",
           "visits": 1,
           "goals": 0
@@ -6081,6 +4393,11 @@
         },
         {
           "query": "отсутствие точки сброса сточных вод",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "отчет о пнр по наладке режимов очистных сооружений с использованием реагентов",
           "visits": 1,
           "goals": 0
         },
@@ -6300,6 +4617,11 @@
           "goals": 0
         },
         {
+          "query": "перечень нормативной документации при разработке проекта очистных сооружений",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "периодичность визуальных осмотров канализационных колодцев",
           "visits": 1,
           "goals": 0
@@ -6435,6 +4757,11 @@
           "goals": 0
         },
         {
+          "query": "последовательность промывки песчаного фильтра",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "поставка \"под ключ\" - лосы",
           "visits": 1,
           "goals": 0
@@ -6456,6 +4783,11 @@
         },
         {
           "query": "построить открытый накопительный резервуар для ливневой канализации своими руками",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "почему фильтр-патроны для очистки ливневки не эффективны",
           "visits": 1,
           "goals": 0
         },
@@ -6526,6 +4858,11 @@
         },
         {
           "query": "Принцип работы колонны для обезжелезивания воды",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "принцип работы насосной станции пожаротушения",
           "visits": 1,
           "goals": 0
         },
@@ -6905,12 +5242,22 @@
           "goals": 0
         },
         {
+          "query": "размер пожарного резервуара на складе как рассчитать",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "размеры смотровых колодцев для подведения воды",
           "visits": 1,
           "goals": 0
         },
         {
           "query": "разработка проекта и строительство локальных очистных сооружений",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "рассчитать объем пожарных резервуаров для спринклеров с расходом 93.14 л/с",
           "visits": 1,
           "goals": 0
         },
@@ -6926,6 +5273,11 @@
         },
         {
           "query": "расчет накопительных резервуаров дождевых стоков",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "расчет объема накопительного резервуара для дождевого стока",
           "visits": 1,
           "goals": 0
         },
@@ -7095,6 +5447,11 @@
           "goals": 0
         },
         {
+          "query": "смотрой колодец что это",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "собственник очистных сооружений обязан обеспечить точку сброса",
           "visits": 1,
           "goals": 0
@@ -7121,6 +5478,11 @@
         },
         {
           "query": "согласование точек сброса в водный объект воронеж",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "согласование точки сброса в водный объект по водному кодексу",
           "visits": 1,
           "goals": 0
         },
@@ -7445,6 +5807,11 @@
           "goals": 0
         },
         {
+          "query": "техтребования к смотровым колодцам водоснабжения",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "типы канализационных колодцев",
           "visits": 1,
           "goals": 0
@@ -7585,11 +5952,6 @@
           "goals": 0
         },
         {
-          "query": "установка дискового фильтра для очистки воды",
-          "visits": 1,
-          "goals": 0
-        },
-        {
           "query": "установка дренажного колодца для ливневой канализации",
           "visits": 1,
           "goals": 0
@@ -7606,6 +5968,11 @@
         },
         {
           "query": "установка ионного обмена для глубокого обессоливания воды производство",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "установка ливневого колодца",
           "visits": 1,
           "goals": 0
         },
@@ -7665,6 +6032,11 @@
           "goals": 0
         },
         {
+          "query": "установка системы очистки воды с обратным осмосом bailotс помпой видео",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "установка труб и монтаж дождеприеных. колодец схемы",
           "visits": 1,
           "goals": 0
@@ -7710,7 +6082,17 @@
           "goals": 0
         },
         {
+          "query": "устройство самопромывных фильтров",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "устройство смотрового колодца городской канализации",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "устройство смотровых канализационных колодцев",
           "visits": 1,
           "goals": 0
         },
@@ -7736,6 +6118,11 @@
         },
         {
           "query": "фильтр для воды дисковый как часто промывать",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "фильтр патрон - это локальные очистные сооружения? форум",
           "visits": 1,
           "goals": 0
         },
@@ -7795,6 +6182,11 @@
           "goals": 0
         },
         {
+          "query": "чем отличается колодец от дренажного колодца",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "чем промыть обратный осмос",
           "visits": 1,
           "goals": 0
@@ -7836,6 +6228,11 @@
         },
         {
           "query": "что необходимо для пусконаладочных работ на станции химподгтовки",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "Что такое дренажный колодец и для чего",
           "visits": 1,
           "goals": 0
         },
@@ -7938,7 +6335,7 @@
       "topQueries": [
         {
           "query": "аквагард",
-          "visits": 82,
+          "visits": 83,
           "goals": 9
         },
         {
@@ -8953,7 +7350,13 @@
         {
           "month": "10.09",
           "date": "2026-09-10",
-          "visits": 43,
+          "visits": 54,
+          "goals": 0
+        },
+        {
+          "month": "11.09",
+          "date": "2026-09-11",
+          "visits": 33,
           "goals": 0
         }
       ],
@@ -9097,9 +7500,9 @@
           "goals": 8
         },
         {
-          "month": "07.09-10.09",
+          "month": "07.09-11.09",
           "date": "2026-09-07",
-          "visits": 199,
+          "visits": 243,
           "goals": 1
         }
       ],
@@ -9137,7 +7540,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 420,
+          "visits": 464,
           "goals": 9
         }
       ]
@@ -9148,19 +7551,19 @@
       "counterId": 99590873,
       "counterName": "promtehmakulatura.ru",
       "siteUrl": "https://promtehmakulatura.ru",
-      "periodLabel": "01.04.26 - 10.09.26",
+      "periodLabel": "01.04.26 - 11.09.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-09-10",
-      "visits": 3730,
-      "users": 3439,
+      "fullCoverageDate": "2026-09-11",
+      "visits": 3781,
+      "users": 3487,
       "goalCount": 190,
-      "queryVisits": 2415,
+      "queryVisits": 2454,
       "queryGoalCount": 94,
-      "uniqueQueries": 1437,
+      "uniqueQueries": 1465,
       "goalRows": 51,
       "sampleQueries": [
         "прием макулатуры спб",
@@ -9220,7 +7623,7 @@
         },
         {
           "query": "как правильно утилизировать пластик",
-          "visits": 5,
+          "visits": 6,
           "goals": 2
         },
         {
@@ -9424,13 +7827,13 @@
           "goals": 1
         },
         {
-          "query": "прием макулатуры",
-          "visits": 32,
+          "query": "сколько видов пластика можно сдать на переработку в россии",
+          "visits": 33,
           "goals": 0
         },
         {
-          "query": "сколько видов пластика можно сдать на переработку в россии",
-          "visits": 30,
+          "query": "прием макулатуры",
+          "visits": 32,
           "goals": 0
         },
         {
@@ -9440,7 +7843,7 @@
         },
         {
           "query": "hdpe 2 что означает на канистре",
-          "visits": 28,
+          "visits": 29,
           "goals": 0
         },
         {
@@ -9784,6 +8187,11 @@
           "goals": 0
         },
         {
+          "query": "катушки от филамента куда девать",
+          "visits": 4,
+          "goals": 0
+        },
+        {
           "query": "маркировка hdpe на канистре что значит",
           "visits": 4,
           "goals": 0
@@ -9849,7 +8257,7 @@
           "goals": 0
         },
         {
-          "query": "катушки от филамента куда девать",
+          "query": "канистра hdpe маркировка для чего",
           "visits": 3,
           "goals": 0
         },
@@ -10009,6 +8417,11 @@
           "goals": 0
         },
         {
+          "query": "из какого дерева изготавливают бумагу",
+          "visits": 2,
+          "goals": 0
+        },
+        {
           "query": "из чего делают газеты",
           "visits": 2,
           "goals": 0
@@ -10059,12 +8472,12 @@
           "goals": 0
         },
         {
-          "query": "канистра hdpe маркировка для чего",
+          "query": "куда выкинуть линолеум",
           "visits": 2,
           "goals": 0
         },
         {
-          "query": "куда выкинуть линолеум",
+          "query": "куда девать катушки от пластика",
           "visits": 2,
           "goals": 0
         },
@@ -10085,6 +8498,11 @@
         },
         {
           "query": "куда сдать старые книги в спб",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "query": "макулатура спб",
           "visits": 2,
           "goals": 0
         },
@@ -10239,6 +8657,11 @@
           "goals": 0
         },
         {
+          "query": "сколько деревьев нужно для изготовления 1 тонны бумаги",
+          "visits": 2,
+          "goals": 0
+        },
+        {
           "query": "скупка катушек от филамента",
           "visits": 2,
           "goals": 0
@@ -10309,12 +8732,22 @@
           "goals": 0
         },
         {
+          "query": "1 pet",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "2 hdpe",
           "visits": 1,
           "goals": 0
         },
         {
           "query": "2 hdpe маркировка пластика что означает",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "2 hdpe пластик что это",
           "visits": 1,
           "goals": 0
         },
@@ -10484,6 +8917,11 @@
           "goals": 0
         },
         {
+          "query": "в треугольнике 6 и ps",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "в чем отличие пленки виды в приеме макулатур",
           "visits": 1,
           "goals": 0
@@ -10610,6 +9048,11 @@
         },
         {
           "query": "вывоз архивных документов в спб",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "вывоз втулок от стрейч пленки",
           "visits": 1,
           "goals": 0
         },
@@ -11039,6 +9482,11 @@
           "goals": 0
         },
         {
+          "query": "есть ли в петербурге пункты приема макулатуры желательно невский",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "завод переработки макулатуры",
           "visits": 1,
           "goals": 0
@@ -11149,12 +9597,12 @@
           "goals": 0
         },
         {
-          "query": "из какого дерева изготавливают бумагу",
+          "query": "из какого дерева изготавливают самую качественную бумагу",
           "visits": 1,
           "goals": 0
         },
         {
-          "query": "из какого дерева изготавливают самую качественную бумагу",
+          "query": "из какого дерева лучше делать бумагу",
           "visits": 1,
           "goals": 0
         },
@@ -11294,6 +9742,11 @@
           "goals": 0
         },
         {
+          "query": "как выращивают деревья для бумаги",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "как делается бумага из дерева врошлом",
           "visits": 1,
           "goals": 0
@@ -11415,6 +9868,11 @@
         },
         {
           "query": "как организовать раздельный сбор пластика",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "как отличить pet от pp",
           "visits": 1,
           "goals": 0
         },
@@ -11844,6 +10302,11 @@
           "goals": 0
         },
         {
+          "query": "какую пластмассу принимают",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "канистра с маркировкой hdpe для чего нужна",
           "visits": 1,
           "goals": 0
@@ -12084,11 +10547,6 @@
           "goals": 0
         },
         {
-          "query": "куда девать катушки от пластика",
-          "visits": 1,
-          "goals": 0
-        },
-        {
           "query": "куда девать отходы 3д печати",
           "visits": 1,
           "goals": 0
@@ -12120,6 +10578,11 @@
         },
         {
           "query": "куда деть и как переработать какушки после 3д печати",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "куда деть катушки",
           "visits": 1,
           "goals": 0
         },
@@ -12624,11 +11087,6 @@
           "goals": 0
         },
         {
-          "query": "макулатура спб",
-          "visits": 1,
-          "goals": 0
-        },
-        {
           "query": "макулатура спб за деньги дорого",
           "visits": 1,
           "goals": 0
@@ -12750,6 +11208,11 @@
         },
         {
           "query": "маркировка рэт 1 для бутылей что означает",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "маркировка треугольник в нем 1 pet",
           "visits": 1,
           "goals": 0
         },
@@ -12899,6 +11362,11 @@
           "goals": 0
         },
         {
+          "query": "можно ли сдавать архив в макулатуру",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "можно ли сдавать архивные документы макулатуру",
           "visits": 1,
           "goals": 0
@@ -12974,6 +11442,11 @@
           "goals": 0
         },
         {
+          "query": "можно ли сдавать файлы на переработку",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "можно ли сдаваь на макулатуру персональные данные",
           "visits": 1,
           "goals": 0
@@ -12984,12 +11457,22 @@
           "goals": 0
         },
         {
+          "query": "можно ли сдать в макулатуру глянцевые журналы",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "можно ли сдать в макулотуру табели учета рабочего аремени",
           "visits": 1,
           "goals": 0
         },
         {
           "query": "можно ли сдать в пункт макулатуры документы содержащие персональные данные",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "можно ли сдать канистру для бензина обратно",
           "visits": 1,
           "goals": 0
         },
@@ -13060,6 +11543,11 @@
         },
         {
           "query": "можно сдавать на макулатуру документы",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "мукулатцра журналы",
           "visits": 1,
           "goals": 0
         },
@@ -13195,6 +11683,11 @@
         },
         {
           "query": "ооо «промтехмакулатура»",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "ООО БИГ-Бэг спб прием мешков",
           "visits": 1,
           "goals": 0
         },
@@ -13484,6 +11977,11 @@
           "goals": 0
         },
         {
+          "query": "переработка филамента в москве",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "переработка филамента сдать",
           "visits": 1,
           "goals": 0
@@ -13550,6 +12048,11 @@
         },
         {
           "query": "пластик с какой маркировкой можно сдать на переработку",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "пластик с маркировкой 2 в треугольнике",
           "visits": 1,
           "goals": 0
         },
@@ -13700,6 +12203,11 @@
         },
         {
           "query": "полимерная гранула это",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "полипропилен сдать в переработку цена за 1 кг",
           "visits": 1,
           "goals": 0
         },
@@ -14004,6 +12512,11 @@
           "goals": 0
         },
         {
+          "query": "приём отзодов пластика 3д принтеров",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "прием отходо впузырьчатой пленки спб",
           "visits": 1,
           "goals": 0
@@ -14090,6 +12603,11 @@
         },
         {
           "query": "прием пластика ленинградская область",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "прием пластика на переработку в спб",
           "visits": 1,
           "goals": 0
         },
@@ -14509,6 +13027,11 @@
           "goals": 0
         },
         {
+          "query": "пункты приёма пластика в спб",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "пункты приема пластиковых ящиков",
           "visits": 1,
           "goals": 0
@@ -14605,6 +13128,11 @@
         },
         {
           "query": "сбор и размещение стрейч-пленки и картона, сортировка.",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "сбор отходов пвд",
           "visits": 1,
           "goals": 0
         },
@@ -14984,6 +13512,11 @@
           "goals": 0
         },
         {
+          "query": "сдать файлики на отходы",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "сдать файлы в переработку",
           "visits": 1,
           "goals": 0
@@ -15090,11 +13623,6 @@
         },
         {
           "query": "сколько деревьев вырубается для бумаги",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "сколько деревьев нужно для изготовления 1 тонны бумаги",
           "visits": 1,
           "goals": 0
         },
@@ -16269,6 +14797,11 @@
           "goals": 0
         },
         {
+          "query": "hdpe на канистре что означает",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "hdpe обозначение на канистре",
           "visits": 1,
           "goals": 0
@@ -16280,6 +14813,11 @@
         },
         {
           "query": "hdpe что означает на канистре из под масла",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "https://promtehmakulatura.ru/partneri/",
           "visits": 1,
           "goals": 0
         },
@@ -16310,6 +14848,11 @@
         },
         {
           "query": "pet 1",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "pet 1 на бутылке что значит",
           "visits": 1,
           "goals": 0
         },
@@ -17372,7 +15915,13 @@
         {
           "month": "10.09",
           "date": "2026-09-10",
-          "visits": 43,
+          "visits": 69,
+          "goals": 0
+        },
+        {
+          "month": "11.09",
+          "date": "2026-09-11",
+          "visits": 25,
           "goals": 0
         }
       ],
@@ -17516,9 +16065,9 @@
           "goals": 24
         },
         {
-          "month": "07.09-10.09",
+          "month": "07.09-11.09",
           "date": "2026-09-07",
-          "visits": 243,
+          "visits": 294,
           "goals": 8
         }
       ],
@@ -17556,7 +16105,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 667,
+          "visits": 718,
           "goals": 24
         }
       ]
@@ -17567,20 +16116,20 @@
       "counterId": 107615431,
       "counterName": "smart-spb.pro",
       "siteUrl": "https://smart-spb.pro",
-      "periodLabel": "01.04.26 - 10.09.26",
+      "periodLabel": "01.04.26 - 11.09.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-09-10",
-      "visits": 1686,
-      "users": 1439,
-      "goalCount": 164,
-      "queryVisits": 1015,
-      "queryGoalCount": 77,
-      "uniqueQueries": 758,
-      "goalRows": 29,
+      "fullCoverageDate": "2026-09-11",
+      "visits": 1724,
+      "users": 1475,
+      "goalCount": 165,
+      "queryVisits": 1044,
+      "queryGoalCount": 78,
+      "uniqueQueries": 781,
+      "goalRows": 30,
       "sampleQueries": [
         "смартстрой",
         "смартстрой официальный сайт",
@@ -17698,6 +16247,11 @@
           "goals": 1
         },
         {
+          "query": "Смарт спб",
+          "visits": 1,
+          "goals": 1
+        },
+        {
           "query": "смарт строй строительная компания спб",
           "visits": 1,
           "goals": 1
@@ -17743,6 +16297,11 @@
           "goals": 0
         },
         {
+          "query": "проекты домов из газобетона в спб одноэтажные",
+          "visits": 5,
+          "goals": 0
+        },
+        {
           "query": "санкт-петербург проспект испытателей 39 смартстрой",
           "visits": 5,
           "goals": 0
@@ -17754,11 +16313,6 @@
         },
         {
           "query": "вентиляция в каркасном доме как правильно сделать",
-          "visits": 4,
-          "goals": 0
-        },
-        {
-          "query": "проекты домов из газобетона в спб одноэтажные",
           "visits": 4,
           "goals": 0
         },
@@ -17775,6 +16329,11 @@
         {
           "query": "warm-house-spb@yandex.com",
           "visits": 4,
+          "goals": 0
+        },
+        {
+          "query": "вентиляция в каркасном доме",
+          "visits": 3,
           "goals": 0
         },
         {
@@ -17838,11 +16397,6 @@
           "goals": 0
         },
         {
-          "query": "вентиляция в каркасном доме",
-          "visits": 2,
-          "goals": 0
-        },
-        {
           "query": "виды каркасных бань",
           "visits": 2,
           "goals": 0
@@ -17859,6 +16413,11 @@
         },
         {
           "query": "внутренняя отделка каркасного дома",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "query": "внутренняя отделка каркасного дома гипсокартоном",
           "visits": 2,
           "goals": 0
         },
@@ -17904,6 +16463,11 @@
         },
         {
           "query": "какие лаги использовать для пола в деревянном доме размеры норма",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "query": "каркасный дом внутри с отделкой фото",
           "visits": 2,
           "goals": 0
         },
@@ -17978,7 +16542,17 @@
           "goals": 0
         },
         {
+          "query": "строительство домов под ключ",
+          "visits": 2,
+          "goals": 0
+        },
+        {
           "query": "строительство домов санкт петербург",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "query": "строительство домов спб",
           "visits": 2,
           "goals": 0
         },
@@ -18088,6 +16662,11 @@
           "goals": 0
         },
         {
+          "query": "в каркасном доме стоит ли обшивать стены осб плитами или лучше гипсокартоном?",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "в чем отличие щитового дома от каркасно щитового дома",
           "visits": 1,
           "goals": 0
@@ -18168,7 +16747,7 @@
           "goals": 0
         },
         {
-          "query": "внутренняя отделка каркасного дома гипсокартоном",
+          "query": "внутренняя отделка каркасного дома имитация бруса",
           "visits": 1,
           "goals": 0
         },
@@ -18298,12 +16877,22 @@
           "goals": 0
         },
         {
+          "query": "Дом в спб под ключ",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "дом газобетон под ключ",
           "visits": 1,
           "goals": 0
         },
         {
           "query": "дом из бруса когда лучше строить",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "дом из бруса плюсы и минусы",
           "visits": 1,
           "goals": 0
         },
@@ -18708,6 +17297,11 @@
           "goals": 0
         },
         {
+          "query": "как реально строить дома",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "Как с первого раза самому сделать клееный брус",
           "visits": 1,
           "goals": 0
@@ -19028,11 +17622,6 @@
           "goals": 0
         },
         {
-          "query": "каркасный дом внутри с отделкой фото",
-          "visits": 1,
-          "goals": 0
-        },
-        {
           "query": "каркасный дом и щитовой в чем разница",
           "visits": 1,
           "goals": 0
@@ -19208,6 +17797,11 @@
           "goals": 0
         },
         {
+          "query": "линейных уравнений системы вентиляции для каркасных домов",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "лопухинка что строят за домики",
           "visits": 1,
           "goals": 0
@@ -19239,6 +17833,11 @@
         },
         {
           "query": "можно ли строить дом осенью и зимой?",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "Можно проекта санкт",
           "visits": 1,
           "goals": 0
         },
@@ -19348,6 +17947,11 @@
           "goals": 0
         },
         {
+          "query": "ос дом можно каркасный оббивать внутри или лучше сделать гипсокартон",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "Особенности каркасной бани",
           "visits": 1,
           "goals": 0
@@ -19374,6 +17978,11 @@
         },
         {
           "query": "отделка стен в каркасном доме внутри варианты",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "Отделка штукатуркой каркасного дома внутри",
           "visits": 1,
           "goals": 0
         },
@@ -19409,6 +18018,11 @@
         },
         {
           "query": "плюсы и минусы жизни в доме из бруса в черте города",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "подрядчик смартстрой норм ?",
           "visits": 1,
           "goals": 0
         },
@@ -19474,6 +18088,11 @@
         },
         {
           "query": "построить дом из газобетона и кирпича в ленинградской области",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "построить дом ленинградская область",
           "visits": 1,
           "goals": 0
         },
@@ -19844,6 +18463,16 @@
         },
         {
           "query": "ремонт в каркасном доме дизайн фото обивка гипсокартоном",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "ремонт каркасного дома внутри",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "ройка оконного проема",
           "visits": 1,
           "goals": 0
         },
@@ -20243,6 +18872,11 @@
           "goals": 0
         },
         {
+          "query": "СмартСтрой просп. Испытателей, 39 Отзывы",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "СмартСтрой просп. Испытателей, 39 Фото",
           "visits": 1,
           "goals": 0
@@ -20588,11 +19222,6 @@
           "goals": 0
         },
         {
-          "query": "строительство домов под ключ",
-          "visits": 1,
-          "goals": 0
-        },
-        {
           "query": "строительство домов под ключ в ипотеку",
           "visits": 1,
           "goals": 0
@@ -20613,11 +19242,6 @@
           "goals": 0
         },
         {
-          "query": "строительство домов спб",
-          "visits": 1,
-          "goals": 0
-        },
-        {
           "query": "строительство домов спб под ключ",
           "visits": 1,
           "goals": 0
@@ -20629,6 +19253,11 @@
         },
         {
           "query": "строительство загородное",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "строительство загородных домов",
           "visits": 1,
           "goals": 0
         },
@@ -20649,6 +19278,11 @@
         },
         {
           "query": "Строительство загородных домов из газобетона в санкт петербурге",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "строительство загородных домов из газобетона в спб",
           "visits": 1,
           "goals": 0
         },
@@ -20699,6 +19333,11 @@
         },
         {
           "query": "строительство каркасных домов под ключ в ленинградской области",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "строительство коттеджей и загородных домов в спб и лнеинградской области",
           "visits": 1,
           "goals": 0
         },
@@ -20788,6 +19427,11 @@
           "goals": 0
         },
         {
+          "query": "схема вентиляции в каркасном доме",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "схема вентиляции в каркасном доме через стену",
           "visits": 1,
           "goals": 0
@@ -20844,6 +19488,11 @@
         },
         {
           "query": "труба отопления через каркасную стену",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "трубы водоснабжения укладывать открытым или закрытым способом с каркасном доме",
           "visits": 1,
           "goals": 0
         },
@@ -20919,6 +19568,11 @@
         },
         {
           "query": "частное домостроение еспб",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "частный дом под ключ цена",
           "visits": 1,
           "goals": 0
         },
@@ -21118,6 +19772,11 @@
           "goals": 0
         },
         {
+          "query": "чем отделать каркасный дом внутри",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "чем отделать каркасный дом внутри кроме вагонки",
           "visits": 1,
           "goals": 0
@@ -21144,6 +19803,11 @@
         },
         {
           "query": "чем покрасить лестницу в бане",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "чем покрасить лестницу деревянную внутри дома на второй этаж",
           "visits": 1,
           "goals": 0
         },
@@ -22396,8 +21060,14 @@
         {
           "month": "10.09",
           "date": "2026-09-10",
-          "visits": 21,
+          "visits": 40,
           "goals": 0
+        },
+        {
+          "month": "11.09",
+          "date": "2026-09-11",
+          "visits": 19,
+          "goals": 1
         }
       ],
       "weekly": [
@@ -22540,10 +21210,10 @@
           "goals": 21
         },
         {
-          "month": "07.09-10.09",
+          "month": "07.09-11.09",
           "date": "2026-09-07",
-          "visits": 168,
-          "goals": 7
+          "visits": 206,
+          "goals": 8
         }
       ],
       "monthly": [
@@ -22580,8 +21250,8 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 347,
-          "goals": 25
+          "visits": 385,
+          "goals": 26
         }
       ]
     },
@@ -22591,15 +21261,15 @@
       "counterId": 99163159,
       "counterName": "balt-pallet",
       "siteUrl": "https://balt-pallet.ru",
-      "periodLabel": "01.04.26 - 10.09.26",
+      "periodLabel": "01.04.26 - 11.09.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-09-10",
-      "visits": 799,
-      "users": 731,
+      "fullCoverageDate": "2026-09-11",
+      "visits": 804,
+      "users": 735,
       "goalCount": 92,
       "queryVisits": 185,
       "queryGoalCount": 11,
@@ -24095,6 +22765,12 @@
         {
           "month": "10.09",
           "date": "2026-09-10",
+          "visits": 5,
+          "goals": 0
+        },
+        {
+          "month": "11.09",
+          "date": "2026-09-11",
           "visits": 4,
           "goals": 0
         }
@@ -24239,9 +22915,9 @@
           "goals": 0
         },
         {
-          "month": "07.09-10.09",
+          "month": "07.09-11.09",
           "date": "2026-09-07",
-          "visits": 31,
+          "visits": 36,
           "goals": 2
         }
       ],
@@ -24279,7 +22955,7 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 104,
+          "visits": 109,
           "goals": 2
         }
       ]
@@ -24290,20 +22966,20 @@
       "counterId": 109615906,
       "counterName": "lombard-banka",
       "siteUrl": "https://lombard-banka.ru",
-      "periodLabel": "01.04.26 - 10.09.26",
+      "periodLabel": "01.04.26 - 11.09.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-09-10",
-      "visits": 622,
-      "users": 591,
-      "goalCount": 136,
-      "queryVisits": 512,
-      "queryGoalCount": 107,
-      "uniqueQueries": 370,
-      "goalRows": 33,
+      "fullCoverageDate": "2026-09-11",
+      "visits": 635,
+      "users": 603,
+      "goalCount": 140,
+      "queryVisits": 522,
+      "queryGoalCount": 111,
+      "uniqueQueries": 375,
+      "goalRows": 34,
       "sampleQueries": [
         "ломбард электросамокатов спб",
         "где в санкт-петербурге колпино можно заложить велосипед",
@@ -24343,6 +23019,11 @@
         {
           "query": "ломбард музыкальных инструментов саксофон",
           "visits": 45,
+          "goals": 4
+        },
+        {
+          "query": "ломбард спб техника",
+          "visits": 3,
           "goals": 4
         },
         {
@@ -24417,7 +23098,7 @@
         },
         {
           "query": "велосипед в ломбард",
-          "visits": 23,
+          "visits": 24,
           "goals": 1
         },
         {
@@ -24437,7 +23118,7 @@
         },
         {
           "query": "Сдать велосипед в ломбард",
-          "visits": 3,
+          "visits": 4,
           "goals": 1
         },
         {
@@ -24531,6 +23212,11 @@
           "goals": 0
         },
         {
+          "query": "как делают ювелирные изделия из золота",
+          "visits": 2,
+          "goals": 0
+        },
+        {
           "query": "клеймо на золоте 583 пробы ссср",
           "visits": 2,
           "goals": 0
@@ -24576,11 +23262,6 @@
           "goals": 0
         },
         {
-          "query": "ломбард спб техника",
-          "visits": 2,
-          "goals": 0
-        },
-        {
           "query": "ломбард спб цена за грамм",
           "visits": 2,
           "goals": 0
@@ -24597,6 +23278,11 @@
         },
         {
           "query": "проба 583 что за металл",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "query": "Серебряные изделия под залог",
           "visits": 2,
           "goals": 0
         },
@@ -24836,6 +23522,11 @@
           "goals": 0
         },
         {
+          "query": "деньги под залог спецтехники спб",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "домбард банка",
           "visits": 1,
           "goals": 0
@@ -25001,11 +23692,6 @@
           "goals": 0
         },
         {
-          "query": "как делают ювелирные изделия из золота",
-          "visits": 1,
-          "goals": 0
-        },
-        {
           "query": "Как делают ювелирные украшения из серебра",
           "visits": 1,
           "goals": 0
@@ -25027,6 +23713,11 @@
         },
         {
           "query": "как лучше работает ломбард",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "Как отличить золото 585 пробы от 583",
           "visits": 1,
           "goals": 0
         },
@@ -25486,6 +24177,11 @@
           "goals": 0
         },
         {
+          "query": "ломбард техники онлайн оценка спб",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "ломбард трюковых самокатов спб",
           "visits": 1,
           "goals": 0
@@ -25881,11 +24577,6 @@
           "goals": 0
         },
         {
-          "query": "Серебряные изделия под залог",
-          "visits": 1,
-          "goals": 0
-        },
-        {
           "query": "серебряные украшения как производят",
           "visits": 1,
           "goals": 0
@@ -25907,6 +24598,11 @@
         },
         {
           "query": "сколько стоит грамм серебра в ломбарде спб",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "сколько стоит сдать кольцо в ломбард спб",
           "visits": 1,
           "goals": 0
         },
@@ -26101,6 +24797,11 @@
           "goals": 0
         },
         {
+          "query": "чем отличается золото 375 от 585 пробы",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "чем отличаются 585 проба от 583 в двух словах",
           "visits": 1,
           "goals": 0
@@ -26198,8 +24899,8 @@
           "goals": 4
         },
         {
-          "query": "ломбард сумок спб",
-          "visits": 1,
+          "query": "ломбард спб техника",
+          "visits": 3,
           "goals": 4
         }
       ],
@@ -27179,8 +25880,14 @@
         {
           "month": "10.09",
           "date": "2026-09-10",
-          "visits": 13,
+          "visits": 22,
           "goals": 0
+        },
+        {
+          "month": "11.09",
+          "date": "2026-09-11",
+          "visits": 4,
+          "goals": 4
         }
       ],
       "weekly": [
@@ -27323,10 +26030,10 @@
           "goals": 14
         },
         {
-          "month": "07.09-10.09",
+          "month": "07.09-11.09",
           "date": "2026-09-07",
-          "visits": 76,
-          "goals": 7
+          "visits": 89,
+          "goals": 11
         }
       ],
       "monthly": [
@@ -27363,8 +26070,8 @@
         {
           "month": "сент",
           "date": "2026-09-01",
-          "visits": 198,
-          "goals": 19
+          "visits": 211,
+          "goals": 23
         }
       ]
     }
