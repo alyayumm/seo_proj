@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-14T10:52:54.322Z",
+  "updatedAt": "2026-09-15T10:17:23.989Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -338,15 +338,15 @@
     {
       "id": "20906",
       "title": "Аквагард.рф - добавить фото по станциям повышения давления на сайт",
-      "status": "2",
-      "statusLabel": "Ждет выполнения",
+      "status": "5",
+      "statusLabel": "Готово",
       "responsibleId": "634",
       "responsibleName": "SEO Alex",
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-09-10T11:31:20+03:00",
       "deadline": "2026-09-11T18:00:00+03:00",
-      "closedDate": "",
+      "closedDate": "2026-09-14T16:07:58+03:00",
       "description": "https://dana-maksimovna.wfolio.pro/disk/[телефон скрыт]-f5xzbg",
       "groupId": "46",
       "groupName": "SEO"
@@ -354,15 +354,15 @@
     {
       "id": "20872",
       "title": "Актуализировать панель, где хранятся все доступы",
-      "status": "2",
-      "statusLabel": "Ждет выполнения",
+      "status": "5",
+      "statusLabel": "Готово",
       "responsibleId": "586",
       "responsibleName": "Чеботарев Кирилл",
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-09-09T18:08:07+03:00",
       "deadline": "2026-09-11T18:00:00+03:00",
-      "closedDate": "",
+      "closedDate": "2026-09-14T15:02:59+03:00",
       "description": "",
       "groupId": "46",
       "groupName": "SEO"
@@ -10233,11 +10233,12 @@
         "assignedByName": "Евстратьева Кристина",
         "stageId": "NEW",
         "createdTime": "2026-04-06T11:10:07+03:00",
-        "updatedTime": "2026-08-03T17:44:12+03:00",
+        "updatedTime": "2026-09-14T17:23:50+03:00",
         "closedTime": "",
         "companyId": "0",
         "contactIds": [],
         "customFields": {
+          "ufCrm_1732632849809": "https://switch-eng.ru/",
           "ufCrmDealAmoJrcxsmqxxwfbemzy": "Санкт-Петербург",
           "ufCrmDealAmoMwhefxzsqryuxhjw": 1
         }
