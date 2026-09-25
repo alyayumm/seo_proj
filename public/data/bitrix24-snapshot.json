@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-24T10:19:47.763Z",
+  "updatedAt": "2026-09-25T10:23:18.879Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -351,7 +351,7 @@
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-09-10T11:56:46+03:00",
-      "deadline": "2026-09-24T18:00:00+03:00",
+      "deadline": "2026-09-25T18:00:00+03:00",
       "closedDate": "",
       "description": "Сделать пункт 2: https://docs.google.com/document/d/[скрыто]/edit?tab=t.emcoqoq3hai5#heading=h.9ocmnxqz6u8e",
       "groupId": "46",
@@ -383,7 +383,7 @@
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-09-10T11:44:41+03:00",
-      "deadline": "2026-09-23T18:00:00+03:00",
+      "deadline": "2026-09-25T18:00:00+03:00",
       "closedDate": "",
       "description": "https://docs.google.com/spreadsheets/d/[скрыто]/edit?gid=0#gid=0",
       "groupId": "46",
@@ -3065,6 +3065,20 @@
   ],
   "crm": {
     "leads": [
+      {
+        "id": "29790",
+        "title": "Смена Ответственного",
+        "entityType": "lead",
+        "assignedById": "564",
+        "assignedByName": "Евстратьева Кристина",
+        "stageId": "UC_EXW3N0",
+        "createdTime": "2026-09-24T16:07:35+03:00",
+        "updatedTime": "2026-09-24T16:07:38+03:00",
+        "closedTime": "",
+        "companyId": "0",
+        "contactIds": [],
+        "customFields": {}
+      },
       {
         "id": "29788",
         "title": "Смена Ответственного",
@@ -10100,20 +10114,6 @@
         "stageId": "NEW",
         "createdTime": "2025-01-22T18:39:54+03:00",
         "updatedTime": "2025-01-22T18:43:47+03:00",
-        "closedTime": "",
-        "companyId": "0",
-        "contactIds": [],
-        "customFields": {}
-      },
-      {
-        "id": "28770",
-        "title": "Ancy Beauty Saloon",
-        "entityType": "lead",
-        "assignedById": "36",
-        "assignedByName": "Юмаева Алина",
-        "stageId": "NEW",
-        "createdTime": "2025-01-22T18:39:54+03:00",
-        "updatedTime": "2025-01-22T18:39:54+03:00",
         "closedTime": "",
         "companyId": "0",
         "contactIds": [],
