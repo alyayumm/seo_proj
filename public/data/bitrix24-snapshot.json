@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-25T10:23:18.879Z",
+  "updatedAt": "2026-09-26T10:03:10.762Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -278,6 +278,22 @@
   ],
   "tasks": [
     {
+      "id": "21230",
+      "title": "rosta-finance - Аудит",
+      "status": "2",
+      "statusLabel": "Ждет выполнения",
+      "responsibleId": "634",
+      "responsibleName": "SEO Alex",
+      "creatorId": "564",
+      "creatorName": "Евстратьева Кристина",
+      "createdDate": "2026-09-25T16:00:23+03:00",
+      "deadline": "2026-09-30T18:00:00+03:00",
+      "closedDate": "",
+      "description": "Сайт : https://rosta-finance.ru/ Контекст : наш клиент на Яндекс Картах, хотим его усилить результат с помощью СЕО. Задача : провести аудит, обозначить проблемы и точки роста. Результат : оформить в гугл док, обозначить проблемы и точки роста. мб какой то прогноз/оффер что даст сео оптимизация на дистанции 3-6-9 мес.",
+      "groupId": "46",
+      "groupName": "SEO"
+    },
+    {
       "id": "21140",
       "title": "СЕО-задачи по всем клиентам",
       "status": "2",
@@ -351,7 +367,7 @@
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-09-10T11:56:46+03:00",
-      "deadline": "2026-09-25T18:00:00+03:00",
+      "deadline": "2026-09-29T18:00:00+03:00",
       "closedDate": "",
       "description": "Сделать пункт 2: https://docs.google.com/document/d/[скрыто]/edit?tab=t.emcoqoq3hai5#heading=h.9ocmnxqz6u8e",
       "groupId": "46",
@@ -383,7 +399,7 @@
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-09-10T11:44:41+03:00",
-      "deadline": "2026-09-25T18:00:00+03:00",
+      "deadline": "2026-09-30T18:00:00+03:00",
       "closedDate": "",
       "description": "https://docs.google.com/spreadsheets/d/[скрыто]/edit?gid=0#gid=0",
       "groupId": "46",
