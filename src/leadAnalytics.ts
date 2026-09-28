@@ -62,6 +62,8 @@ export type LeadAnalyticsSource = {
   channel: string;
   periodLabel: string;
   sheetName?: string;
+  format?: 'raw-leads' | 'period-summary' | 'smartstroy-matrix';
+  range?: string;
   spreadsheetId: string;
   gid: string;
   url: string;
@@ -110,54 +112,66 @@ type GvizResponse = {
   };
 };
 
+const LEAD_MASTER_SPREADSHEET_ID = '1tM8lK4524ujLJqEu0VTEikJdpPE5O65_u-VRGnLduzQ';
+const LEAD_MASTER_SPREADSHEET_URL =
+  'https://docs.google.com/spreadsheets/d/1tM8lK4524ujLJqEu0VTEikJdpPE5O65_u-VRGnLduzQ/edit';
+
 export const LEAD_ANALYTICS_SOURCES: LeadAnalyticsSource[] = [
   {
-    id: 'aquaguard-leads-source-1',
+    id: 'aquaguard-leads-master-2026',
     projectName: 'Аквагард',
     clientName: 'Аквагард',
-    title: 'Аквагард: заявки, выгрузка 1',
+    title: 'Аквагард: аналитика лидов',
     channel: 'Заявки',
-    periodLabel: 'Google Sheets',
-    spreadsheetId: '1bZIzYEMFlAqQa42iFS9VMJPQrQ3BnkjbcP2sCY2kzzg',
-    gid: '1914813722',
-    url: 'https://docs.google.com/spreadsheets/d/1bZIzYEMFlAqQa42iFS9VMJPQrQ3BnkjbcP2sCY2kzzg/edit?gid=1914813722#gid=1914813722',
-    note: 'Источник заявок Аквагарда из Google Sheets.',
+    periodLabel: 'апрель-июнь 2026',
+    format: 'period-summary',
+    range: 'A1:Z100',
+    spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
+    gid: '1340262634',
+    url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=1340262634#gid=1340262634`,
+    note: 'Сводная таблица лидов: звонки, почта, сайт, другое и недельная динамика.',
   },
   {
-    id: 'aquaguard-leads-source-2',
-    projectName: 'Аквагард',
-    clientName: 'Аквагард',
-    title: 'Аквагард: заявки, выгрузка 2',
+    id: 'smartstroy-leads-master-2026',
+    projectName: 'Смартстрой',
+    clientName: 'Смартстрой',
+    title: 'Смартстрой: аналитика лидов',
     channel: 'Заявки',
-    periodLabel: 'Google Sheets',
-    spreadsheetId: '1wVx-svliWiFFIKnAl-MQx6pbCJUcmGET1qvvCR8jDIY',
-    gid: '1032888152',
-    url: 'https://docs.google.com/spreadsheets/d/1wVx-svliWiFFIKnAl-MQx6pbCJUcmGET1qvvCR8jDIY/edit?gid=1032888152#gid=1032888152',
-    note: 'Источник заявок Аквагарда из Google Sheets.',
-  },
-  {
-    id: 'aquaguard-leads-source-3',
-    projectName: 'Аквагард',
-    clientName: 'Аквагард',
-    title: 'Аквагард: заявки, выгрузка 3',
-    channel: 'Заявки',
-    periodLabel: 'Google Sheets',
-    spreadsheetId: '1K0qVoWsLEOn-_yqRA4qKnGEX5891Kwv5DloZoTntcks',
+    periodLabel: 'июнь-сентябрь 2026',
+    format: 'smartstroy-matrix',
+    range: 'A1:T20',
+    spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
     gid: '0',
-    url: 'https://docs.google.com/spreadsheets/d/1K0qVoWsLEOn-_yqRA4qKnGEX5891Kwv5DloZoTntcks/edit?gid=0#gid=0',
-    note: 'Источник заявок Аквагарда из Google Sheets.',
+    url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=0#gid=0`,
+    note: 'Сводная таблица лидов: лиды, квалы, продажи и выручка по месяцам.',
   },
   {
-    id: 'aquaguard-leads-source-4',
-    projectName: 'Аквагард',
-    clientName: 'Аквагард',
-    title: 'Аквагард: заявки, выгрузка 4',
+    id: 'balt-pallet-leads-master-2026',
+    projectName: 'Балт-паллет',
+    clientName: 'Балт Паллет',
+    title: 'Балт Паллет: аналитика лидов',
     channel: 'Заявки',
     periodLabel: 'Google Sheets',
-    spreadsheetId: '1DcxdORWOCCIYPKpkTTPYpTkRB3O_oShk4QS5_hoodwg',
-    gid: '1143285266',
-    url: 'https://docs.google.com/spreadsheets/d/1DcxdORWOCCIYPKpkTTPYpTkRB3O_oShk4QS5_hoodwg/edit?gid=1143285266#gid=1143285266',
-    note: 'Источник заявок Аквагарда из Google Sheets.',
+    format: 'period-summary',
+    range: 'A1:Z120',
+    spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
+    gid: '893107997',
+    url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=893107997#gid=893107997`,
+    note: 'Сводная таблица лидов. Сейчас используется ручной fallback, пока вкладка не заполнена.',
+  },
+  {
+    id: 'watch-leads-master-2026',
+    projectName: 'Часы',
+    clientName: 'WatchStore',
+    title: 'WatchStore: аналитика лидов',
+    channel: 'Заявки',
+    periodLabel: 'Google Sheets',
+    format: 'period-summary',
+    range: 'A1:Z120',
+    spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
+    gid: '612063314',
+    url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=612063314#gid=612063314`,
+    note: 'Сводная таблица лидов. Данные появятся после заполнения вкладки.',
   },
 ];
 
@@ -173,7 +187,7 @@ export const STATIC_LEAD_ANALYTICS_SUMMARIES: LeadAnalyticsSummary[] = [
     unknown: 0,
     budget: 75119,
     sourceCount: 4,
-    note: 'Сводка из локальных Excel-файлов без персональных данных: июль/август, почта и звонки.',
+    note: 'Сводка из локальных Excel-файлов без персональных данных: июль/август, почта и звонки. Общая таблица лидов подключена как проверочный источник.',
     sources: [
       {
         id: 'promteh-2026-08-mail',
@@ -182,6 +196,7 @@ export const STATIC_LEAD_ANALYTICS_SUMMARIES: LeadAnalyticsSummary[] = [
         periodLabel: 'август 2026',
         sourceType: 'local-snapshot',
         fileName: 'август почта.xlsx',
+        url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=681182108#gid=681182108`,
         total: 19,
         quality: 0,
         inWork: 8,
@@ -195,6 +210,7 @@ export const STATIC_LEAD_ANALYTICS_SUMMARIES: LeadAnalyticsSummary[] = [
         periodLabel: 'июль 2026',
         sourceType: 'local-snapshot',
         fileName: 'июль звонки.xlsx',
+        url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=681182108#gid=681182108`,
         total: 10,
         quality: 0,
         inWork: 2,
@@ -208,6 +224,7 @@ export const STATIC_LEAD_ANALYTICS_SUMMARIES: LeadAnalyticsSummary[] = [
         periodLabel: 'июль 2026',
         sourceType: 'local-snapshot',
         fileName: 'июль почта.xlsx',
+        url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=681182108#gid=681182108`,
         total: 15,
         quality: 2,
         inWork: 5,
@@ -221,6 +238,7 @@ export const STATIC_LEAD_ANALYTICS_SUMMARIES: LeadAnalyticsSummary[] = [
         periodLabel: 'август 2026',
         sourceType: 'local-snapshot',
         fileName: 'август звонки.xlsx',
+        url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=681182108#gid=681182108`,
         total: 16,
         quality: 3,
         inWork: 4,
@@ -369,9 +387,11 @@ export const STATIC_LEAD_ANALYTICS_SUMMARIES: LeadAnalyticsSummary[] = [
 
 export async function fetchLeadAnalyticsSummaries(): Promise<LeadAnalyticsFetchResult> {
   const results = await Promise.allSettled(
-    LEAD_ANALYTICS_SOURCES.map(async (source) => summarizeLeadRows(parseLeadRows(await loadGvizJsonp(source), source), source)),
+    LEAD_ANALYTICS_SOURCES.map(async (source) => summarizeLeadSource(await loadGvizJsonp(source), source)),
   );
-  const summaries = results.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
+  const summaries = results.flatMap((result) =>
+    result.status === 'fulfilled' && hasLeadSummaryData(result.value) ? [result.value] : [],
+  );
   const errors = results.flatMap((result, index) => {
     if (result.status === 'fulfilled') return [];
     const source = LEAD_ANALYTICS_SOURCES[index];
@@ -398,6 +418,16 @@ export async function fetchLeadAnalyticsSummaries(): Promise<LeadAnalyticsFetchR
   }
 
   return { summaries, errors };
+}
+
+function summarizeLeadSource(response: GvizResponse, source: LeadAnalyticsSource) {
+  if (source.format === 'period-summary') return summarizePeriodSummary(response, source);
+  if (source.format === 'smartstroy-matrix') return summarizeSmartstroyMatrix(response, source);
+  return summarizeLeadRows(parseLeadRows(response, source), source);
+}
+
+function hasLeadSummaryData(summary: LeadAnalyticsSummary) {
+  return summary.total > 0 || summary.daily.length > 0 || summary.weekly.length > 0 || summary.monthly.length > 0;
 }
 
 export function combineLeadAnalyticsSummaries(summaries: LeadAnalyticsSummary[]): LeadAnalyticsSummary[] {
@@ -481,6 +511,329 @@ function summarizeLeadRows(rows: LeadRow[], source: LeadAnalyticsSource): LeadAn
   };
 }
 
+function summarizePeriodSummary(response: GvizResponse, source: LeadAnalyticsSource): LeadAnalyticsSummary {
+  const rawRows = getGvizRows(response);
+  const headerIndex = rawRows.findIndex((row) => {
+    const normalized = row.map(normalizeHeader);
+    return normalized.some((cell) => cell.includes('месяц') || cell.includes('неделя')) &&
+      normalized.some((cell) => cell.includes('всего') && cell.includes('лид'));
+  });
+
+  if (headerIndex < 0) return emptyLeadSummary(source, 'Вкладка подключена, но строки лидов пока не заполнены.');
+
+  const header = rawRows[headerIndex].map(normalizeHeader);
+  const findHeader = (...needles: string[]) => header.findIndex((cell) => needles.some((needle) => cell.includes(needle)));
+  const labelIndex = findHeader('месяц', 'неделя');
+  const startIndex = findHeader('начало');
+  const endIndex = findHeader('конец');
+  const totalIndex = findHeader('всего');
+  const channelIndexes = [
+    { index: findHeader('звон'), label: 'Звонки' },
+    { index: findHeader('почт'), label: 'Почта' },
+    { index: findHeader('сайт'), label: 'Сайт' },
+    { index: findHeader('другое'), label: 'Другое' },
+  ].filter((item) => item.index >= 0);
+
+  const records = rawRows
+    .slice(headerIndex + 1)
+    .map((row) => {
+      const label = getCell(row, labelIndex);
+      const start = parseLeadDate(getCell(row, startIndex));
+      const end = parseLeadDate(getCell(row, endIndex));
+      const total = parseCount(getCell(row, totalIndex));
+      const normalizedLabel = normalize(label);
+      const type = normalizedLabel.includes('всего')
+        ? 'total'
+        : isMonthlySummaryRow(label, start, end)
+          ? 'monthly'
+          : start
+            ? 'period'
+            : 'undated';
+
+      return {
+        label,
+        start,
+        end,
+        total,
+        type,
+        channels: channelIndexes
+          .map((channel) => ({ label: channel.label, count: parseCount(getCell(row, channel.index)) }))
+          .filter((channel) => channel.count > 0),
+      };
+    })
+    .filter((record) => record.label && (record.total > 0 || record.type === 'total'));
+
+  const totalRecord = records.find((record) => record.type === 'total');
+  const monthlyRecords = records.filter((record) => record.type === 'monthly');
+  const periodRecords = records.filter((record) => record.type === 'period');
+  const total = totalRecord?.total ?? sumLeadRecords(monthlyRecords.length ? monthlyRecords : periodRecords);
+  const byChannel = mergeBreakdowns((totalRecord ? [totalRecord] : monthlyRecords).flatMap((record) => record.channels));
+  const daily = periodRecords
+    .filter((record) => record.start && record.total > 0)
+    .map((record) => makeLeadTrendPoint(record.start, record.total, 0, record.total));
+  const weekly = daily.map((point) => ({
+    ...point,
+    period: getTrendPeriod(point.period, 'weekly') || point.period,
+    label: getTrendLabel(getTrendPeriod(point.period, 'weekly') || point.period, 'weekly'),
+  }));
+  const monthly = monthlyRecords
+    .filter((record) => record.start && record.total > 0)
+    .map((record) => makeLeadTrendPoint(record.start.slice(0, 7), record.total, 0, record.total, 'monthly'));
+
+  return {
+    projectName: source.projectName,
+    clientName: source.clientName,
+    periodLabel: source.periodLabel,
+    total,
+    quality: 0,
+    inWork: 0,
+    rejected: 0,
+    unknown: total,
+    budget: 0,
+    sourceCount: 1,
+    sources: [
+      {
+        id: source.id,
+        title: source.title,
+        channel: source.channel,
+        periodLabel: source.periodLabel,
+        sourceType: 'google-sheet',
+        url: source.url,
+        total,
+        quality: 0,
+        inWork: 0,
+        rejected: 0,
+        unknown: total,
+      },
+    ],
+    byChannel,
+    byStatus: total > 0 ? [{ label: 'Без оценки качества', count: total }] : [],
+    byReason: [],
+    byVolume: [],
+    byMaterial: [],
+    byClientType: [],
+    daily,
+    weekly: mergeTrendPoints(weekly, 'weekly'),
+    monthly,
+    note: `${source.note} Качество лидов в этой вкладке не размечено, поэтому заявки показаны как “без оценки”.`,
+  };
+}
+
+function summarizeSmartstroyMatrix(response: GvizResponse, source: LeadAnalyticsSource): LeadAnalyticsSummary {
+  const rawRows = getGvizRows(response);
+  const monthRow = rawRows.find((row) => row.some((cell) => normalize(cell) === 'месяц')) ?? [];
+  const periodRowIndex = rawRows.findIndex((row) => row.some((cell) => normalize(cell) === 'неделя'));
+  const periodRow = periodRowIndex >= 0 ? rawRows[periodRowIndex] : [];
+  const leadsRow = findMatrixMetricRow(rawRows, 'лид');
+  const qualityRow = findMatrixMetricRow(rawRows, 'квал');
+  const salesRow = findMatrixMetricRow(rawRows, 'продажа');
+  const revenueRow = findMatrixMetricRow(rawRows, 'выручка');
+
+  if (!monthRow.length || !leadsRow.length) return emptyLeadSummary(source, 'Вкладка подключена, но матрица лидов пока не заполнена.');
+
+  const monthGroups = monthRow
+    .map((value, index) => ({ value: cleanCell(value), index }))
+    .filter((item) => parseMatrixMonth(item.value))
+    .map((item, itemIndex, items) => ({
+      ...item,
+      month: parseMatrixMonth(item.value)!,
+      endIndex: items[itemIndex + 1]?.index ?? monthRow.length,
+    }));
+
+  const daily: LeadTrendPoint[] = [];
+  const monthly: LeadTrendPoint[] = [];
+  let total = 0;
+  let quality = 0;
+  let sales = 0;
+  let revenue = 0;
+
+  monthGroups.forEach((group) => {
+    let monthLeads = 0;
+    let monthQuality = 0;
+    let monthSales = 0;
+    let monthRevenue = 0;
+    let hasTotalColumn = false;
+
+    for (let column = group.index; column < group.endIndex; column += 1) {
+      const periodLabel = normalize(getCell(periodRow, column));
+      const leads = parseCount(getCell(leadsRow, column));
+      const qualified = parseCount(getCell(qualityRow, column));
+      const sold = parseCount(getCell(salesRow, column));
+      const income = parseMoney(getCell(revenueRow, column));
+      if (periodLabel.includes('итого')) {
+        hasTotalColumn = true;
+        monthLeads = leads;
+        monthQuality = qualified;
+        monthSales = sold;
+        monthRevenue = income;
+        continue;
+      }
+
+      if (leads > 0 || qualified > 0) {
+        const day = periodLabel.includes('16') ? 16 : 1;
+        const date = `${group.month.year}-${String(group.month.month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        daily.push(makeLeadTrendPoint(date, leads, qualified, Math.max(leads - qualified, 0)));
+      }
+
+      if (!hasTotalColumn) {
+        monthLeads += leads;
+        monthQuality += qualified;
+        monthSales += sold;
+        monthRevenue += income;
+      }
+    }
+
+    if (monthLeads > 0 || monthQuality > 0) {
+      const period = `${group.month.year}-${String(group.month.month).padStart(2, '0')}`;
+      monthly.push(makeLeadTrendPoint(period, monthLeads, monthQuality, Math.max(monthLeads - monthQuality, 0), 'monthly'));
+    }
+
+    total += monthLeads;
+    quality += monthQuality;
+    sales += monthSales;
+    revenue += monthRevenue;
+  });
+
+  const unknown = Math.max(total - quality, 0);
+
+  return {
+    projectName: source.projectName,
+    clientName: source.clientName,
+    periodLabel: source.periodLabel,
+    total,
+    quality,
+    inWork: 0,
+    rejected: 0,
+    unknown,
+    budget: revenue,
+    sourceCount: 1,
+    sources: [
+      {
+        id: source.id,
+        title: source.title,
+        channel: source.channel,
+        periodLabel: source.periodLabel,
+        sourceType: 'google-sheet',
+        url: source.url,
+        total,
+        quality,
+        inWork: 0,
+        rejected: 0,
+        unknown,
+      },
+    ],
+    byChannel: total > 0 ? [{ label: 'Заявки', count: total }] : [],
+    byStatus: [
+      quality > 0 ? { label: 'Квал', count: quality } : null,
+      unknown > 0 ? { label: 'Без квалификации', count: unknown } : null,
+      sales > 0 ? { label: 'Продажи', count: sales } : null,
+    ].filter((item): item is LeadBreakdownItem => Boolean(item)),
+    byReason: [],
+    byVolume: [],
+    byMaterial: [],
+    byClientType: [],
+    daily,
+    weekly: mergeTrendPoints(
+      daily.map((point) => ({
+        ...point,
+        period: getTrendPeriod(point.period, 'weekly') || point.period,
+        label: getTrendLabel(getTrendPeriod(point.period, 'weekly') || point.period, 'weekly'),
+      })),
+      'weekly',
+    ),
+    monthly,
+    note: source.note,
+  };
+}
+
+function emptyLeadSummary(source: LeadAnalyticsSource, note: string): LeadAnalyticsSummary {
+  return {
+    projectName: source.projectName,
+    clientName: source.clientName,
+    periodLabel: source.periodLabel,
+    total: 0,
+    quality: 0,
+    inWork: 0,
+    rejected: 0,
+    unknown: 0,
+    budget: 0,
+    sourceCount: 1,
+    sources: [
+      {
+        id: source.id,
+        title: source.title,
+        channel: source.channel,
+        periodLabel: source.periodLabel,
+        sourceType: 'google-sheet',
+        url: source.url,
+        total: 0,
+        quality: 0,
+        inWork: 0,
+        rejected: 0,
+        unknown: 0,
+      },
+    ],
+    byChannel: [],
+    byStatus: [],
+    byReason: [],
+    byVolume: [],
+    byMaterial: [],
+    byClientType: [],
+    daily: [],
+    weekly: [],
+    monthly: [],
+    note,
+  };
+}
+
+function getGvizRows(response: GvizResponse) {
+  return (
+    response.table?.rows
+      .map((row) => (row.c ?? []).map(formatGvizCell))
+      .filter((row) => row.some(Boolean)) ?? []
+  );
+}
+
+function isMonthlySummaryRow(label: string, start: string, end: string) {
+  const normalized = normalize(label);
+  if (ruMonthNames.some((month) => normalized.includes(month))) return true;
+  if (!start || !end) return false;
+  const startDate = new Date(`${start}T12:00:00`);
+  const endDate = new Date(`${end}T12:00:00`);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return false;
+  return startDate.getDate() === 1 && startDate.getMonth() === endDate.getMonth() && endDate.getDate() >= 28;
+}
+
+function sumLeadRecords(records: Array<{ total: number }>) {
+  return records.reduce((total, record) => total + record.total, 0);
+}
+
+function makeLeadTrendPoint(period: string, leads: number, quality = 0, unknown = 0, mode: 'daily' | 'monthly' = 'daily') {
+  return {
+    period,
+    label: getTrendLabel(period, mode),
+    leads,
+    quality,
+    inWork: 0,
+    rejected: 0,
+    unknown,
+  } satisfies LeadTrendPoint;
+}
+
+function findMatrixMetricRow(rows: string[][], metric: string) {
+  return rows.find((row) => row.some((cell) => normalize(cell) === metric)) ?? [];
+}
+
+function parseMatrixMonth(value: string) {
+  const normalized = normalize(value);
+  const month = ruMonthNames.findIndex((item) => normalized.includes(item.slice(0, 3)));
+  if (month < 0) return null;
+  const yearMatch = normalized.match(/(\d{2,4})/);
+  const yearPart = yearMatch ? Number(yearMatch[1]) : getCurrentYear();
+  const year = yearPart < 100 ? 2000 + yearPart : yearPart;
+  return { month: month + 1, year };
+}
+
 function loadGvizJsonp(source: LeadAnalyticsSource) {
   return new Promise<GvizResponse>((resolve, reject) => {
     const callbackName = `__taskSeoLeads_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -513,9 +866,10 @@ function loadGvizJsonp(source: LeadAnalyticsSource) {
     };
 
     const query = encodeURIComponent('select *');
+    const range = source.range ? `&range=${encodeURIComponent(source.range)}` : '';
     script.src = `https://docs.google.com/spreadsheets/d/${source.spreadsheetId}/gviz/tq?gid=${encodeURIComponent(
       source.gid,
-    )}&tq=${query}&tqx=out:json;responseHandler:${callbackName}&cacheBust=${Date.now()}`;
+    )}${range}&tq=${query}&tqx=out:json;responseHandler:${callbackName}&cacheBust=${Date.now()}`;
     script.async = true;
     script.onerror = () => {
       cleanup();
@@ -530,7 +884,7 @@ function parseLeadRows(response: GvizResponse, source: LeadAnalyticsSource): Lea
   const table = response.table;
   if (!table) return [];
 
-  const rawRows = table.rows.map((row) => (row.c ?? []).map(formatGvizCell)).filter((row) => row.some(Boolean));
+  const rawRows = getGvizRows(response);
   const columnLabels = table.cols.map((column) => column.label ?? '');
   const hasColumnLabels = columnLabels.some((label) => label.trim());
   const fallbackHeaderIndex = rawRows.findIndex((row, index) => index < 10 && row.some((cell) => looksLikeLeadHeader(cell)));
@@ -791,6 +1145,11 @@ function parseMoney(value: string) {
   const normalized = cleanCell(value).replace(/\s/g, '').replace(',', '.');
   const parsed = Number.parseFloat(normalized);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function parseCount(value: string) {
+  const parsed = parseMoney(value);
+  return Number.isFinite(parsed) ? Math.max(Math.round(parsed), 0) : 0;
 }
 
 function sum(items: LeadAnalyticsSummary[], key: 'total' | 'quality' | 'inWork' | 'rejected' | 'unknown' | 'budget') {

@@ -537,7 +537,7 @@ function buildInitialManagedResources(): ManagedResource[] {
 
 const initialManagedResources = [...buildInitialManagedResources(), ...requiredManagedResourceSeeds];
 const requiredManagedResourceSeedsById = new Map(requiredManagedResourceSeeds.map((resource) => [resource.id, resource]));
-const managedResourceSeedVersion = 'managed-resources-2026-09-10-leads-v1';
+const managedResourceSeedVersion = 'managed-resources-2026-09-28-leads-master-v1';
 
 const legacyPersonIdMap: Record<string, string> = {
   'person-vlad': 'person-aleksey',
