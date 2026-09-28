@@ -552,7 +552,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'task-updates-2026-09-28-report-v1';
+const taskSeedVersion = 'task-updates-2026-09-28-avtopravo-v1';
 const taskDefaultDeadlineVersion = 'default-deadlines-2026-09-03-v1';
 const legacyDemoTaskIds = new Set([
   'task-1',
@@ -569,14 +569,14 @@ const requiredTaskSeeds: Task[] = [
     projectId: 'project-ash',
     title: 'Редизайн сайта Автоправо',
     description:
-      'Изменили ТЗ и брендбук, ориентир - сайты Симакина. На 07.09 сдан макет блога, остались небольшие блоки типа FAQ. План - передать айтишникам на этой неделе.',
+      'Изменили ТЗ и брендбук, ориентир - сайты Симакина. На 28.09 дизайн сдан, передаем на верстку в IT. К запуску с вебмастерами готовы, осталось пополнить бюджет.',
     sourceLabel: 'редизайн в Figma',
     sourceUrl:
       'https://www.figma.com/design/BrReyqlaV4p15QX0bekG2X/%D0%90%D0%B2%D1%82%D0%BE%D0%BF%D1%80%D0%B0%D0%B2%D0%BE?node-id=519-8247&t=RXaNEtFVQQizrAjv-1',
     status: 'active',
     ownerIds: ['person-outsource'],
     createdAt: '2026-08-10',
-    deadline: '2026-09-13',
+    deadline: '2026-10-07',
     timelineEnabled: true,
     timeline: [
       {
@@ -591,15 +591,31 @@ const requiredTaskSeeds: Task[] = [
         id: 'timeline-ash-avtopravo-faq-blocks',
         title: 'Доделать небольшие блоки типа FAQ',
         ownerId: 'person-outsource',
-        status: 'active',
+        status: 'done',
         dueDate: '2026-09-13',
+        completedAt: '2026-09-28',
       },
       {
         id: 'timeline-ash-avtopravo-transfer-to-it',
-        title: 'Передать макет айтишникам',
+        title: 'Передать дизайн на верстку в IT',
         ownerId: 'person-vlad-it',
-        status: 'planned',
-        dueDate: '2026-09-13',
+        status: 'active',
+        dueDate: '2026-10-07',
+      },
+      {
+        id: 'timeline-ash-avtopravo-webmasters-ready',
+        title: 'Подготовить запуск с вебмастерами',
+        ownerId: 'person-marketing',
+        status: 'done',
+        dueDate: '2026-09-28',
+        completedAt: '2026-09-28',
+      },
+      {
+        id: 'timeline-ash-avtopravo-webmasters-budget',
+        title: 'Пополнить бюджет для запуска с вебмастерами',
+        ownerId: 'person-marketing',
+        status: 'active',
+        dueDate: '2026-10-07',
       },
     ],
   },
