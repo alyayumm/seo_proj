@@ -552,7 +552,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'task-updates-2026-09-28-avtopravo-v1';
+const taskSeedVersion = 'task-updates-2026-09-28-report-cleanup-v1';
 const taskDefaultDeadlineVersion = 'default-deadlines-2026-09-03-v1';
 const legacyDemoTaskIds = new Set([
   'task-1',
@@ -2624,14 +2624,6 @@ const requiredTaskSeeds: Task[] = [
     completedAt: '2026-09-28',
     timelineEnabled: true,
     timeline: [
-      {
-        id: 'timeline-watch-telegram-bot-28-09',
-        title: 'Подключить Telegram-бота',
-        ownerId: 'person-aleksey',
-        status: 'done',
-        dueDate: '2026-09-28',
-        completedAt: '2026-09-28',
-      },
       {
         id: 'timeline-watch-content-plan-28-09',
         title: 'Контент план',
@@ -9890,7 +9882,7 @@ function buildSeoWeeklyReports(
         trend,
       };
     })
-    .filter((report) => report.done.length || report.late.length || report.planned.length || report.summary?.total);
+    .filter((report) => report.done.length || report.late.length || report.planned.length);
 }
 
 function buildExternalWeeklyReports(
@@ -9935,10 +9927,13 @@ function buildExternalWeeklyReports(
         getExternalTimeline(section)
           .filter((item) => item.status === 'done')
           .forEach((item) => {
+            const itemDate = parseShortRuDateLabel(item.dateLabel ?? '');
+            if (!isIsoInWindow(itemDate, previousWeek)) return;
             done.push({
               id: `${section.id}-${item.id}-status-done`,
               title: item.title,
               meta: 'Статус папки: готово',
+              date: itemDate,
               statusLabel: externalStatusLabels[section.status],
               tone: 'success',
             });
