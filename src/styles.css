@@ -757,7 +757,7 @@ p {
 
 .task-main {
   display: grid;
-  grid-template-columns: 32px minmax(240px, 1fr) minmax(240px, 0.72fr) 124px;
+  grid-template-columns: 32px minmax(220px, 1fr) minmax(320px, 0.86fr) minmax(154px, auto);
   gap: 12px;
   align-items: center;
   padding: 13px 14px;
@@ -873,7 +873,7 @@ p {
 
 .task-meta {
   display: grid;
-  grid-template-columns: minmax(90px, 1fr) 74px 74px;
+  grid-template-columns: minmax(90px, 1fr) 74px 74px minmax(118px, 0.9fr);
   gap: 10px;
   align-items: end;
 }
@@ -895,10 +895,16 @@ p {
   line-height: 1.2;
 }
 
-.task-meta select {
+.task-meta select,
+.task-meta input {
   min-height: 34px;
   padding: 0 8px;
   font-size: 12px;
+}
+
+.task-fact-date-field input:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .timeline-toggle {
@@ -911,6 +917,51 @@ p {
   gap: 7px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.quick-done-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid rgba(216, 238, 243, 0.16);
+  border-radius: 999px;
+  color: var(--ink);
+  background: rgba(216, 238, 243, 0.08);
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 950;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.quick-done-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.quick-done-toggle:hover,
+.quick-done-toggle:focus-within {
+  border-color: rgba(126, 231, 241, 0.46);
+  color: var(--sky);
+  background: rgba(216, 238, 243, 0.15);
+  transform: translateY(-1px);
+}
+
+.quick-done-toggle.is-done {
+  border-color: rgba(126, 231, 241, 0.58);
+  color: #061111;
+  background: linear-gradient(135deg, rgba(126, 231, 241, 0.92), rgba(216, 238, 243, 0.84));
 }
 
 .task-action-button,
@@ -7355,6 +7406,7 @@ p {
 :root[data-theme='light'] .field select,
 :root[data-theme='light'] .field textarea,
 :root[data-theme='light'] .task-meta select,
+:root[data-theme='light'] .task-meta input,
 :root[data-theme='light'] .timeline-item select,
 :root[data-theme='light'] .timeline-inline-field input,
 :root[data-theme='light'] .timeline-inline-field select,
@@ -7403,6 +7455,7 @@ p {
 :root[data-theme='light'] .weekly-report-line-detail a,
 :root[data-theme='light'] .weekly-project-mini-summary span,
 :root[data-theme='light'] .seo-task-summary-strip span,
+:root[data-theme='light'] .quick-done-toggle,
 :root[data-theme='light'] .analytics-tile,
 :root[data-theme='light'] .chronology-section,
 :root[data-theme='light'] .chronology-item,

@@ -6674,6 +6674,7 @@ type TaskEditDraft = {
   ownerIds: string[];
   createdAt: string;
   deadline: string;
+  completedAt: string;
   timelineEnabled: boolean;
   timeline: TimelineItem[];
 };
@@ -6689,6 +6690,7 @@ function makeTaskEditDraft(task: Task): TaskEditDraft {
     ownerIds: task.ownerIds,
     createdAt: task.createdAt,
     deadline: task.deadline,
+    completedAt: task.completedAt ?? '',
     timelineEnabled: task.timelineEnabled,
     timeline: task.timeline,
   };
@@ -6754,7 +6756,7 @@ function TaskRow({
         ownerIds,
         createdAt,
         deadline,
-        completedAt: draft.status === 'done' ? current.completedAt ?? todayIso() : undefined,
+        completedAt: draft.status === 'done' ? draft.completedAt || current.completedAt || todayIso() : undefined,
         timelineEnabled: draft.timelineEnabled,
         timeline,
       }),
@@ -6824,6 +6826,30 @@ function TaskRow({
     setTimelineDraftDirty(false);
   };
 
+  const toggleTaskDone = (checked: boolean) => {
+    onTaskUpdate(
+      task.id,
+      (current) => ({
+        ...current,
+        status: checked ? 'done' : 'active',
+        completedAt: checked ? current.completedAt ?? todayIso() : undefined,
+      }),
+      checked ? 'Быстрое завершение задачи' : 'Возврат задачи в работу',
+    );
+  };
+
+  const updateTaskCompletedAt = (completedAt: string) => {
+    onTaskUpdate(
+      task.id,
+      (current) => ({
+        ...current,
+        status: completedAt ? 'done' : current.status,
+        completedAt: completedAt || undefined,
+      }),
+      'Изменение фактической даты выполнения',
+    );
+  };
+
   return (
     <div className={`task-row ${task.status}`}>
       <div className="task-main">
@@ -6890,9 +6916,28 @@ function TaskRow({
             <span>Дедлайн</span>
             <strong>{formatDate(task.deadline)}</strong>
           </div>
+          <label className="task-fact-date-field">
+            <span>Факт</span>
+            <input
+              type="date"
+              value={task.completedAt ?? ''}
+              disabled={task.status !== 'done'}
+              onChange={(event) => updateTaskCompletedAt(event.target.value)}
+              aria-label={`Фактическая дата выполнения: ${task.title}`}
+            />
+          </label>
         </div>
 
         <div className="task-controls">
+          <label className={`quick-done-toggle ${task.status === 'done' ? 'is-done' : ''}`}>
+            <input
+              type="checkbox"
+              checked={task.status === 'done'}
+              onChange={(event) => toggleTaskDone(event.target.checked)}
+            />
+            <CheckCircle2 size={14} />
+            <span>{task.status === 'done' ? 'Готово' : 'Выполнить'}</span>
+          </label>
           <label className="timeline-toggle">
             <input
               type="checkbox"
@@ -7121,7 +7166,14 @@ function TaskEditPanel({
           <span>Статус</span>
           <select
             value={draft.status}
-            onChange={(event) => onDraftChange((current) => ({ ...current, status: event.target.value as Status }))}
+            onChange={(event) => {
+              const status = event.target.value as Status;
+              onDraftChange((current) => ({
+                ...current,
+                status,
+                completedAt: status === 'done' ? current.completedAt || todayIso() : '',
+              }));
+            }}
           >
             {statusOrder.map((status) => (
               <option key={status} value={status}>
@@ -7150,6 +7202,15 @@ function TaskEditPanel({
             type="date"
             value={draft.deadline}
             onChange={(event) => onDraftChange((current) => ({ ...current, deadline: event.target.value }))}
+          />
+        </label>
+        <label className="field">
+          <span>Факт выполнения</span>
+          <input
+            type="date"
+            value={draft.status === 'done' ? draft.completedAt : ''}
+            disabled={draft.status !== 'done'}
+            onChange={(event) => onDraftChange((current) => ({ ...current, completedAt: event.target.value }))}
           />
         </label>
         <label className="field wide">
