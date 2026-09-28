@@ -3023,6 +3023,23 @@ type WeeklyReportArchiveFolder = {
   externalPlanned: number;
 };
 
+type GeneralReportMetricRow = {
+  id: string;
+  projectName: string;
+  headline: string;
+  details: string[];
+  tone: 'success' | 'warning' | 'danger' | 'info';
+};
+
+type GeneralReportDigestModel = {
+  stuckItems: WeeklyReportItem[];
+  activeItems: WeeklyReportItem[];
+  doneItems: WeeklyReportItem[];
+  plannedItems: WeeklyReportItem[];
+  metricRows: GeneralReportMetricRow[];
+  signals: string[];
+};
+
 type AnalyticsDateRange = {
   start: string;
   end: string;
@@ -8299,6 +8316,19 @@ function WeeklyReportView({
   );
   const allTaskScore = useMemo(() => buildOverallTaskScore(taskLogicReports), [taskLogicReports]);
   const visibleTaskScore = useMemo(() => buildOverallTaskScore(visibleTaskLogicReports), [visibleTaskLogicReports]);
+  const generalReportDigest = useMemo(
+    () =>
+      buildGeneralReportDigest({
+        projects,
+        seoReports,
+        externalReports,
+        taskLogicReports,
+        linkRows,
+        promotionSources,
+        leadAnalyticsByProject,
+      }),
+    [externalReports, leadAnalyticsByProject, linkRows, projects, promotionSources, seoReports, taskLogicReports],
+  );
   const selectedMetricsProject = projects.find((project) => project.id === reportProjectId) ?? projects[0];
   const selectedMetricsProjectKey = normalizeProjectName(selectedMetricsProject?.name ?? '');
   const selectedMetricsLinkRows = linkRows.filter((row) => normalizeProjectName(row.projectName) === selectedMetricsProjectKey);
@@ -8402,6 +8432,8 @@ function WeeklyReportView({
           setSelectedDrilldown(null);
         }}
       />
+
+      <GeneralReportDigest digest={generalReportDigest} reportWeek={selectedReportWeek} planWeek={selectedPlanWeek} />
 
       {reportMode === 'metrics' && selectedMetricsProject ? (
         <ReportMetricsMode
@@ -8571,6 +8603,149 @@ function ReportModeSwitch({
         </div>
       </div>
     </section>
+  );
+}
+
+function GeneralReportDigest({
+  digest,
+  reportWeek,
+  planWeek,
+  compact = false,
+}: {
+  digest: GeneralReportDigestModel;
+  reportWeek: WeekWindow;
+  planWeek: WeekWindow;
+  compact?: boolean;
+}) {
+  const hasAnyData =
+    digest.stuckItems.length ||
+    digest.activeItems.length ||
+    digest.doneItems.length ||
+    digest.plannedItems.length ||
+    digest.metricRows.length;
+
+  return (
+    <section className={`panel general-report-digest ${compact ? 'compact' : ''}`}>
+      <div className="section-heading compact-heading">
+        <div>
+          <h2>{compact ? 'Срез по проекту' : 'Общий срез'}</h2>
+          <p>
+            Автособранная выжимка: что зависло, что сейчас в работе, что сделали за {formatWeekWindow(reportWeek)} и
+            какие результаты видны по доступным метрикам.
+          </p>
+        </div>
+        <span className="report-period-pill">
+          План {formatNumericDate(planWeek.start)}-{formatNumericDate(planWeek.end)}
+        </span>
+      </div>
+
+      <div className="general-report-signals" aria-label="Ключевые выводы общего отчета">
+        {digest.signals.map((signal) => (
+          <strong key={signal}>{signal}</strong>
+        ))}
+      </div>
+
+      {hasAnyData ? (
+        <div className="general-report-grid">
+          <GeneralReportDigestCard
+            title="Зависло / просрочено"
+            tone={digest.stuckItems.length ? 'danger' : 'success'}
+            count={digest.stuckItems.length}
+            empty="Долгих зависаний и просрочек не видно."
+            items={digest.stuckItems}
+          />
+          <GeneralReportDigestCard
+            title="В работе сейчас"
+            tone="info"
+            count={digest.activeItems.length}
+            empty="Активных задач в текущем срезе нет."
+            items={digest.activeItems}
+          />
+          <GeneralReportDigestCard
+            title="Сделано за прошлую неделю"
+            tone="success"
+            count={digest.doneItems.length}
+            empty="Завершений за прошлую неделю нет."
+            items={digest.doneItems}
+          />
+          <article className="general-report-card metrics">
+            <header>
+              <span>Краткий результат</span>
+              <strong>{digest.metricRows.length}</strong>
+            </header>
+            {digest.metricRows.length ? (
+              <div className="general-metric-list">
+                {digest.metricRows.slice(0, compact ? 3 : 6).map((row) => (
+                  <div className={`general-metric-row ${row.tone}`} key={row.id}>
+                    <strong>{row.projectName}</strong>
+                    <span>{row.headline}</span>
+                    <p>{row.details.join(' · ')}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="general-report-empty">По выбранным проектам пока нет подключенных метрик.</p>
+            )}
+          </article>
+        </div>
+      ) : (
+        <div className="weekly-report-empty">Для общего среза пока нет данных.</div>
+      )}
+    </section>
+  );
+}
+
+function GeneralReportDigestCard({
+  title,
+  tone,
+  count,
+  empty,
+  items,
+}: {
+  title: string;
+  tone: 'success' | 'warning' | 'danger' | 'info';
+  count: number;
+  empty: string;
+  items: WeeklyReportItem[];
+}) {
+  return (
+    <article className={`general-report-card ${tone}`}>
+      <header>
+        <span>{title}</span>
+        <strong>{count}</strong>
+      </header>
+      {items.length ? (
+        <div className="general-report-item-list">
+          {items.slice(0, 5).map((item) => (
+            <details className={`weekly-report-line ${item.tone ?? tone}`} key={item.id}>
+              <summary>
+                <span className="mini-dot" />
+                <div>
+                  <strong>{item.title}</strong>
+                  <p>{item.meta}</p>
+                </div>
+                {(item.date || item.statusLabel) && <em>{item.date ? formatDate(item.date) : item.statusLabel}</em>}
+              </summary>
+              <div className="weekly-report-line-detail">
+                {item.description && <p>{item.description}</p>}
+                <dl>
+                  <div>
+                    <dt>Проект</dt>
+                    <dd>{item.projectName ?? 'без проекта'}</dd>
+                  </div>
+                  <div>
+                    <dt>Дедлайн</dt>
+                    <dd>{formatDate(item.deadline ?? '') || 'без даты'}</dd>
+                  </div>
+                </dl>
+              </div>
+            </details>
+          ))}
+        </div>
+      ) : (
+        <p className="general-report-empty">{empty}</p>
+      )}
+    </article>
   );
 }
 
@@ -10282,6 +10457,161 @@ function buildOverallTaskScore(reports: TaskLogicReport[]): ProjectTaskScore {
     signals: problemSignals.length ? problemSignals : ['критичных сигналов нет'],
     itemsByMetric,
   };
+}
+
+function buildGeneralReportDigest({
+  projects,
+  seoReports,
+  externalReports,
+  taskLogicReports,
+  linkRows,
+  promotionSources,
+  leadAnalyticsByProject,
+}: {
+  projects: Project[];
+  seoReports: WeeklyProjectReport[];
+  externalReports: WeeklyProjectReport[];
+  taskLogicReports: TaskLogicReport[];
+  linkRows: LinkPurchase[];
+  promotionSources: PromotionResultSource[];
+  leadAnalyticsByProject: Map<string, LeadAnalyticsSummary>;
+}): GeneralReportDigestModel {
+  const stuckFromHistory = taskLogicReports.flatMap((report) => report.itemsByCategory.stuck);
+  const carried = taskLogicReports.flatMap((report) => report.itemsByCategory.carried);
+  const overdue = taskLogicReports.flatMap((report) => report.score.itemsByMetric.overdue);
+  const stuckItems = dedupeWeeklyReportItems(stuckFromHistory.length ? stuckFromHistory : overdue.length ? overdue : carried);
+  const activeItems = dedupeWeeklyReportItems(
+    seoReports.flatMap((report) => report.summary?.itemsByFilter.active ?? []),
+  );
+  const doneItems = dedupeWeeklyReportItems([
+    ...seoReports.flatMap((report) => report.done),
+    ...externalReports.flatMap((report) => report.done),
+  ]);
+  const plannedItems = dedupeWeeklyReportItems([
+    ...seoReports.flatMap((report) => report.planned),
+    ...externalReports.flatMap((report) => report.planned),
+  ]);
+  const metricRows = buildGeneralMetricRows(projects, linkRows, promotionSources, leadAnalyticsByProject);
+  const signals = [
+    makeDigestTaskSignal(stuckItems, 'зависла / просрочена', 'Долгих зависаний не видно'),
+    activeItems.length ? `В работе сейчас: ${activeItems.length} задач` : 'Активных задач сейчас нет',
+    doneItems.length ? `За прошлую неделю закрыто: ${doneItems.length}` : 'За прошлую неделю закрытий нет',
+    plannedItems.length ? `План на эту неделю: ${plannedItems.length} задач` : 'План на неделю пустой',
+    metricRows.length ? `Метрики доступны по ${metricRows.length} проектам` : 'Метрики пока не подключены',
+  ];
+
+  return {
+    stuckItems: sortWeeklyItems(stuckItems, 'asc').slice(0, 8),
+    activeItems: sortWeeklyItems(activeItems, 'asc').slice(0, 8),
+    doneItems: sortWeeklyItems(doneItems, 'desc').slice(0, 8),
+    plannedItems: sortWeeklyItems(plannedItems, 'asc').slice(0, 8),
+    metricRows,
+    signals,
+  };
+}
+
+function buildGeneralMetricRows(
+  projects: Project[],
+  linkRows: LinkPurchase[],
+  promotionSources: PromotionResultSource[],
+  leadAnalyticsByProject: Map<string, LeadAnalyticsSummary>,
+): GeneralReportMetricRow[] {
+  return projects.flatMap((project) => {
+    const projectKey = normalizeProjectName(project.name);
+    const projectLinkRows = linkRows.filter((row) => normalizeProjectName(row.projectName) === projectKey);
+    const linkSummary = summarizeLinkPurchases(projectLinkRows);
+    const projectSources = promotionSources.filter((source) => normalizeProjectName(source.projectName) === projectKey);
+    const goalAnalytics = mergePromotionGoalAnalytics(
+      projectSources.map((source) => source.goalAnalytics).filter((item): item is PromotionGoalAnalytics => Boolean(item)),
+    );
+    const leadAnalytics = leadAnalyticsByProject.get(projectKey);
+    const details: string[] = [];
+
+    if (goalAnalytics) {
+      details.push(
+        `Метрика: ${formatInteger(goalAnalytics.visits)} визитов, ${formatInteger(goalAnalytics.goalCount)} достижений целей, ${formatInteger(goalAnalytics.uniqueQueries)} запросов`,
+      );
+    }
+
+    if (leadAnalytics) {
+      const workable = leadAnalytics.quality + leadAnalytics.inWork;
+      details.push(
+        `Лиды: ${formatInteger(leadAnalytics.total)} всего, ${formatInteger(workable)} качественные/в работе`,
+      );
+    }
+
+    if (linkSummary.count) {
+      details.push(
+        `Ссылки: ${formatInteger(linkSummary.count)} строк, размещено ${formatInteger(linkSummary.placed)}, факт ${formatMoney(linkSummary.factCost)}`,
+      );
+    }
+
+    if (!details.length) return [];
+
+    const headline = goalAnalytics
+      ? `${formatInteger(goalAnalytics.goalCount)} целей · ${formatInteger(goalAnalytics.visits)} визитов`
+      : leadAnalytics
+        ? `${formatInteger(leadAnalytics.total)} лидов`
+        : `${formatInteger(linkSummary.count)} строк закупа`;
+
+    return [
+      {
+        id: `general-metric-${project.id}`,
+        projectName: project.name,
+        headline,
+        details,
+        tone: getGeneralMetricTone(goalAnalytics, leadAnalytics, linkSummary),
+      },
+    ];
+  });
+}
+
+function mergePromotionGoalAnalytics(items: PromotionGoalAnalytics[]): PromotionGoalAnalytics | undefined {
+  if (!items.length) return undefined;
+  const queryMap = new Map<string, PromotionGoalQueryStat>();
+  items.flatMap((item) => getGoalQueryRows(item)).forEach((query) => {
+    const key = normalizeSearchText(query.query);
+    if (!key) return;
+    const current = queryMap.get(key) ?? { query: query.query, visits: 0, goals: 0 };
+    current.visits += query.visits;
+    current.goals += query.goals;
+    queryMap.set(key, current);
+  });
+
+  const monthly = items.flatMap((item) => item.monthly ?? []);
+  return {
+    visits: items.reduce((sum, item) => sum + item.visits, 0),
+    uniqueQueries: items.reduce((sum, item) => sum + item.uniqueQueries, 0),
+    goalRows: items.reduce((sum, item) => sum + item.goalRows, 0),
+    goalCount: items.reduce((sum, item) => sum + item.goalCount, 0),
+    topQueries: [...queryMap.values()].sort((left, right) => right.goals - left.goals || right.visits - left.visits).slice(0, 8),
+    monthly,
+  };
+}
+
+function getGeneralMetricTone(
+  goalAnalytics: PromotionGoalAnalytics | undefined,
+  leadAnalytics: LeadAnalyticsSummary | undefined,
+  linkSummary: LinkPurchaseSummary,
+): GeneralReportMetricRow['tone'] {
+  if (goalAnalytics?.goalCount || leadAnalytics?.quality || leadAnalytics?.inWork) return 'success';
+  if (goalAnalytics || leadAnalytics || linkSummary.count) return 'info';
+  return 'warning';
+}
+
+function dedupeWeeklyReportItems(items: WeeklyReportItem[]) {
+  const map = new Map<string, WeeklyReportItem>();
+  items.forEach((item) => {
+    const key = `${item.taskId ?? item.id}-${item.title}-${item.projectName ?? item.meta}`;
+    if (!map.has(key)) map.set(key, item);
+  });
+  return [...map.values()];
+}
+
+function makeDigestTaskSignal(items: WeeklyReportItem[], activeLabel: string, emptyLabel: string) {
+  if (!items.length) return emptyLabel;
+  const item = items[0];
+  return `${item.projectName ?? item.meta}: ${activeLabel} - ${item.title}`;
 }
 
 function emptyTaskReportFilterMap(): Record<TaskReportFilter, WeeklyReportItem[]> {
@@ -12249,6 +12579,22 @@ function SeoProjectReportsPanel({
   };
   const reportResources = resources.filter((resource) => resource.tab === 'report');
   const siteResources = resources.filter((resource) => resource.tab === 'site');
+  const projectReportDigest = useMemo(
+    () =>
+      buildGeneralReportDigest({
+        projects: [project],
+        seoReports: report ? [report] : [],
+        externalReports: [],
+        taskLogicReports,
+        linkRows,
+        promotionSources,
+        leadAnalyticsByProject: new Map([[normalizeProjectName(project.name), leadAnalytics]].filter(([, value]) => Boolean(value)) as [
+          string,
+          LeadAnalyticsSummary,
+        ][]),
+      }),
+    [leadAnalytics, linkRows, project, promotionSources, report, taskLogicReports],
+  );
 
   return (
     <div className="seo-report-panel">
@@ -12273,6 +12619,8 @@ function SeoProjectReportsPanel({
           ))}
         </div>
       </div>
+
+      <GeneralReportDigest digest={projectReportDigest} reportWeek={reportWeek} planWeek={planWeek} compact />
 
       {reportMode === 'metrics' ? (
         <ProjectSeoAnalyticsTiles
