@@ -552,7 +552,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'task-updates-2026-09-28-report-cleanup-v1';
+const taskSeedVersion = 'task-updates-2026-09-28-week-plan-v2';
 const taskDefaultDeadlineVersion = 'default-deadlines-2026-09-03-v1';
 const legacyDemoTaskIds = new Set([
   'task-1',
@@ -2049,7 +2049,7 @@ const requiredTaskSeeds: Task[] = [
   {
     id: 'plan-rectop-content-filling-2026-09-14',
     projectId: 'project-rectop',
-    title: 'Заполнение контентом',
+    title: 'Заполнить контентом',
     description: 'План на неделю 28.09-04.10: заполнить страницы контентом.',
     sourceLabel: 'ТЗ правки',
     sourceUrl: RECTOP_CORRECTIONS_BRIEF_URL,
@@ -2566,6 +2566,13 @@ const requiredTaskSeeds: Task[] = [
         dueDate: '2026-10-04',
       },
       {
+        id: 'timeline-rectop-visual-fixes-28-09',
+        title: 'Правки по визуалу',
+        ownerId: 'person-outsource',
+        status: 'active',
+        dueDate: '2026-10-04',
+      },
+      {
         id: 'timeline-rectop-service-pages-28-09',
         title: 'Создать сервисные страницы',
         ownerId: 'person-outsource',
@@ -2598,6 +2605,20 @@ const requiredTaskSeeds: Task[] = [
       {
         id: 'timeline-aquaguard-delivery-page-28-09',
         title: 'Реализовать страницу про доставку',
+        ownerId: 'person-aleksey',
+        status: 'active',
+        dueDate: '2026-10-04',
+      },
+      {
+        id: 'timeline-aquaguard-new-products-28-09',
+        title: 'Добавить новые товары в каталог',
+        ownerId: 'person-olga',
+        status: 'active',
+        dueDate: '2026-10-04',
+      },
+      {
+        id: 'timeline-aquaguard-layout-functional-fixes-28-09',
+        title: 'Правки по верстке и функционалу',
         ownerId: 'person-aleksey',
         status: 'active',
         dueDate: '2026-10-04',
@@ -2647,6 +2668,13 @@ const requiredTaskSeeds: Task[] = [
         status: 'done',
         dueDate: '2026-09-28',
         completedAt: '2026-09-28',
+      },
+      {
+        id: 'timeline-watch-page-template-fixes-28-09',
+        title: 'Правки шаблонов страниц',
+        ownerId: 'person-outsource',
+        status: 'active',
+        dueDate: '2026-10-04',
       },
       {
         id: 'timeline-watch-auto-metatags-28-09',
@@ -2715,6 +2743,27 @@ const requiredTaskSeeds: Task[] = [
       {
         id: 'timeline-balt-feed-template-fixes-28-09',
         title: 'Правки шаблонов страниц под товарный фид',
+        ownerId: 'person-aleksey',
+        status: 'active',
+        dueDate: '2026-10-04',
+      },
+    ],
+  },
+  {
+    id: 'weekly-lombard-report-2026-09-28',
+    projectId: 'project-lombard',
+    title: 'Недельная запись 28.09: Ломбард',
+    description: 'План на неделю 28.09-04.10 по Ломбарду.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-09-28',
+    deadline: '2026-09-28',
+    completedAt: '2026-09-28',
+    timelineEnabled: true,
+    timeline: [
+      {
+        id: 'timeline-lombard-quarter-plan-28-09',
+        title: 'План работ на 3 месяца',
         ownerId: 'person-aleksey',
         status: 'active',
         dueDate: '2026-10-04',
@@ -9813,13 +9862,17 @@ function buildSeoWeeklyReports(
         }
       });
 
+      const doneItems = dedupeWeeklyReportItemsByMeaning(done);
+      const lateItems = dedupeWeeklyReportItemsByMeaning(late);
+      const plannedItems = dedupeWeeklyReportItemsByMeaning(planned);
+
       return {
         id: project.id,
         title: project.name,
         color: project.color,
-        done: sortWeeklyItems(done, 'desc'),
-        late: sortWeeklyItems(late, 'asc'),
-        planned: sortWeeklyItems(planned, 'asc'),
+        done: sortWeeklyItems(doneItems, 'desc'),
+        late: sortWeeklyItems(lateItems, 'asc'),
+        planned: sortWeeklyItems(plannedItems, 'asc'),
         summary,
         trend,
       };
@@ -10618,6 +10671,31 @@ function dedupeWeeklyReportItems(items: WeeklyReportItem[]) {
   items.forEach((item) => {
     const key = `${item.taskId ?? item.id}-${item.title}-${item.projectName ?? item.meta}`;
     if (!map.has(key)) map.set(key, item);
+  });
+  return [...map.values()];
+}
+
+function dedupeWeeklyReportItemsByMeaning(items: WeeklyReportItem[]) {
+  const map = new Map<string, WeeklyReportItem>();
+  items.forEach((item) => {
+    const key = [
+      normalizeProjectName(item.projectName ?? item.meta.split('·')[0] ?? ''),
+      normalizeProjectName(item.title),
+      item.deadline ?? item.date ?? '',
+    ].join('|');
+    const current = map.get(key);
+    const currentIsWeekly = current?.taskId?.startsWith('weekly-') ?? false;
+    const nextIsWeekly = item.taskId?.startsWith('weekly-') ?? false;
+
+    if (!current || (currentIsWeekly && !nextIsWeekly)) {
+      map.set(key, item);
+      return;
+    }
+
+    if (!current.description && item.description) {
+      map.set(key, item);
+      return;
+    }
   });
   return [...map.values()];
 }
