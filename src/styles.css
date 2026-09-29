@@ -5926,6 +5926,7 @@ p {
 .aquaguard-kpi-card {
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
   gap: 12px;
   min-height: 110px;
   padding: 14px;
@@ -5954,8 +5955,7 @@ p {
 }
 
 .aquaguard-kpi-card span,
-.aquaguard-kpi-card p,
-.aquaguard-kpi-card small {
+.aquaguard-kpi-card p {
   color: var(--muted);
   font-size: 12px;
   font-weight: 850;
@@ -5971,24 +5971,52 @@ p {
 }
 
 .aquaguard-kpi-card em {
-  color: var(--success);
-  font-size: 13px;
+  color: var(--muted);
+  font-size: 11px;
   font-style: normal;
-  font-weight: 950;
+  font-weight: 850;
 }
 
-.aquaguard-kpi-card.negative em {
-  color: var(--danger);
-}
-
-.aquaguard-kpi-card.warning em,
 .aquaguard-kpi-card.warning p {
   color: var(--warning);
 }
 
-.aquaguard-kpi-card small {
-  grid-column: 2;
-  opacity: 0.82;
+.aquaguard-kpi-week-delta {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(216, 238, 243, 0.14);
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.aquaguard-kpi-week-delta span:first-child {
+  color: inherit;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.aquaguard-kpi-week-delta span:last-child {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+  text-align: right;
+}
+
+.aquaguard-kpi-card.negative .aquaguard-kpi-week-delta {
+  color: var(--danger);
+}
+
+.aquaguard-kpi-card.neutral .aquaguard-kpi-week-delta {
+  color: var(--muted);
+}
+
+.aquaguard-kpi-card.warning .aquaguard-kpi-week-delta {
+  color: var(--warning);
 }
 
 .aquaguard-leads-panel {

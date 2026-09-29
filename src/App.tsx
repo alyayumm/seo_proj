@@ -3074,6 +3074,7 @@ type SeoKpiCardModel = {
   value: string;
   meta: string;
   deltaLabel: string;
+  deltaCaption: string;
   tone: 'positive' | 'negative' | 'neutral' | 'warning';
   statusLabel: string;
   icon: 'leaf' | 'users' | 'target' | 'funnel';
@@ -3634,6 +3635,29 @@ function buildConversionSeries(visitSeries: AnalyticsSeriesPoint[], leadSeries: 
 
 function sumSeries(points: AnalyticsSeriesPoint[]) {
   return points.reduce((total, point) => total + point.value, 0);
+}
+
+function getTrailingWeekRange(endDate: string): AnalyticsDateRange {
+  return {
+    start: addDaysToIso(endDate, -6),
+    end: endDate,
+  };
+}
+
+function getPreviousTrailingWeekRange(range: AnalyticsDateRange): AnalyticsDateRange {
+  const end = addDaysToIso(range.start, -1);
+  return {
+    start: addDaysToIso(end, -6),
+    end,
+  };
+}
+
+function sumGoalDailyPoints(points: PromotionGoalTrendPoint[], metric: 'visits' | 'goals') {
+  return points.reduce((total, point) => total + point[metric], 0);
+}
+
+function sumLeadDailyPoints(points: LeadTrendPoint[], metric: SeoLeadMetricMode) {
+  return points.reduce((total, point) => total + (metric === 'target' ? point.quality : point.leads), 0);
 }
 
 function getSeriesRate(numerator: number | null, denominator: number | null) {
@@ -11739,6 +11763,12 @@ function ProjectSeoAnalyticsScreen({
   const previousGoalDaily = compareRange ? filterGoalDailyPoints(goalAnalytics, compareRange) : [];
   const currentLeadDaily = filterLeadDailyPoints(leadAnalytics, currentRange);
   const previousLeadDaily = compareRange ? filterLeadDailyPoints(leadAnalytics, compareRange) : [];
+  const currentWeekRange = getTrailingWeekRange(currentRange.end);
+  const previousWeekRange = getPreviousTrailingWeekRange(currentWeekRange);
+  const currentWeekGoalDaily = filterGoalDailyPoints(goalAnalytics, currentWeekRange);
+  const previousWeekGoalDaily = filterGoalDailyPoints(goalAnalytics, previousWeekRange);
+  const currentWeekLeadDaily = filterLeadDailyPoints(leadAnalytics, currentWeekRange);
+  const previousWeekLeadDaily = filterLeadDailyPoints(leadAnalytics, previousWeekRange);
   const usesTotalOrganicFallback = trafficSystem !== 'all';
   const trafficSeries = buildGoalSeries(currentGoalDaily, trendMode, 'visits');
   const previousTrafficSeries = compareRange ? buildGoalSeries(previousGoalDaily, trendMode, 'visits') : [];
@@ -11747,17 +11777,25 @@ function ProjectSeoAnalyticsScreen({
   const leadSeries = buildLeadSeries(currentLeadDaily, trendMode, leadMetricMode);
   const previousLeadSeries = compareRange ? buildLeadSeries(previousLeadDaily, trendMode, leadMetricMode) : [];
   const targetLeadSeries = buildLeadSeries(currentLeadDaily, trendMode, 'target');
-  const previousTargetLeadSeries = compareRange ? buildLeadSeries(previousLeadDaily, trendMode, 'target') : [];
   const conversionSeries = buildConversionSeries(trafficSeries, goalSeries);
   const previousConversionSeries = buildConversionSeries(previousTrafficSeries, previousGoalSeries);
   const organicVisits = currentGoalDaily.length ? sumSeries(trafficSeries) : null;
-  const previousOrganicVisits = compareRange && previousGoalDaily.length ? sumSeries(previousTrafficSeries) : null;
   const conversionVisits = currentGoalDaily.length ? sumSeries(goalSeries) : null;
-  const previousConversionVisits = compareRange && previousGoalDaily.length ? sumSeries(previousGoalSeries) : null;
   const targetSeoLeads = currentLeadDaily.length ? sumSeries(targetLeadSeries) : leadAnalytics ? null : null;
-  const previousTargetSeoLeads = compareRange && previousLeadDaily.length ? sumSeries(previousTargetLeadSeries) : null;
   const conversionRate = getSeriesRate(conversionVisits, organicVisits);
-  const previousConversionRate = getSeriesRate(previousConversionVisits, previousOrganicVisits);
+  const currentWeekOrganicVisits = currentWeekGoalDaily.length ? sumGoalDailyPoints(currentWeekGoalDaily, 'visits') : null;
+  const previousWeekOrganicVisits = previousWeekGoalDaily.length ? sumGoalDailyPoints(previousWeekGoalDaily, 'visits') : null;
+  const currentWeekConversionVisits = currentWeekGoalDaily.length ? sumGoalDailyPoints(currentWeekGoalDaily, 'goals') : null;
+  const previousWeekConversionVisits = previousWeekGoalDaily.length ? sumGoalDailyPoints(previousWeekGoalDaily, 'goals') : null;
+  const currentWeekTargetSeoLeads = currentWeekLeadDaily.length ? sumLeadDailyPoints(currentWeekLeadDaily, 'target') : leadAnalytics ? null : null;
+  const previousWeekTargetSeoLeads = previousWeekLeadDaily.length ? sumLeadDailyPoints(previousWeekLeadDaily, 'target') : null;
+  const currentWeekConversionRate = getSeriesRate(currentWeekConversionVisits, currentWeekOrganicVisits);
+  const previousWeekConversionRate = getSeriesRate(previousWeekConversionVisits, previousWeekOrganicVisits);
+  const trafficWeekDelta = getDeltaLabel(currentWeekOrganicVisits, previousWeekOrganicVisits);
+  const conversionVisitsWeekDelta = getDeltaLabel(currentWeekConversionVisits, previousWeekConversionVisits);
+  const targetLeadsWeekDelta = getDeltaLabel(currentWeekTargetSeoLeads, previousWeekTargetSeoLeads);
+  const conversionRateWeekDelta = getDeltaLabel(currentWeekConversionRate, previousWeekConversionRate, { percentPoint: true });
+  const weekDeltaCaption = 'к прошлой неделе';
   const leadIssue = getLeadDataIssue(leadAnalytics, currentLeadDaily);
   const linkSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
   const markers = getAnalyticsMarkers(tasks, currentRange);
@@ -11808,8 +11846,9 @@ function ProjectSeoAnalyticsScreen({
       title: 'Органические визиты',
       value: organicVisits === null ? '—' : formatInteger(organicVisits),
       meta: `за ${formatInputRange(currentRange)}`,
-      deltaLabel: getDeltaLabel(organicVisits, previousOrganicVisits).label,
-      tone: getDeltaLabel(organicVisits, previousOrganicVisits).tone,
+      deltaLabel: trafficWeekDelta.label,
+      deltaCaption: weekDeltaCaption,
+      tone: trafficWeekDelta.tone,
       statusLabel: usesTotalOrganicFallback
         ? `${seoTrafficSystemLabels[trafficSystem]}: показана общая органика`
         : 'по временному ряду Метрики',
@@ -11819,8 +11858,9 @@ function ProjectSeoAnalyticsScreen({
       title: 'Конверсионные визиты',
       value: conversionVisits === null ? '—' : formatInteger(conversionVisits),
       meta: 'достижения целей Метрики',
-      deltaLabel: getDeltaLabel(conversionVisits, previousConversionVisits).label,
-      tone: getDeltaLabel(conversionVisits, previousConversionVisits).tone,
+      deltaLabel: conversionVisitsWeekDelta.label,
+      deltaCaption: weekDeltaCaption,
+      tone: conversionVisitsWeekDelta.tone,
       statusLabel: conversionVisits === 0 ? 'подтвержденный 0 в выбранном периоде' : 'по целям Метрики',
       icon: 'users',
     },
@@ -11828,8 +11868,9 @@ function ProjectSeoAnalyticsScreen({
       title: 'Целевые SEO-лиды',
       value: targetSeoLeads === null ? '—' : formatInteger(targetSeoLeads),
       meta: leadUpdatedAt || leadAnalytics?.periodLabel || 'Google Sheets',
-      deltaLabel: getDeltaLabel(targetSeoLeads, previousTargetSeoLeads).label,
-      tone: leadIssue ? 'warning' : getDeltaLabel(targetSeoLeads, previousTargetSeoLeads).tone,
+      deltaLabel: targetLeadsWeekDelta.label,
+      deltaCaption: weekDeltaCaption,
+      tone: leadIssue ? 'warning' : targetLeadsWeekDelta.tone,
       statusLabel: leadIssue || 'по распознанным датам заявок',
       icon: 'target',
     },
@@ -11837,8 +11878,9 @@ function ProjectSeoAnalyticsScreen({
       title: 'Конверсия в обращение',
       value: formatConversionRate(conversionRate),
       meta: 'конв. визиты / органика',
-      deltaLabel: getDeltaLabel(conversionRate, previousConversionRate, { percentPoint: true }).label,
-      tone: conversionVisits === 0 ? 'warning' : getDeltaLabel(conversionRate, previousConversionRate, { percentPoint: true }).tone,
+      deltaLabel: conversionRateWeekDelta.label,
+      deltaCaption: weekDeltaCaption,
+      tone: conversionVisits === 0 ? 'warning' : conversionRateWeekDelta.tone,
       statusLabel: conversionVisits === 0 ? 'учет обращений в целях не настроен' : 'отношение сумм за период',
       icon: 'funnel',
     },
@@ -12269,10 +12311,13 @@ function SeoAnalyticsKpiCard({ card }: { card: SeoKpiCardModel }) {
       <section>
         <span>{card.title}</span>
         <strong>{card.value}</strong>
-        <em>{card.deltaLabel}</em>
+        <em>{card.meta}</em>
         <p>{card.statusLabel}</p>
       </section>
-      <small>{card.meta}</small>
+      <small className="aquaguard-kpi-week-delta">
+        <span>{card.deltaLabel}</span>
+        <span>{card.deltaCaption}</span>
+      </small>
     </article>
   );
 }
