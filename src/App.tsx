@@ -11854,24 +11854,24 @@ function ProjectSeoAnalyticsScreen({
   const previousGoalSeries = compareRange ? buildGoalSeries(previousGoalDaily, trendMode, 'goals') : [];
   const leadSeries = buildLeadSeries(currentLeadDaily, trendMode, leadMetricMode);
   const previousLeadSeries = compareRange ? buildLeadSeries(previousLeadDaily, trendMode, leadMetricMode) : [];
-  const targetLeadSeries = buildLeadSeries(currentLeadDaily, trendMode, 'target');
+  const realLeadSeries = buildLeadSeries(currentLeadDaily, trendMode, 'all');
   const conversionSeries = buildConversionSeries(trafficSeries, goalSeries);
   const previousConversionSeries = buildConversionSeries(previousTrafficSeries, previousGoalSeries);
   const organicVisits = currentGoalDaily.length ? sumSeries(trafficSeries) : null;
   const conversionVisits = currentGoalDaily.length ? sumSeries(goalSeries) : null;
-  const targetSeoLeads = currentLeadDaily.length ? sumSeries(targetLeadSeries) : leadAnalytics ? null : null;
+  const realSeoLeads = currentLeadDaily.length ? sumSeries(realLeadSeries) : leadAnalytics ? null : null;
   const conversionRate = getSeriesRate(conversionVisits, organicVisits);
   const currentWeekOrganicVisits = currentWeekGoalDaily.length ? sumGoalDailyPoints(currentWeekGoalDaily, 'visits') : null;
   const previousWeekOrganicVisits = previousWeekGoalDaily.length ? sumGoalDailyPoints(previousWeekGoalDaily, 'visits') : null;
   const currentWeekConversionVisits = currentWeekGoalDaily.length ? sumGoalDailyPoints(currentWeekGoalDaily, 'goals') : null;
   const previousWeekConversionVisits = previousWeekGoalDaily.length ? sumGoalDailyPoints(previousWeekGoalDaily, 'goals') : null;
-  const currentWeekTargetSeoLeads = currentWeekLeadDaily.length ? sumLeadDailyPoints(currentWeekLeadDaily, 'target') : leadAnalytics ? null : null;
-  const previousWeekTargetSeoLeads = previousWeekLeadDaily.length ? sumLeadDailyPoints(previousWeekLeadDaily, 'target') : null;
+  const currentWeekRealSeoLeads = currentWeekLeadDaily.length ? sumLeadDailyPoints(currentWeekLeadDaily, 'all') : leadAnalytics ? null : null;
+  const previousWeekRealSeoLeads = previousWeekLeadDaily.length ? sumLeadDailyPoints(previousWeekLeadDaily, 'all') : null;
   const currentWeekConversionRate = getSeriesRate(currentWeekConversionVisits, currentWeekOrganicVisits);
   const previousWeekConversionRate = getSeriesRate(previousWeekConversionVisits, previousWeekOrganicVisits);
   const trafficWeekDelta = getDeltaLabel(currentWeekOrganicVisits, previousWeekOrganicVisits);
   const conversionVisitsWeekDelta = getDeltaLabel(currentWeekConversionVisits, previousWeekConversionVisits);
-  const targetLeadsWeekDelta = getDeltaLabel(currentWeekTargetSeoLeads, previousWeekTargetSeoLeads);
+  const realLeadsWeekDelta = getDeltaLabel(currentWeekRealSeoLeads, previousWeekRealSeoLeads);
   const conversionRateWeekDelta = getDeltaLabel(currentWeekConversionRate, previousWeekConversionRate, { percentPoint: true });
   const weekDeltaCaption = 'к прошлой неделе';
   const leadIssue = getLeadDataIssue(leadAnalytics, currentLeadDaily);
@@ -11943,23 +11943,23 @@ function ProjectSeoAnalyticsScreen({
       icon: 'users',
     },
     {
-      title: 'Целевые SEO-лиды',
-      value: targetSeoLeads === null ? '—' : formatInteger(targetSeoLeads),
+      title: 'Реальные обращения',
+      value: realSeoLeads === null ? '—' : formatInteger(realSeoLeads),
       meta: leadUpdatedAt || leadAnalytics?.periodLabel || 'Google Sheets',
-      deltaLabel: targetLeadsWeekDelta.label,
+      deltaLabel: realLeadsWeekDelta.label,
       deltaCaption: weekDeltaCaption,
-      tone: leadIssue ? 'warning' : targetLeadsWeekDelta.tone,
-      statusLabel: leadIssue || 'по распознанным датам заявок',
+      tone: leadIssue ? 'warning' : realLeadsWeekDelta.tone,
+      statusLabel: leadIssue || 'по Google Sheets: лист проекта',
       icon: 'target',
     },
     {
       title: 'Конверсия в обращение',
       value: formatConversionRate(conversionRate),
-      meta: 'конв. визиты / органика',
+      meta: 'конверсия ЦД / органика',
       deltaLabel: conversionRateWeekDelta.label,
       deltaCaption: weekDeltaCaption,
       tone: conversionVisits === 0 ? 'warning' : conversionRateWeekDelta.tone,
-      statusLabel: conversionVisits === 0 ? 'учет обращений в целях не настроен' : 'отношение сумм за период',
+      statusLabel: conversionVisits === 0 ? 'ЦД в Метрике не зафиксированы' : 'по целям Метрики',
       icon: 'funnel',
     },
   ];
@@ -12268,14 +12268,14 @@ function ProjectSeoAnalyticsScreen({
             <div>
               <h3>Конверсия в обращение</h3>
               <p>
-                {conversionVisits ?? 0} конверсионных визитов из {organicVisits ?? 0} органических.
+                {conversionVisits ?? 0} ЦД из {organicVisits ?? 0} органических визитов.
               </p>
             </div>
-            <span className="aquaguard-info-link">Какие цели учитываются</span>
+            <span className="aquaguard-info-link">Цели Метрики</span>
           </div>
           <SeoAnalyticsLineChart
             current={conversionSeries}
-            emptyLabel="Не настроен учет обращений в целях"
+            emptyLabel="Нет данных по ЦД в Метрике"
             previous={previousConversionSeries}
             previousLabel={compareRange ? formatInputRange(compareRange) : ''}
             title="CR"
