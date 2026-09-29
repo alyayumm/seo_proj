@@ -11732,6 +11732,9 @@ function ProjectSeoAnalyticsScreen({
 
   const currentRange = resolveSeoDateRange(periodPreset, customRange, sourceEndDate);
   const compareRange = resolveSeoCompareRange(compareMode, currentRange, customCompareRange);
+  const configuredLeadSources = LEAD_ANALYTICS_SOURCES.filter(
+    (item) => normalizeProjectName(item.projectName) === normalizeProjectName(project.name),
+  );
   const currentGoalDaily = filterGoalDailyPoints(goalAnalytics, currentRange);
   const previousGoalDaily = compareRange ? filterGoalDailyPoints(goalAnalytics, compareRange) : [];
   const currentLeadDaily = filterLeadDailyPoints(leadAnalytics, currentRange);
@@ -11854,6 +11857,22 @@ function ProjectSeoAnalyticsScreen({
       ? 'Заявки не обновились: Google Sheets недоступен или закрыт для текущей сессии.'
       : '',
   ].filter(Boolean);
+  const leadSourceCards = leadAnalytics?.sources.length
+    ? leadAnalytics.sources
+    : configuredLeadSources.map((leadSource) => ({
+        id: leadSource.id,
+        title: leadSource.title,
+        channel: leadSource.channel,
+        periodLabel: leadSource.periodLabel,
+        sourceType: 'google-sheet' as const,
+        url: leadSource.url,
+        total: 0,
+        quality: 0,
+        inWork: 0,
+        rejected: 0,
+        unknown: 0,
+        fileName: undefined,
+      }));
 
   return (
     <section className="aquaguard-analytics" aria-label={`Аналитика SEO-проекта ${project.name}`}>
@@ -11989,6 +12008,69 @@ function ProjectSeoAnalyticsScreen({
           <SeoAnalyticsKpiCard card={card} key={card.title} />
         ))}
       </div>
+
+      <section className="aquaguard-leads-panel">
+        <div className="aquaguard-chart-toolbar">
+          <div>
+            <h3>Таблица лидов</h3>
+            <p>
+              {leadAnalytics
+                ? `${leadAnalytics.periodLabel} · ${leadAnalytics.sourceCount} источн.`
+                : leadLoadStatus === 'loading'
+                  ? 'Заявки загружаются из Google Sheets'
+                  : 'Источник заявок подключен как Google-таблица'}
+            </p>
+          </div>
+          <button type="button" onClick={onReloadLeads} disabled={leadLoadStatus === 'loading'}>
+            <RefreshCw className={leadLoadStatus === 'loading' ? 'spin' : undefined} size={16} />
+            Обновить заявки
+          </button>
+        </div>
+
+        {leadAnalytics ? (
+          <div className="aquaguard-lead-summary-row">
+            <Metric label="Всего лидов" value={formatInteger(leadAnalytics.total)} compact />
+            <Metric label="Качественные" value={formatInteger(leadAnalytics.quality)} compact tone="success" />
+            <Metric label="В работе" value={formatInteger(leadAnalytics.inWork)} compact />
+            <Metric label="Отказ / нецелевые" value={formatInteger(leadAnalytics.rejected)} compact tone="warning" />
+          </div>
+        ) : (
+          <div className="aquaguard-lead-empty">
+            {leadError || 'Данных в сводке пока нет, но ссылка на таблицу ниже сохранена.'}
+          </div>
+        )}
+
+        {leadSourceCards.length > 0 ? (
+          <div className="aquaguard-lead-source-list">
+            {leadSourceCards.map((leadSource) => (
+              <article key={leadSource.id}>
+                <div>
+                  <span>{leadSource.channel}</span>
+                  <strong>{leadSource.title}</strong>
+                  <em>{leadSource.periodLabel}</em>
+                </div>
+                <p>
+                  {leadAnalytics
+                    ? `${formatInteger(leadSource.total)} лидов · ${formatInteger(leadSource.quality)} кач. · ${formatInteger(
+                        leadSource.inWork,
+                      )} в работе`
+                    : 'Источник подключен, ожидает загрузку строк'}
+                </p>
+                {leadSource.url && (
+                  <a href={leadSource.url} target="_blank" rel="noreferrer">
+                    <FileSpreadsheet size={15} />
+                    Открыть таблицу лидов
+                    <ExternalLink size={13} />
+                  </a>
+                )}
+                {leadSource.fileName && <small>{leadSource.fileName}</small>}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="aquaguard-lead-empty">Для этого проекта таблица лидов пока не привязана.</div>
+        )}
+      </section>
 
       <article className="aquaguard-chart-panel aquaguard-chart-panel-main">
         <div className="aquaguard-chart-toolbar">

@@ -5720,6 +5720,7 @@ p {
 .aquaguard-filter-panel,
 .aquaguard-chart-panel,
 .aquaguard-impact-panel,
+.aquaguard-leads-panel,
 .aquaguard-work-strip,
 .aquaguard-open-tasks {
   border: 1px solid rgba(126, 231, 241, 0.2);
@@ -5740,6 +5741,7 @@ p {
 
 .aquaguard-analytics-head h2,
 .aquaguard-chart-toolbar h3,
+.aquaguard-leads-panel h3,
 .aquaguard-work-strip h3 {
   margin: 0;
   color: var(--ink);
@@ -5794,6 +5796,7 @@ p {
 
 .aquaguard-freshness button,
 .aquaguard-impact-actions button,
+.aquaguard-leads-panel button,
 .aquaguard-work-strip button {
   display: inline-flex;
   align-items: center;
@@ -5837,6 +5840,8 @@ p {
 .aquaguard-freshness button:focus-visible,
 .aquaguard-impact-actions button:hover,
 .aquaguard-impact-actions button:focus-visible,
+.aquaguard-leads-panel button:hover,
+.aquaguard-leads-panel button:focus-visible,
 .aquaguard-work-strip button:hover,
 .aquaguard-work-strip button:focus-visible {
   border-color: rgba(126, 231, 241, 0.58);
@@ -5984,6 +5989,99 @@ p {
 .aquaguard-kpi-card small {
   grid-column: 2;
   opacity: 0.82;
+}
+
+.aquaguard-leads-panel {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.aquaguard-lead-summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.aquaguard-lead-empty {
+  min-height: 44px;
+  border: 1px dashed rgba(216, 238, 243, 0.18);
+  border-radius: 12px;
+  color: var(--muted);
+  background: rgba(216, 238, 243, 0.06);
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.aquaguard-lead-source-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.aquaguard-lead-source-list article {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid rgba(216, 238, 243, 0.14);
+  border-radius: 14px;
+  background: rgba(216, 238, 243, 0.07);
+}
+
+.aquaguard-lead-source-list article > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.aquaguard-lead-source-list span,
+.aquaguard-lead-source-list em,
+.aquaguard-lead-source-list p,
+.aquaguard-lead-source-list small {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 820;
+}
+
+.aquaguard-lead-source-list strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aquaguard-lead-source-list p {
+  margin: 0;
+}
+
+.aquaguard-lead-source-list a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid rgba(126, 231, 241, 0.28);
+  border-radius: 10px;
+  color: var(--ink);
+  background: rgba(126, 231, 241, 0.12);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.aquaguard-lead-source-list a:hover,
+.aquaguard-lead-source-list a:focus-visible {
+  border-color: rgba(126, 231, 241, 0.58);
+  background: rgba(126, 231, 241, 0.18);
+  outline: none;
 }
 
 .aquaguard-chart-panel,
@@ -7572,6 +7670,7 @@ p {
 :root[data-theme='light'] .aquaguard-filter-panel,
 :root[data-theme='light'] .aquaguard-chart-panel,
 :root[data-theme='light'] .aquaguard-impact-panel,
+:root[data-theme='light'] .aquaguard-leads-panel,
 :root[data-theme='light'] .aquaguard-work-strip,
 :root[data-theme='light'] .aquaguard-open-tasks {
   background:
@@ -7600,6 +7699,8 @@ p {
 :root[data-theme='light'] .aquaguard-work-chips span,
 :root[data-theme='light'] .aquaguard-marker-list span,
 :root[data-theme='light'] .aquaguard-info-link,
+:root[data-theme='light'] .aquaguard-lead-empty,
+:root[data-theme='light'] .aquaguard-lead-source-list article,
 :root[data-theme='light'] .aquaguard-open-tasks article,
 :root[data-theme='light'] .aquaguard-chart-empty,
 :root[data-theme='light'] .aquaguard-impact-empty {
@@ -7939,6 +8040,7 @@ p {
 
   .aquaguard-filter-panel,
   .aquaguard-kpi-grid,
+  .aquaguard-lead-summary-row,
   .aquaguard-chart-grid,
   .aquaguard-impact-actions {
     grid-template-columns: 1fr;
