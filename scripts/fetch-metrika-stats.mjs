@@ -350,6 +350,50 @@ async function writePayload(payload) {
   await writeFile(OUTPUT_PATH, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
+function makeEmptyProjectStats(project, counter, error) {
+  return {
+    projectName: project.projectName,
+    clientName: project.clientName,
+    counterId: counter?.id ? Number(counter.id) : undefined,
+    counterName: counter?.name || project.projectName,
+    siteUrl: project.siteUrls[0],
+    periodLabel: `${formatRuDate(DATE_1)} - ${formatRuDate(DATE_2)}`,
+    metricScope: 'organic_search',
+    filter: ORGANIC_FILTER,
+    attribution: ATTRIBUTION,
+    timezone: SOURCE_TIMEZONE,
+    dataStatus: 'error',
+    fullCoverageDate: DATE_2,
+    visits: 0,
+    users: 0,
+    goalCount: 0,
+    queryVisits: 0,
+    queryGoalCount: 0,
+    uniqueQueries: 0,
+    goalRows: 0,
+    sampleQueries: [],
+    queries: [],
+    topQueries: [],
+    daily: [],
+    weekly: [],
+    monthly: [],
+    error: error?.message || String(error || 'Метрика не обновилась'),
+  };
+}
+
+function keepPreviousProjectStats(project, previousByProject, counter, error) {
+  const previous = previousByProject.get(normalizeProjectName(project.projectName));
+  if (previous) {
+    return {
+      ...previous,
+      dataStatus: previous.dataStatus === 'error' ? 'error' : 'stale',
+      error: error?.message || String(error || 'Метрика не обновилась'),
+    };
+  }
+
+  return makeEmptyProjectStats(project, counter, error);
+}
+
 async function main() {
   const token = process.env.YANDEX_OAUTH_TOKEN;
   if (!token) {
@@ -358,6 +402,10 @@ async function main() {
   }
 
   const projects = parseJsonEnv('METRIKA_PROJECTS', DEFAULT_PROJECTS);
+  const previous = await readExistingPayload();
+  const previousByProject = new Map(
+    (previous.projects ?? []).map((project) => [normalizeProjectName(project.projectName), project]),
+  );
   const counterMap = parseCounterMap();
   const counters = await fetchCounters(token);
   const projectStats = [];
@@ -370,6 +418,9 @@ async function main() {
 
     if (!counter) {
       console.log(`Счетчик не найден: ${project.projectName}`);
+      projectStats.push(
+        keepPreviousProjectStats(project, previousByProject, undefined, new Error(`Счетчик не найден: ${project.projectName}`)),
+      );
       continue;
     }
 
@@ -379,10 +430,10 @@ async function main() {
       console.log(`Обновлено: ${project.projectName}`);
     } catch (error) {
       console.log(`Не удалось обновить ${project.projectName}: ${error.message}`);
+      projectStats.push(keepPreviousProjectStats(project, previousByProject, counter, error));
     }
   }
 
-  const previous = await readExistingPayload();
   const payload = {
     schemaVersion: 1,
     updatedAt: new Date().toISOString(),
