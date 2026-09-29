@@ -65,7 +65,7 @@ export type LeadAnalyticsSource = {
   format?: 'raw-leads' | 'period-summary' | 'smartstroy-matrix';
   range?: string;
   spreadsheetId: string;
-  gid: string;
+  gid?: string;
   url: string;
   note: string;
 };
@@ -115,6 +115,8 @@ type GvizResponse = {
 const LEAD_MASTER_SPREADSHEET_ID = '1tM8lK4524ujLJqEu0VTEikJdpPE5O65_u-VRGnLduzQ';
 const LEAD_MASTER_SPREADSHEET_URL =
   'https://docs.google.com/spreadsheets/d/1tM8lK4524ujLJqEu0VTEikJdpPE5O65_u-VRGnLduzQ/edit';
+const LEAD_MASTER_PUBLIC_URL =
+  'https://docs.google.com/spreadsheets/d/1tM8lK4524ujLJqEu0VTEikJdpPE5O65_u-VRGnLduzQ/edit?usp=sharing';
 
 export const LEAD_ANALYTICS_SOURCES: LeadAnalyticsSource[] = [
   {
@@ -126,10 +128,24 @@ export const LEAD_ANALYTICS_SOURCES: LeadAnalyticsSource[] = [
     periodLabel: 'апрель-июнь 2026',
     format: 'period-summary',
     range: 'A1:Z100',
+    sheetName: 'аква',
     spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
-    gid: '1340262634',
-    url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=1340262634#gid=1340262634`,
+    url: LEAD_MASTER_PUBLIC_URL,
     note: 'Сводная таблица лидов: звонки, почта, сайт, другое и недельная динамика.',
+  },
+  {
+    id: 'promteh-leads-master-2026',
+    projectName: 'Промтех',
+    clientName: 'ПромТехМакулатура',
+    title: 'Промтех: аналитика лидов',
+    channel: 'Заявки',
+    periodLabel: 'июль-август 2026',
+    format: 'period-summary',
+    range: 'A1:Z160',
+    sheetName: 'промтех',
+    spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
+    url: LEAD_MASTER_PUBLIC_URL,
+    note: 'Сводная таблица лидов из листа “промтех”.',
   },
   {
     id: 'smartstroy-leads-master-2026',
@@ -140,9 +156,9 @@ export const LEAD_ANALYTICS_SOURCES: LeadAnalyticsSource[] = [
     periodLabel: 'июнь-сентябрь 2026',
     format: 'smartstroy-matrix',
     range: 'A1:T20',
+    sheetName: 'смарт',
     spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
-    gid: '0',
-    url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=0#gid=0`,
+    url: LEAD_MASTER_PUBLIC_URL,
     note: 'Сводная таблица лидов: лиды, квалы, продажи и выручка по месяцам.',
   },
   {
@@ -154,9 +170,9 @@ export const LEAD_ANALYTICS_SOURCES: LeadAnalyticsSource[] = [
     periodLabel: 'Google Sheets',
     format: 'period-summary',
     range: 'A1:Z120',
+    sheetName: 'балт',
     spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
-    gid: '893107997',
-    url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=893107997#gid=893107997`,
+    url: LEAD_MASTER_PUBLIC_URL,
     note: 'Сводная таблица лидов. Сейчас используется ручной fallback, пока вкладка не заполнена.',
   },
   {
@@ -168,10 +184,52 @@ export const LEAD_ANALYTICS_SOURCES: LeadAnalyticsSource[] = [
     periodLabel: 'Google Sheets',
     format: 'period-summary',
     range: 'A1:Z120',
+    sheetName: 'часы',
     spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
-    gid: '612063314',
-    url: `${LEAD_MASTER_SPREADSHEET_URL}?gid=612063314#gid=612063314`,
+    url: LEAD_MASTER_PUBLIC_URL,
     note: 'Сводная таблица лидов. Данные появятся после заполнения вкладки.',
+  },
+  {
+    id: 'lombard-leads-master-2026',
+    projectName: 'Ломбард',
+    clientName: 'ЛомбардБанка',
+    title: 'Ломбард: аналитика лидов',
+    channel: 'Заявки',
+    periodLabel: 'Google Sheets',
+    format: 'period-summary',
+    range: 'A1:Z120',
+    sheetName: 'ломбард',
+    spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
+    url: LEAD_MASTER_PUBLIC_URL,
+    note: 'Сводная таблица лидов из листа “ломбард”.',
+  },
+  {
+    id: 'switch-leads-master-2026',
+    projectName: 'Свич',
+    clientName: 'Свитч',
+    title: 'Свич: аналитика лидов',
+    channel: 'Заявки',
+    periodLabel: 'Google Sheets',
+    format: 'period-summary',
+    range: 'A1:Z120',
+    sheetName: 'свитч',
+    spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
+    url: LEAD_MASTER_PUBLIC_URL,
+    note: 'Сводная таблица лидов из листа “свитч”.',
+  },
+  {
+    id: 'rectop-leads-master-2026',
+    projectName: 'Ректоп',
+    clientName: 'Ректоп',
+    title: 'Ректоп: аналитика лидов',
+    channel: 'Заявки',
+    periodLabel: 'Google Sheets',
+    format: 'period-summary',
+    range: 'A1:Z120',
+    sheetName: 'ректоп',
+    spreadsheetId: LEAD_MASTER_SPREADSHEET_ID,
+    url: LEAD_MASTER_PUBLIC_URL,
+    note: 'Сводная таблица лидов из листа “ректоп”.',
   },
 ];
 
@@ -443,29 +501,31 @@ export function combineLeadAnalyticsSummaries(summaries: LeadAnalyticsSummary[])
 }
 
 function mergeProjectSummaries(items: LeadAnalyticsSummary[]): LeadAnalyticsSummary {
-  const [first] = items;
+  const googleSheetItems = items.filter((item) => item.sources.some((source) => source.sourceType === 'google-sheet'));
+  const sourceItems = googleSheetItems.length ? googleSheetItems : items;
+  const [first] = sourceItems;
   const merged: LeadAnalyticsSummary = {
     projectName: first.projectName,
     clientName: first.clientName,
-    periodLabel: mergePeriodLabels(items.map((item) => item.periodLabel)),
-    total: sum(items, 'total'),
-    quality: sum(items, 'quality'),
-    inWork: sum(items, 'inWork'),
-    rejected: sum(items, 'rejected'),
-    unknown: sum(items, 'unknown'),
-    budget: sum(items, 'budget'),
-    sourceCount: items.reduce((count, item) => count + item.sourceCount, 0),
-    sources: items.flatMap((item) => item.sources),
-    byChannel: mergeBreakdowns(items.flatMap((item) => item.byChannel)),
-    byStatus: mergeBreakdowns(items.flatMap((item) => item.byStatus)),
-    byReason: mergeBreakdowns(items.flatMap((item) => item.byReason)),
-    byVolume: mergeBreakdowns(items.flatMap((item) => item.byVolume)),
-    byMaterial: mergeBreakdowns(items.flatMap((item) => item.byMaterial)),
-    byClientType: mergeBreakdowns(items.flatMap((item) => item.byClientType)),
-    daily: mergeTrendPoints(items.flatMap((item) => item.daily), 'daily'),
-    weekly: mergeTrendPoints(items.flatMap((item) => item.weekly), 'weekly'),
-    monthly: mergeTrendPoints(items.flatMap((item) => item.monthly), 'monthly'),
-    note: items.map((item) => item.note).filter(Boolean).join(' '),
+    periodLabel: mergePeriodLabels(sourceItems.map((item) => item.periodLabel)),
+    total: sum(sourceItems, 'total'),
+    quality: sum(sourceItems, 'quality'),
+    inWork: sum(sourceItems, 'inWork'),
+    rejected: sum(sourceItems, 'rejected'),
+    unknown: sum(sourceItems, 'unknown'),
+    budget: sum(sourceItems, 'budget'),
+    sourceCount: sourceItems.reduce((count, item) => count + item.sourceCount, 0),
+    sources: sourceItems.flatMap((item) => item.sources),
+    byChannel: mergeBreakdowns(sourceItems.flatMap((item) => item.byChannel)),
+    byStatus: mergeBreakdowns(sourceItems.flatMap((item) => item.byStatus)),
+    byReason: mergeBreakdowns(sourceItems.flatMap((item) => item.byReason)),
+    byVolume: mergeBreakdowns(sourceItems.flatMap((item) => item.byVolume)),
+    byMaterial: mergeBreakdowns(sourceItems.flatMap((item) => item.byMaterial)),
+    byClientType: mergeBreakdowns(sourceItems.flatMap((item) => item.byClientType)),
+    daily: mergeTrendPoints(sourceItems.flatMap((item) => item.daily), 'daily'),
+    weekly: mergeTrendPoints(sourceItems.flatMap((item) => item.weekly), 'weekly'),
+    monthly: mergeTrendPoints(sourceItems.flatMap((item) => item.monthly), 'monthly'),
+    note: sourceItems.map((item) => item.note).filter(Boolean).join(' '),
   };
 
   return merged;
@@ -513,20 +573,35 @@ function summarizeLeadRows(rows: LeadRow[], source: LeadAnalyticsSource): LeadAn
 
 function summarizePeriodSummary(response: GvizResponse, source: LeadAnalyticsSource): LeadAnalyticsSummary {
   const rawRows = getGvizRows(response);
-  const headerIndex = rawRows.findIndex((row) => {
-    const normalized = row.map(normalizeHeader);
-    return normalized.some((cell) => cell.includes('месяц') || cell.includes('неделя')) &&
-      normalized.some((cell) => cell.includes('всего') && cell.includes('лид'));
-  });
+  const columnLabels = response.table?.cols.map((column) => column.label ?? '') ?? [];
+  const normalizedColumnLabels = columnLabels.map(normalizeHeader);
+  const columnLabelsLookLikeHeader =
+    normalizedColumnLabels.some((cell) => cell.includes('месяц') || cell.includes('неделя')) &&
+    normalizedColumnLabels.some((cell, index) => index > 0 && cell.includes('всего') && cell.includes('лид'));
+  const headerIndex = columnLabelsLookLikeHeader
+    ? -1
+    : rawRows.findIndex((row) => {
+        const normalized = row.map(normalizeHeader);
+        return normalized.some((cell) => cell.includes('месяц') || cell.includes('неделя')) &&
+          normalized.some((cell, index) => index > 0 && cell.includes('всего') && cell.includes('лид'));
+      });
 
-  if (headerIndex < 0) return emptyLeadSummary(source, 'Вкладка подключена, но строки лидов пока не заполнены.');
+  if (!columnLabelsLookLikeHeader && headerIndex < 0) {
+    return emptyLeadSummary(source, 'Вкладка подключена, но строки лидов пока не заполнены.');
+  }
 
-  const header = rawRows[headerIndex].map(normalizeHeader);
+  const header = columnLabelsLookLikeHeader ? normalizedColumnLabels : rawRows[headerIndex].map(normalizeHeader);
+  const dataRows = columnLabelsLookLikeHeader ? rawRows : rawRows.slice(headerIndex + 1);
   const findHeader = (...needles: string[]) => header.findIndex((cell) => needles.some((needle) => cell.includes(needle)));
-  const labelIndex = findHeader('месяц', 'неделя');
+  const labelIndex = header.findIndex((cell) => cell.includes('месяц') || cell.includes('неделя'));
   const startIndex = findHeader('начало');
   const endIndex = findHeader('конец');
-  const totalIndex = findHeader('всего');
+  const totalIndex = header.findIndex(
+    (cell, index) =>
+      index !== labelIndex &&
+      cell.includes('всего') &&
+      (cell.includes('лид') || cell.includes('обращ')),
+  );
   const channelIndexes = [
     { index: findHeader('звон'), label: 'Звонки' },
     { index: findHeader('почт'), label: 'Почта' },
@@ -534,8 +609,7 @@ function summarizePeriodSummary(response: GvizResponse, source: LeadAnalyticsSou
     { index: findHeader('другое'), label: 'Другое' },
   ].filter((item) => item.index >= 0);
 
-  const records = rawRows
-    .slice(headerIndex + 1)
+  const records = dataRows
     .map((row) => {
       const label = getCell(row, labelIndex);
       const start = parseLeadDate(getCell(row, startIndex));
@@ -866,10 +940,11 @@ function loadGvizJsonp(source: LeadAnalyticsSource) {
     };
 
     const query = encodeURIComponent('select *');
+    const sheetOrGid = source.sheetName
+      ? `sheet=${encodeURIComponent(source.sheetName)}`
+      : `gid=${encodeURIComponent(source.gid ?? '')}`;
     const range = source.range ? `&range=${encodeURIComponent(source.range)}` : '';
-    script.src = `https://docs.google.com/spreadsheets/d/${source.spreadsheetId}/gviz/tq?gid=${encodeURIComponent(
-      source.gid,
-    )}${range}&tq=${query}&tqx=out:json;responseHandler:${callbackName}&cacheBust=${Date.now()}`;
+    script.src = `https://docs.google.com/spreadsheets/d/${source.spreadsheetId}/gviz/tq?${sheetOrGid}${range}&tq=${query}&tqx=out:json;responseHandler:${callbackName}&cacheBust=${Date.now()}`;
     script.async = true;
     script.onerror = () => {
       cleanup();
