@@ -6042,6 +6042,69 @@ p {
   font-weight: 850;
 }
 
+.aquaguard-lead-table {
+  overflow: auto;
+  max-height: 260px;
+  border: 1px solid rgba(216, 238, 243, 0.14);
+  border-radius: 14px;
+  background: rgba(216, 238, 243, 0.05);
+}
+
+.aquaguard-lead-table-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) 86px repeat(5, minmax(86px, 0.7fr));
+  gap: 10px;
+  align-items: center;
+  min-width: 790px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(216, 238, 243, 0.1);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.aquaguard-lead-table-row:last-child {
+  border-bottom: 0;
+}
+
+.aquaguard-lead-table-row.head {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  min-height: 34px;
+  color: var(--muted);
+  background: rgba(7, 63, 72, 0.92);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.aquaguard-lead-table-row strong,
+.aquaguard-lead-table-row em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aquaguard-lead-table-row em {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.aquaguard-lead-table-row span:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.aquaguard-lead-table-row .success {
+  color: var(--success);
+}
+
+.aquaguard-lead-table-row .warning {
+  color: var(--warning);
+}
+
 .aquaguard-lead-source-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -7728,11 +7791,16 @@ p {
 :root[data-theme='light'] .aquaguard-marker-list span,
 :root[data-theme='light'] .aquaguard-info-link,
 :root[data-theme='light'] .aquaguard-lead-empty,
+:root[data-theme='light'] .aquaguard-lead-table,
 :root[data-theme='light'] .aquaguard-lead-source-list article,
 :root[data-theme='light'] .aquaguard-open-tasks article,
 :root[data-theme='light'] .aquaguard-chart-empty,
 :root[data-theme='light'] .aquaguard-impact-empty {
   background: rgba(255, 255, 255, 0.62);
+}
+
+:root[data-theme='light'] .aquaguard-lead-table-row.head {
+  background: rgba(216, 238, 243, 0.92);
 }
 
 :root[data-theme='light'] .aquaguard-line-chart line,

@@ -271,6 +271,12 @@ const seoTrendModeShortLabels: Record<SeoTrendMode, string> = {
   monthly: 'месяцы',
 };
 
+const leadTrendGranularityLabels: Record<SeoTrendMode, string> = {
+  daily: 'день',
+  weekly: 'неделя',
+  monthly: 'месяц',
+};
+
 const seoPeriodPresetLabels: Record<SeoPeriodPreset, string> = {
   '30d': '30 дней',
   '3m': '3 месяца',
@@ -3537,10 +3543,110 @@ function sortGoalPoints(points: PromotionGoalTrendPoint[]) {
     .sort((left, right) => String(left.date).localeCompare(String(right.date)));
 }
 
+type LeadTrendPointWithGranularity = LeadTrendPoint & {
+  sourceGranularity: SeoTrendMode;
+};
+
+function getMonthRange(period: string): AnalyticsDateRange | null {
+  if (!/^\d{4}-\d{2}$/.test(period)) return null;
+  const year = Number(period.slice(0, 4));
+  const month = Number(period.slice(5, 7));
+  if (!year || !month) return null;
+  return {
+    start: `${period}-01`,
+    end: toLocalIso(new Date(year, month, 0, 12)),
+  };
+}
+
+function getLeadPointRange(point: LeadTrendPointWithGranularity): AnalyticsDateRange | null {
+  if (point.sourceGranularity === 'monthly' || /^\d{4}-\d{2}$/.test(point.period)) {
+    return getMonthRange(point.period);
+  }
+  if (!isValidIsoDate(point.period)) return null;
+  if (point.sourceGranularity === 'weekly') {
+    return { start: point.period, end: addDaysToIso(point.period, 6) };
+  }
+  return { start: point.period, end: point.period };
+}
+
+function rangesOverlap(left: AnalyticsDateRange, right: AnalyticsDateRange) {
+  return left.start <= right.end && right.start <= left.end;
+}
+
+function getLeadAnalyticsPointsByGranularity(
+  leadAnalytics: LeadAnalyticsSummary | undefined,
+  granularity: SeoTrendMode,
+): LeadTrendPointWithGranularity[] {
+  const points =
+    granularity === 'daily'
+      ? leadAnalytics?.daily
+      : granularity === 'weekly'
+        ? leadAnalytics?.weekly
+        : leadAnalytics?.monthly;
+
+  return (points ?? []).map((point) => ({
+    ...point,
+    sourceGranularity: granularity,
+  }));
+}
+
+function sortLeadTrendPoints(points: LeadTrendPointWithGranularity[]) {
+  return [...points].sort((left, right) => {
+    const leftRange = getLeadPointRange(left);
+    const rightRange = getLeadPointRange(right);
+    return (leftRange?.start ?? left.period).localeCompare(rightRange?.start ?? right.period);
+  });
+}
+
+function getLeadTrendModeOrder(preferredMode: SeoTrendMode) {
+  return Array.from(new Set<SeoTrendMode>([preferredMode, 'daily', 'weekly', 'monthly']));
+}
+
+function filterLeadTrendPoints(
+  leadAnalytics: LeadAnalyticsSummary | undefined,
+  range: AnalyticsDateRange,
+  preferredMode: SeoTrendMode,
+) {
+  for (const granularity of getLeadTrendModeOrder(preferredMode)) {
+    const points = getLeadAnalyticsPointsByGranularity(leadAnalytics, granularity).filter((point) => {
+      const pointRange = getLeadPointRange(point);
+      return pointRange ? rangesOverlap(pointRange, range) : false;
+    });
+    if (points.length > 0) return sortLeadTrendPoints(points);
+  }
+
+  return [];
+}
+
+function excludeMonthlyLeadPoints(points: LeadTrendPointWithGranularity[]) {
+  return points.filter((point) => point.sourceGranularity !== 'monthly');
+}
+
+function getLeadTableRows(leadAnalytics: LeadAnalyticsSummary | undefined, range: AnalyticsDateRange) {
+  const rangedRows = filterLeadTrendPoints(leadAnalytics, range, 'monthly');
+  if (rangedRows.length > 0) return rangedRows;
+
+  for (const granularity of ['monthly', 'weekly', 'daily'] as const) {
+    const points = getLeadAnalyticsPointsByGranularity(leadAnalytics, granularity);
+    if (points.length > 0) return sortLeadTrendPoints(points);
+  }
+
+  return [];
+}
+
+function hasAnyLeadTrendPoints(leadAnalytics: LeadAnalyticsSummary | undefined) {
+  return Boolean(
+    leadAnalytics &&
+      (leadAnalytics.daily.length > 0 || leadAnalytics.weekly.length > 0 || leadAnalytics.monthly.length > 0),
+  );
+}
+
 function getLatestAnalyticsDate(goalAnalytics?: PromotionGoalAnalytics, leadAnalytics?: LeadAnalyticsSummary) {
   const dates = [
     ...(goalAnalytics?.daily ?? []).map((point) => point.date ?? ''),
-    ...(leadAnalytics?.daily ?? []).map((point) => point.period),
+    ...(['daily', 'weekly', 'monthly'] as const)
+      .flatMap((granularity) => getLeadAnalyticsPointsByGranularity(leadAnalytics, granularity))
+      .map((point) => getLeadPointRange(point)?.end ?? ''),
   ].filter(isValidIsoDate);
   return dates.sort().at(-1) ?? todayIso();
 }
@@ -3632,30 +3738,24 @@ function buildGoalSeries(points: PromotionGoalTrendPoint[], mode: SeoTrendMode, 
     }));
 }
 
-function filterLeadDailyPoints(leadAnalytics: LeadAnalyticsSummary | undefined, range: AnalyticsDateRange) {
-  return (leadAnalytics?.daily ?? [])
-    .filter((point) => isValidIsoDate(point.period) && point.period >= range.start && point.period <= range.end)
-    .sort((left, right) => left.period.localeCompare(right.period));
-}
-
-function buildLeadSeries(points: LeadTrendPoint[], mode: SeoTrendMode, metric: SeoLeadMetricMode) {
+function buildLeadSeries(points: LeadTrendPointWithGranularity[], mode: SeoTrendMode, metric: SeoLeadMetricMode) {
   const map = new Map<string, AnalyticsSeriesPoint>();
   points.forEach((point) => {
-    const date = point.period;
-    if (!isValidIsoDate(date)) return;
-    const key = getSeriesKey(date, mode);
+    const pointRange = getLeadPointRange(point);
+    if (!pointRange) return;
+    const key = getSeriesKey(pointRange.start, mode);
     const current =
       map.get(key) ??
       ({
         key,
         label: getSeriesLabel(key, mode),
-        startDate: date,
-        endDate: date,
+        startDate: pointRange.start,
+        endDate: pointRange.end,
         value: 0,
         secondary: 0,
       } satisfies AnalyticsSeriesPoint);
-    current.startDate = current.startDate < date ? current.startDate : date;
-    current.endDate = current.endDate > date ? current.endDate : date;
+    current.startDate = current.startDate < pointRange.start ? current.startDate : pointRange.start;
+    current.endDate = current.endDate > pointRange.end ? current.endDate : pointRange.end;
     current.value += metric === 'target' ? point.quality : point.leads;
     current.secondary = (current.secondary ?? 0) + point.quality;
     map.set(key, current);
@@ -3705,7 +3805,7 @@ function sumGoalDailyPoints(points: PromotionGoalTrendPoint[], metric: 'visits' 
   return points.reduce((total, point) => total + point[metric], 0);
 }
 
-function sumLeadDailyPoints(points: LeadTrendPoint[], metric: SeoLeadMetricMode) {
+function sumLeadTrendPoints(points: LeadTrendPointWithGranularity[], metric: SeoLeadMetricMode) {
   return points.reduce((total, point) => total + (metric === 'target' ? point.quality : point.leads), 0);
 }
 
@@ -3764,10 +3864,11 @@ function getAnalyticsMarkers(tasks: Task[], range: AnalyticsDateRange) {
     .slice(0, 12);
 }
 
-function getLeadDataIssue(leadAnalytics: LeadAnalyticsSummary | undefined, leadPoints: LeadTrendPoint[]) {
+function getLeadDataIssue(leadAnalytics: LeadAnalyticsSummary | undefined, leadPoints: LeadTrendPointWithGranularity[]) {
   if (!leadAnalytics) return 'данные по заявкам не загружены';
   if (leadAnalytics.total > 0 && leadPoints.length === 0) {
-    return `нельзя построить динамику: у ${leadAnalytics.total} обращений не распознана дата`;
+    if (hasAnyLeadTrendPoints(leadAnalytics)) return 'за выбранный период заявок в таблице нет';
+    return `в таблице есть ${leadAnalytics.total} обращений, но без дат, недель или месяцев`;
   }
   if (leadAnalytics.unknown > 0) return `${leadAnalytics.unknown} обращений без понятного статуса качества`;
   return '';
@@ -11839,34 +11940,34 @@ function ProjectSeoAnalyticsScreen({
   );
   const currentGoalDaily = filterGoalDailyPoints(goalAnalytics, currentRange);
   const previousGoalDaily = compareRange ? filterGoalDailyPoints(goalAnalytics, compareRange) : [];
-  const currentLeadDaily = filterLeadDailyPoints(leadAnalytics, currentRange);
-  const previousLeadDaily = compareRange ? filterLeadDailyPoints(leadAnalytics, compareRange) : [];
+  const currentLeadPoints = filterLeadTrendPoints(leadAnalytics, currentRange, trendMode);
+  const previousLeadPoints = compareRange ? filterLeadTrendPoints(leadAnalytics, compareRange, trendMode) : [];
   const currentWeekRange = getTrailingWeekRange(currentRange.end);
   const previousWeekRange = getPreviousTrailingWeekRange(currentWeekRange);
   const currentWeekGoalDaily = filterGoalDailyPoints(goalAnalytics, currentWeekRange);
   const previousWeekGoalDaily = filterGoalDailyPoints(goalAnalytics, previousWeekRange);
-  const currentWeekLeadDaily = filterLeadDailyPoints(leadAnalytics, currentWeekRange);
-  const previousWeekLeadDaily = filterLeadDailyPoints(leadAnalytics, previousWeekRange);
+  const currentWeekLeadPoints = excludeMonthlyLeadPoints(filterLeadTrendPoints(leadAnalytics, currentWeekRange, 'daily'));
+  const previousWeekLeadPoints = excludeMonthlyLeadPoints(filterLeadTrendPoints(leadAnalytics, previousWeekRange, 'daily'));
   const usesTotalOrganicFallback = trafficSystem !== 'all';
   const trafficSeries = buildGoalSeries(currentGoalDaily, trendMode, 'visits');
   const previousTrafficSeries = compareRange ? buildGoalSeries(previousGoalDaily, trendMode, 'visits') : [];
   const goalSeries = buildGoalSeries(currentGoalDaily, trendMode, 'goals');
   const previousGoalSeries = compareRange ? buildGoalSeries(previousGoalDaily, trendMode, 'goals') : [];
-  const leadSeries = buildLeadSeries(currentLeadDaily, trendMode, leadMetricMode);
-  const previousLeadSeries = compareRange ? buildLeadSeries(previousLeadDaily, trendMode, leadMetricMode) : [];
-  const realLeadSeries = buildLeadSeries(currentLeadDaily, trendMode, 'all');
+  const leadSeries = buildLeadSeries(currentLeadPoints, trendMode, leadMetricMode);
+  const previousLeadSeries = compareRange ? buildLeadSeries(previousLeadPoints, trendMode, leadMetricMode) : [];
+  const realLeadSeries = buildLeadSeries(currentLeadPoints, trendMode, 'all');
   const conversionSeries = buildConversionSeries(trafficSeries, goalSeries);
   const previousConversionSeries = buildConversionSeries(previousTrafficSeries, previousGoalSeries);
   const organicVisits = currentGoalDaily.length ? sumSeries(trafficSeries) : null;
   const conversionVisits = currentGoalDaily.length ? sumSeries(goalSeries) : null;
-  const realSeoLeads = currentLeadDaily.length ? sumSeries(realLeadSeries) : leadAnalytics ? null : null;
+  const realSeoLeads = currentLeadPoints.length ? sumSeries(realLeadSeries) : leadAnalytics ? null : null;
   const conversionRate = getSeriesRate(conversionVisits, organicVisits);
   const currentWeekOrganicVisits = currentWeekGoalDaily.length ? sumGoalDailyPoints(currentWeekGoalDaily, 'visits') : null;
   const previousWeekOrganicVisits = previousWeekGoalDaily.length ? sumGoalDailyPoints(previousWeekGoalDaily, 'visits') : null;
   const currentWeekConversionVisits = currentWeekGoalDaily.length ? sumGoalDailyPoints(currentWeekGoalDaily, 'goals') : null;
   const previousWeekConversionVisits = previousWeekGoalDaily.length ? sumGoalDailyPoints(previousWeekGoalDaily, 'goals') : null;
-  const currentWeekRealSeoLeads = currentWeekLeadDaily.length ? sumLeadDailyPoints(currentWeekLeadDaily, 'all') : leadAnalytics ? null : null;
-  const previousWeekRealSeoLeads = previousWeekLeadDaily.length ? sumLeadDailyPoints(previousWeekLeadDaily, 'all') : null;
+  const currentWeekRealSeoLeads = currentWeekLeadPoints.length ? sumLeadTrendPoints(currentWeekLeadPoints, 'all') : leadAnalytics ? null : null;
+  const previousWeekRealSeoLeads = previousWeekLeadPoints.length ? sumLeadTrendPoints(previousWeekLeadPoints, 'all') : null;
   const currentWeekConversionRate = getSeriesRate(currentWeekConversionVisits, currentWeekOrganicVisits);
   const previousWeekConversionRate = getSeriesRate(previousWeekConversionVisits, previousWeekOrganicVisits);
   const trafficWeekDelta = getDeltaLabel(currentWeekOrganicVisits, previousWeekOrganicVisits);
@@ -11874,7 +11975,7 @@ function ProjectSeoAnalyticsScreen({
   const realLeadsWeekDelta = getDeltaLabel(currentWeekRealSeoLeads, previousWeekRealSeoLeads);
   const conversionRateWeekDelta = getDeltaLabel(currentWeekConversionRate, previousWeekConversionRate, { percentPoint: true });
   const weekDeltaCaption = 'к прошлой неделе';
-  const leadIssue = getLeadDataIssue(leadAnalytics, currentLeadDaily);
+  const leadIssue = getLeadDataIssue(leadAnalytics, currentLeadPoints);
   const linkSummary = useMemo(() => summarizeLinkPurchases(linkRows), [linkRows]);
   const markers = getAnalyticsMarkers(tasks, currentRange);
   const activeTasks = tasks
@@ -11993,6 +12094,7 @@ function ProjectSeoAnalyticsScreen({
         unknown: 0,
         fileName: undefined,
       }));
+  const leadTableRows = getLeadTableRows(leadAnalytics, currentRange);
 
   return (
     <section className="aquaguard-analytics" aria-label={`Аналитика SEO-проекта ${project.name}`}>
@@ -12157,6 +12259,31 @@ function ProjectSeoAnalyticsScreen({
         ) : (
           <div className="aquaguard-lead-empty">
             {leadError || 'Данных в сводке пока нет, но ссылка на таблицу ниже сохранена.'}
+          </div>
+        )}
+
+        {leadTableRows.length > 0 && (
+          <div className="aquaguard-lead-table" role="table" aria-label={`Лиды ${project.name}`}>
+            <div className="aquaguard-lead-table-row head" role="row">
+              <span>Период</span>
+              <span>Тип</span>
+              <span>Всего</span>
+              <span>Качественные</span>
+              <span>В работе</span>
+              <span>Отказ</span>
+              <span>Не распознано</span>
+            </div>
+            {leadTableRows.map((row) => (
+              <div className="aquaguard-lead-table-row" role="row" key={`${row.sourceGranularity}-${row.period}`}>
+                <strong>{row.label || row.period}</strong>
+                <em>{leadTrendGranularityLabels[row.sourceGranularity]}</em>
+                <span>{formatInteger(row.leads)}</span>
+                <span className="success">{formatInteger(row.quality)}</span>
+                <span>{formatInteger(row.inWork)}</span>
+                <span className="warning">{formatInteger(row.rejected)}</span>
+                <span>{formatInteger(row.unknown)}</span>
+              </div>
+            ))}
           </div>
         )}
 
