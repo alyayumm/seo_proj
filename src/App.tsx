@@ -3093,14 +3093,9 @@ type SeoImpactRow = {
 const METRIKA_QUERY_EXPORT_ENDPOINT =
   'https://script.google.com/macros/s/AKfycbzDWHp58G5bsDAKmGFgKd3YKeUiH98fIlLUTULMaWWxangIq8dx8DctYydQ9aVDn2wnoA/exec';
 const METRIKA_QUERY_EXPORT_ROW_LIMIT = 20000;
-const METRIKA_LIVE_STATS_ENDPOINT =
-  'https://script.google.com/macros/s/AKfycbzJ7wCwKnKM9jRrsGEaQaiZBRhTucqyrqqVSP-k-04yt2P1mqA434a_sEKMmNTDMnV3Xw/exec';
 const METRIKA_SAVED_STATS_URL = './data/metrika-stats.json';
 
-type MetrikaStatsLoadMode = 'live' | 'saved';
-type JsonpCallbackWindow = Window &
-  typeof globalThis &
-  Record<string, ((payload: unknown) => void) | undefined>;
+type MetrikaStatsLoadMode = 'saved';
 
 type Bitrix24ProjectTask = Bitrix24Snapshot['tasks'][number];
 
@@ -3112,42 +3107,6 @@ async function fetchSavedMetrikaStats() {
   const response = await fetch(`${METRIKA_SAVED_STATS_URL}?cacheBust=${Date.now()}`, { cache: 'no-store' });
   if (!response.ok) throw new Error('сохраненные данные Метрики не загрузились');
   return response.json();
-}
-
-function fetchMetrikaLiveStats() {
-  if (!METRIKA_LIVE_STATS_ENDPOINT) return Promise.resolve(null);
-
-  return new Promise<unknown>((resolve, reject) => {
-    const callbackName = `__taskSeoMetrikaLive_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    const callbackWindow = window as JsonpCallbackWindow;
-    const script = document.createElement('script');
-    const separator = METRIKA_LIVE_STATS_ENDPOINT.includes('?') ? '&' : '?';
-    const timeout = window.setTimeout(() => {
-      cleanup();
-      reject(new Error('Метрика не ответила вовремя'));
-    }, 30000);
-
-    function cleanup() {
-      window.clearTimeout(timeout);
-      script.remove();
-      delete callbackWindow[callbackName];
-    }
-
-    callbackWindow[callbackName] = (payload: unknown) => {
-      cleanup();
-      resolve(payload);
-    };
-
-    script.src = `${METRIKA_LIVE_STATS_ENDPOINT}${separator}callback=${encodeURIComponent(
-      callbackName,
-    )}&cacheBust=${Date.now()}`;
-    script.async = true;
-    script.onerror = () => {
-      cleanup();
-      reject(new Error('не удалось обратиться к live-прокси Метрики'));
-    };
-    document.head.append(script);
-  });
 }
 
 function todayIso() {
@@ -4507,27 +4466,13 @@ function App() {
   const [metrikaLoadStatus, setMetrikaLoadStatus] = useState<LinkLoadStatus>('idle');
   const [metrikaError, setMetrikaError] = useState('');
   const [metrikaUpdatedAt, setMetrikaUpdatedAt] = useState('');
-  const loadMetrikaStats = useCallback(async (mode: MetrikaStatsLoadMode = 'live') => {
+  const loadMetrikaStats = useCallback(async (mode: MetrikaStatsLoadMode = 'saved') => {
+    void mode;
     setMetrikaLoadStatus('loading');
     setMetrikaError('');
 
     try {
-      let payload: unknown = null;
-
-      if (mode === 'live' && METRIKA_LIVE_STATS_ENDPOINT) {
-        const livePayload = await fetchMetrikaLiveStats();
-        const liveStatus = livePayload && typeof livePayload === 'object' ? (livePayload as { status?: string }) : {};
-        if (liveStatus.status === 'error') {
-          const message =
-            livePayload && typeof livePayload === 'object' && 'message' in livePayload
-              ? String((livePayload as { message?: unknown }).message)
-              : 'live-обновление Метрики вернуло ошибку';
-          throw new Error(message);
-        }
-        payload = livePayload;
-      }
-
-      if (!payload) payload = await fetchSavedMetrikaStats();
+      const payload = await fetchSavedMetrikaStats();
       const normalized = normalizeMetrikaStatsPayload(payload);
       if (!normalized.projects.length) throw new Error('Метрика вернула пустой ответ');
 
@@ -4535,41 +4480,14 @@ function App() {
       setMetrikaUpdatedAt(normalized.updatedAt ? formatDateTime(normalized.updatedAt) : new Date().toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }));
       setMetrikaLoadStatus('ready');
     } catch (error) {
-      const liveMessage = getErrorMessage(error, 'не удалось обновить Метрику');
-
-      if (mode === 'live') {
-        try {
-          const fallbackPayload = await fetchSavedMetrikaStats();
-          const normalized = normalizeMetrikaStatsPayload(fallbackPayload);
-          if (!normalized.projects.length) throw new Error('сохраненные данные Метрики пустые');
-          setMetrikaStats(normalized);
-          setMetrikaUpdatedAt(normalized.updatedAt ? formatDateTime(normalized.updatedAt) : '');
-          setMetrikaError(`${liveMessage}. Показаны последние сохраненные данные.`);
-          setMetrikaLoadStatus('ready');
-          return;
-        } catch (fallbackError) {
-          setMetrikaStats(EMPTY_METRIKA_STATS);
-          setMetrikaError(getErrorMessage(fallbackError, liveMessage));
-          setMetrikaLoadStatus('error');
-          return;
-        }
-      }
-
       setMetrikaStats(EMPTY_METRIKA_STATS);
-      setMetrikaError(liveMessage);
+      setMetrikaError(getErrorMessage(error, 'не удалось обновить Метрику'));
       setMetrikaLoadStatus('error');
     }
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
-    void loadMetrikaStats('saved').then(() => {
-      if (isMounted && METRIKA_LIVE_STATS_ENDPOINT) void loadMetrikaStats('live');
-    });
-
-    return () => {
-      isMounted = false;
-    };
+    void loadMetrikaStats('saved');
   }, [loadMetrikaStats]);
 
   const promotionSources = useMemo(
@@ -11447,7 +11365,7 @@ function SeoMetrikaQueriesPanel({
     ? `Метрика сейчас не обновилась: ${metrikaError}`
     : metrikaUpdatedAt
       ? `данные Метрики от: ${metrikaUpdatedAt}`
-      : 'Метрика: дата live-обновления не сохранена';
+      : 'Метрика: дата обновления не сохранена';
   const normalizedSearch = normalizeSearchText(search);
   const filteredRows = queryRows
     .filter((row) => !normalizedSearch || normalizeSearchText(row.query).includes(normalizedSearch))
@@ -11492,9 +11410,9 @@ function SeoMetrikaQueriesPanel({
           </p>
         </div>
         <div className="metrika-query-head-actions">
-          <button type="button" onClick={() => onReloadMetrika('live')} disabled={metrikaLoadStatus === 'loading'}>
+          <button type="button" onClick={() => onReloadMetrika('saved')} disabled={metrikaLoadStatus === 'loading'}>
             <RefreshCw className={metrikaLoadStatus === 'loading' ? 'spin' : undefined} size={16} />
-            Обновить Метрику
+            Обновить данные
           </button>
           <button type="button" onClick={handleQueryExport} disabled={!queryRows.length}>
             <FileSpreadsheet size={16} />
@@ -11818,24 +11736,21 @@ function ProjectSeoAnalyticsScreen({
   const previousGoalDaily = compareRange ? filterGoalDailyPoints(goalAnalytics, compareRange) : [];
   const currentLeadDaily = filterLeadDailyPoints(leadAnalytics, currentRange);
   const previousLeadDaily = compareRange ? filterLeadDailyPoints(leadAnalytics, compareRange) : [];
-  const trafficBreakdownMissing = trafficSystem !== 'all';
-  const trafficSeries = trafficBreakdownMissing ? [] : buildGoalSeries(currentGoalDaily, trendMode, 'visits');
-  const previousTrafficSeries =
-    compareRange && !trafficBreakdownMissing ? buildGoalSeries(previousGoalDaily, trendMode, 'visits') : [];
-  const goalSeries = trafficBreakdownMissing ? [] : buildGoalSeries(currentGoalDaily, trendMode, 'goals');
-  const previousGoalSeries = compareRange && !trafficBreakdownMissing ? buildGoalSeries(previousGoalDaily, trendMode, 'goals') : [];
+  const usesTotalOrganicFallback = trafficSystem !== 'all';
+  const trafficSeries = buildGoalSeries(currentGoalDaily, trendMode, 'visits');
+  const previousTrafficSeries = compareRange ? buildGoalSeries(previousGoalDaily, trendMode, 'visits') : [];
+  const goalSeries = buildGoalSeries(currentGoalDaily, trendMode, 'goals');
+  const previousGoalSeries = compareRange ? buildGoalSeries(previousGoalDaily, trendMode, 'goals') : [];
   const leadSeries = buildLeadSeries(currentLeadDaily, trendMode, leadMetricMode);
   const previousLeadSeries = compareRange ? buildLeadSeries(previousLeadDaily, trendMode, leadMetricMode) : [];
   const targetLeadSeries = buildLeadSeries(currentLeadDaily, trendMode, 'target');
   const previousTargetLeadSeries = compareRange ? buildLeadSeries(previousLeadDaily, trendMode, 'target') : [];
   const conversionSeries = buildConversionSeries(trafficSeries, goalSeries);
   const previousConversionSeries = buildConversionSeries(previousTrafficSeries, previousGoalSeries);
-  const organicVisits = trafficBreakdownMissing ? null : currentGoalDaily.length ? sumSeries(trafficSeries) : null;
-  const previousOrganicVisits =
-    compareRange && !trafficBreakdownMissing && previousGoalDaily.length ? sumSeries(previousTrafficSeries) : null;
-  const conversionVisits = trafficBreakdownMissing ? null : currentGoalDaily.length ? sumSeries(goalSeries) : null;
-  const previousConversionVisits =
-    compareRange && !trafficBreakdownMissing && previousGoalDaily.length ? sumSeries(previousGoalSeries) : null;
+  const organicVisits = currentGoalDaily.length ? sumSeries(trafficSeries) : null;
+  const previousOrganicVisits = compareRange && previousGoalDaily.length ? sumSeries(previousTrafficSeries) : null;
+  const conversionVisits = currentGoalDaily.length ? sumSeries(goalSeries) : null;
+  const previousConversionVisits = compareRange && previousGoalDaily.length ? sumSeries(previousGoalSeries) : null;
   const targetSeoLeads = currentLeadDaily.length ? sumSeries(targetLeadSeries) : leadAnalytics ? null : null;
   const previousTargetSeoLeads = compareRange && previousLeadDaily.length ? sumSeries(previousTargetLeadSeries) : null;
   const conversionRate = getSeriesRate(conversionVisits, organicVisits);
@@ -11861,7 +11776,7 @@ function ProjectSeoAnalyticsScreen({
           ? `Данные Метрики от: ${metrikaUpdatedAt}`
           : 'Метрика: дата обновления не сохранена';
   const handleRefreshAnalytics = () => {
-    onReloadMetrika('live');
+    onReloadMetrika('saved');
     onReloadLeads();
   };
   const impactRows = useMemo<SeoImpactRow[]>(() => {
@@ -11891,8 +11806,10 @@ function ProjectSeoAnalyticsScreen({
       value: organicVisits === null ? '—' : formatInteger(organicVisits),
       meta: `за ${formatInputRange(currentRange)}`,
       deltaLabel: getDeltaLabel(organicVisits, previousOrganicVisits).label,
-      tone: trafficBreakdownMissing ? 'warning' : getDeltaLabel(organicVisits, previousOrganicVisits).tone,
-      statusLabel: trafficBreakdownMissing ? 'разбивка по системам не выгружена' : 'по временному ряду Метрики',
+      tone: getDeltaLabel(organicVisits, previousOrganicVisits).tone,
+      statusLabel: usesTotalOrganicFallback
+        ? `${seoTrafficSystemLabels[trafficSystem]}: показана общая органика`
+        : 'по временному ряду Метрики',
       icon: 'leaf',
     },
     {
@@ -11928,9 +11845,9 @@ function ProjectSeoAnalyticsScreen({
     hasMetrikaMismatch
       ? `Данные Метрики требуют повторного обновления: итог ${formatInteger(goalAnalytics?.visits ?? 0)}, сумма ряда ${formatInteger(allDailySum)}.`
       : '',
-    metrikaError ? `Метрика не обновилась в live-режиме: ${metrikaError}` : '',
-    trafficBreakdownMissing
-      ? `${seoTrafficSystemLabels[trafficSystem]} пока не выделены отдельной выгрузкой, показан пустой режим.`
+    metrikaError ? `Метрика не обновилась: ${metrikaError}` : '',
+    usesTotalOrganicFallback
+      ? `${seoTrafficSystemLabels[trafficSystem]} пока не выделен отдельно: показана общая органика из Метрики.`
       : '',
     leadIssue && leadAnalytics ? leadIssue : '',
     leadError && leadLoadStatus === 'error'
@@ -12100,11 +12017,7 @@ function ProjectSeoAnalyticsScreen({
         </div>
         <SeoAnalyticsLineChart
           current={trafficSeries}
-          emptyLabel={
-            trafficBreakdownMissing
-              ? 'разбивка по выбранной поисковой системе пока не выгружена'
-              : 'источник Метрики не подключен'
-          }
+          emptyLabel="источник Метрики не подключен"
           markers={showMarkers ? markers : []}
           previous={previousTrafficSeries}
           previousLabel={compareRange ? formatInputRange(compareRange) : ''}
