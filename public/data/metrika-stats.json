@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-11T11:26:29.920Z",
+  "updatedAt": "2026-10-12T13:13:31.979Z",
   "date1": "2026-04-01",
-  "date2": "2026-10-11",
-  "periodLabel": "01.04.26 - 11.10.26",
+  "date2": "2026-10-12",
+  "periodLabel": "01.04.26 - 12.10.26",
   "projects": [
     {
       "projectName": "Часы",
@@ -11,13 +11,13 @@
       "counterId": 95877415,
       "counterName": "watchstoree",
       "siteUrl": "https://watchstoree.ru",
-      "periodLabel": "01.04.26 - 11.10.26",
+      "periodLabel": "01.04.26 - 12.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-11",
+      "fullCoverageDate": "2026-10-12",
       "visits": 5472,
       "users": 5433,
       "goalCount": 25,
@@ -1803,6 +1803,12 @@
           "date": "2026-10-11",
           "visits": 9,
           "goals": 0
+        },
+        {
+          "month": "12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -1973,6 +1979,12 @@
           "date": "2026-10-05",
           "visits": 243,
           "goals": 0
+        },
+        {
+          "month": "12.10-12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "monthly": [
@@ -2026,13 +2038,13 @@
       "counterId": 99951775,
       "counterName": "Switch-Eng Metrika",
       "siteUrl": "https://switch-eng.ru",
-      "periodLabel": "01.04.26 - 11.10.26",
+      "periodLabel": "01.04.26 - 12.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-11",
+      "fullCoverageDate": "2026-10-12",
       "visits": 764,
       "users": 751,
       "goalCount": 93,
@@ -4268,6 +4280,12 @@
           "date": "2026-10-11",
           "visits": 0,
           "goals": 0
+        },
+        {
+          "month": "12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -4438,6 +4456,12 @@
           "date": "2026-10-05",
           "visits": 9,
           "goals": 24
+        },
+        {
+          "month": "12.10-12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "monthly": [
@@ -4491,13 +4515,13 @@
       "counterId": 103419904,
       "counterName": "Аквагард",
       "siteUrl": "https://аквагард.рф",
-      "periodLabel": "01.04.26 - 11.10.26",
+      "periodLabel": "01.04.26 - 12.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-11",
+      "fullCoverageDate": "2026-10-12",
       "visits": 2841,
       "users": 2426,
       "goalCount": 156,
@@ -14683,6 +14707,12 @@
           "date": "2026-10-11",
           "visits": 2,
           "goals": 0
+        },
+        {
+          "month": "12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -14853,6 +14883,12 @@
           "date": "2026-10-05",
           "visits": 281,
           "goals": 15
+        },
+        {
+          "month": "12.10-12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "monthly": [
@@ -14906,13 +14942,13 @@
       "counterId": 99590873,
       "counterName": "promtehmakulatura.ru",
       "siteUrl": "https://promtehmakulatura.ru",
-      "periodLabel": "01.04.26 - 11.10.26",
+      "periodLabel": "01.04.26 - 12.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-11",
+      "fullCoverageDate": "2026-10-12",
       "visits": 6248,
       "users": 5781,
       "goalCount": 301,
@@ -30518,6 +30554,12 @@
           "date": "2026-10-11",
           "visits": 4,
           "goals": 0
+        },
+        {
+          "month": "12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -30688,6 +30730,12 @@
           "date": "2026-10-05",
           "visits": 549,
           "goals": 25
+        },
+        {
+          "month": "12.10-12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "monthly": [
@@ -30741,13 +30789,13 @@
       "counterId": 107615431,
       "counterName": "smart-spb.pro",
       "siteUrl": "https://smart-spb.pro",
-      "periodLabel": "01.04.26 - 11.10.26",
+      "periodLabel": "01.04.26 - 12.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-11",
+      "fullCoverageDate": "2026-10-12",
       "visits": 3714,
       "users": 3346,
       "goalCount": 205,
@@ -42488,6 +42536,12 @@
           "date": "2026-10-11",
           "visits": 11,
           "goals": 0
+        },
+        {
+          "month": "12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -42658,6 +42712,12 @@
           "date": "2026-10-05",
           "visits": 484,
           "goals": 8
+        },
+        {
+          "month": "12.10-12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "monthly": [
@@ -42711,13 +42771,13 @@
       "counterId": 99163159,
       "counterName": "balt-pallet",
       "siteUrl": "https://balt-pallet.ru",
-      "periodLabel": "01.04.26 - 11.10.26",
+      "periodLabel": "01.04.26 - 12.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-11",
+      "fullCoverageDate": "2026-10-12",
       "visits": 936,
       "users": 856,
       "goalCount": 101,
@@ -44468,6 +44528,12 @@
           "date": "2026-10-11",
           "visits": 1,
           "goals": 0
+        },
+        {
+          "month": "12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -44638,6 +44704,12 @@
           "date": "2026-10-05",
           "visits": 30,
           "goals": 1
+        },
+        {
+          "month": "12.10-12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "monthly": [
@@ -44691,13 +44763,13 @@
       "counterId": 109615906,
       "counterName": "lombard-banka",
       "siteUrl": "https://lombard-banka.ru",
-      "periodLabel": "01.04.26 - 11.10.26",
+      "periodLabel": "01.04.26 - 12.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-11",
+      "fullCoverageDate": "2026-10-12",
       "visits": 1875,
       "users": 1794,
       "goalCount": 231,
@@ -51543,6 +51615,12 @@
           "date": "2026-10-11",
           "visits": 11,
           "goals": 0
+        },
+        {
+          "month": "12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -51713,6 +51791,12 @@
           "date": "2026-10-05",
           "visits": 340,
           "goals": 15
+        },
+        {
+          "month": "12.10-12.10",
+          "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "monthly": [
