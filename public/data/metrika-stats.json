@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-12T13:13:31.979Z",
+  "updatedAt": "2026-10-13T12:45:28.959Z",
   "date1": "2026-04-01",
-  "date2": "2026-10-12",
-  "periodLabel": "01.04.26 - 12.10.26",
+  "date2": "2026-10-13",
+  "periodLabel": "01.04.26 - 13.10.26",
   "projects": [
     {
       "projectName": "Часы",
@@ -11,15 +11,15 @@
       "counterId": 95877415,
       "counterName": "watchstoree",
       "siteUrl": "https://watchstoree.ru",
-      "periodLabel": "01.04.26 - 12.10.26",
+      "periodLabel": "01.04.26 - 13.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-12",
-      "visits": 5472,
-      "users": 5433,
+      "fullCoverageDate": "2026-10-13",
+      "visits": 5473,
+      "users": 5434,
       "goalCount": 25,
       "queryVisits": 154,
       "queryGoalCount": 5,
@@ -1801,12 +1801,18 @@
         {
           "month": "11.10",
           "date": "2026-10-11",
-          "visits": 9,
+          "visits": 10,
           "goals": 0
         },
         {
           "month": "12.10",
           "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
+        },
+        {
+          "month": "13.10",
+          "date": "2026-10-13",
           "visits": 0,
           "goals": 0
         }
@@ -1977,11 +1983,11 @@
         {
           "month": "05.10-11.10",
           "date": "2026-10-05",
-          "visits": 243,
+          "visits": 244,
           "goals": 0
         },
         {
-          "month": "12.10-12.10",
+          "month": "12.10-13.10",
           "date": "2026-10-12",
           "visits": 0,
           "goals": 0
@@ -2027,7 +2033,7 @@
         {
           "month": "окт",
           "date": "2026-10-01",
-          "visits": 423,
+          "visits": 424,
           "goals": 0
         }
       ]
@@ -2038,13 +2044,13 @@
       "counterId": 99951775,
       "counterName": "Switch-Eng Metrika",
       "siteUrl": "https://switch-eng.ru",
-      "periodLabel": "01.04.26 - 12.10.26",
+      "periodLabel": "01.04.26 - 13.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-12",
+      "fullCoverageDate": "2026-10-13",
       "visits": 764,
       "users": 751,
       "goalCount": 93,
@@ -4286,6 +4292,12 @@
           "date": "2026-10-12",
           "visits": 0,
           "goals": 0
+        },
+        {
+          "month": "13.10",
+          "date": "2026-10-13",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -4458,7 +4470,7 @@
           "goals": 24
         },
         {
-          "month": "12.10-12.10",
+          "month": "12.10-13.10",
           "date": "2026-10-12",
           "visits": 0,
           "goals": 0
@@ -4515,17 +4527,17 @@
       "counterId": 103419904,
       "counterName": "Аквагард",
       "siteUrl": "https://аквагард.рф",
-      "periodLabel": "01.04.26 - 12.10.26",
+      "periodLabel": "01.04.26 - 13.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-12",
-      "visits": 2841,
-      "users": 2426,
+      "fullCoverageDate": "2026-10-13",
+      "visits": 2843,
+      "users": 2428,
       "goalCount": 156,
-      "queryVisits": 2160,
+      "queryVisits": 2161,
       "queryGoalCount": 97,
       "uniqueQueries": 1793,
       "goalRows": 35,
@@ -4982,6 +4994,11 @@
         },
         {
           "query": "как правильно установить дисковый фильтр",
+          "visits": 2,
+          "goals": 0
+        },
+        {
+          "query": "как промывать песочный фильтр",
           "visits": 2,
           "goals": 0
         },
@@ -7192,11 +7209,6 @@
         },
         {
           "query": "как происходит замена фильтрующих элементов в дисковых самопромывных фильтрах",
-          "visits": 1,
-          "goals": 0
-        },
-        {
-          "query": "как промывать песочный фильтр",
           "visits": 1,
           "goals": 0
         },
@@ -14705,12 +14717,18 @@
         {
           "month": "11.10",
           "date": "2026-10-11",
-          "visits": 2,
+          "visits": 4,
           "goals": 0
         },
         {
           "month": "12.10",
           "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
+        },
+        {
+          "month": "13.10",
+          "date": "2026-10-13",
           "visits": 0,
           "goals": 0
         }
@@ -14881,11 +14899,11 @@
         {
           "month": "05.10-11.10",
           "date": "2026-10-05",
-          "visits": 281,
+          "visits": 283,
           "goals": 15
         },
         {
-          "month": "12.10-12.10",
+          "month": "12.10-13.10",
           "date": "2026-10-12",
           "visits": 0,
           "goals": 0
@@ -14931,7 +14949,7 @@
         {
           "month": "окт",
           "date": "2026-10-01",
-          "visits": 456,
+          "visits": 458,
           "goals": 29
         }
       ]
@@ -14942,19 +14960,19 @@
       "counterId": 99590873,
       "counterName": "promtehmakulatura.ru",
       "siteUrl": "https://promtehmakulatura.ru",
-      "periodLabel": "01.04.26 - 12.10.26",
+      "periodLabel": "01.04.26 - 13.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-12",
-      "visits": 6248,
-      "users": 5781,
-      "goalCount": 301,
-      "queryVisits": 4373,
+      "fullCoverageDate": "2026-10-13",
+      "visits": 6256,
+      "users": 5789,
+      "goalCount": 302,
+      "queryVisits": 4377,
       "queryGoalCount": 160,
-      "uniqueQueries": 2877,
+      "uniqueQueries": 2879,
       "goalRows": 92,
       "sampleQueries": [
         "прием макулатуры спб",
@@ -14999,7 +15017,7 @@
         },
         {
           "query": "из каких деревьев делают бумагу в россии",
-          "visits": 8,
+          "visits": 9,
           "goals": 4
         },
         {
@@ -15723,6 +15741,11 @@
           "goals": 0
         },
         {
+          "query": "гофрокартон что это такое простыми словами",
+          "visits": 8,
+          "goals": 0
+        },
+        {
           "query": "макулатура книга",
           "visits": 8,
           "goals": 0
@@ -15749,11 +15772,6 @@
         },
         {
           "query": "гофрокартон фото как выглядит",
-          "visits": 7,
-          "goals": 0
-        },
-        {
-          "query": "гофрокартон что это такое простыми словами",
           "visits": 7,
           "goals": 0
         },
@@ -16978,6 +16996,11 @@
           "goals": 0
         },
         {
+          "query": "1pet в треугольнике значение",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "2 в треугольнике пластик что значит",
           "visits": 1,
           "goals": 0
@@ -17984,6 +18007,11 @@
         },
         {
           "query": "где можно сдать пластиковые бутылки в спб за деньги",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "где можно сдать пэт бутылку в ленинградской области",
           "visits": 1,
           "goals": 0
         },
@@ -29386,7 +29414,7 @@
         },
         {
           "query": "из каких деревьев делают бумагу в россии",
-          "visits": 8,
+          "visits": 9,
           "goals": 4
         }
       ],
@@ -30552,12 +30580,18 @@
         {
           "month": "11.10",
           "date": "2026-10-11",
-          "visits": 4,
-          "goals": 0
+          "visits": 12,
+          "goals": 1
         },
         {
           "month": "12.10",
           "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
+        },
+        {
+          "month": "13.10",
+          "date": "2026-10-13",
           "visits": 0,
           "goals": 0
         }
@@ -30728,11 +30762,11 @@
         {
           "month": "05.10-11.10",
           "date": "2026-10-05",
-          "visits": 549,
-          "goals": 25
+          "visits": 557,
+          "goals": 26
         },
         {
-          "month": "12.10-12.10",
+          "month": "12.10-13.10",
           "date": "2026-10-12",
           "visits": 0,
           "goals": 0
@@ -30778,8 +30812,8 @@
         {
           "month": "окт",
           "date": "2026-10-01",
-          "visits": 899,
-          "goals": 37
+          "visits": 907,
+          "goals": 38
         }
       ]
     },
@@ -30794,7 +30828,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-12",
       "visits": 3714,
       "users": 3346,
@@ -42763,7 +42797,8 @@
           "visits": 810,
           "goals": 10
         }
-      ]
+      ],
+      "error": "Метрика API 400: {\"errors\":[{\"error_type\":\"query_error\",\"message\":\"Запрос слишком сложный. Пожалуйста, уменьшите интервал дат или семплирование.\"}],\"code\":400,\"message\":\"Запрос слишком сложный. Пожалуйста, уменьшите интервал дат или семплирование.\"}"
     },
     {
       "projectName": "Балт-паллет",
@@ -42771,13 +42806,13 @@
       "counterId": 99163159,
       "counterName": "balt-pallet",
       "siteUrl": "https://balt-pallet.ru",
-      "periodLabel": "01.04.26 - 12.10.26",
+      "periodLabel": "01.04.26 - 13.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-12",
+      "fullCoverageDate": "2026-10-13",
       "visits": 936,
       "users": 856,
       "goalCount": 101,
@@ -44534,6 +44569,12 @@
           "date": "2026-10-12",
           "visits": 0,
           "goals": 0
+        },
+        {
+          "month": "13.10",
+          "date": "2026-10-13",
+          "visits": 0,
+          "goals": 0
         }
       ],
       "weekly": [
@@ -44706,7 +44747,7 @@
           "goals": 1
         },
         {
-          "month": "12.10-12.10",
+          "month": "12.10-13.10",
           "date": "2026-10-12",
           "visits": 0,
           "goals": 0
@@ -44763,20 +44804,20 @@
       "counterId": 109615906,
       "counterName": "lombard-banka",
       "siteUrl": "https://lombard-banka.ru",
-      "periodLabel": "01.04.26 - 12.10.26",
+      "periodLabel": "01.04.26 - 13.10.26",
       "metricScope": "organic_search",
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
       "dataStatus": "ok",
-      "fullCoverageDate": "2026-10-12",
-      "visits": 1875,
-      "users": 1794,
-      "goalCount": 231,
-      "queryVisits": 1637,
-      "queryGoalCount": 178,
-      "uniqueQueries": 1125,
-      "goalRows": 57,
+      "fullCoverageDate": "2026-10-13",
+      "visits": 1884,
+      "users": 1803,
+      "goalCount": 236,
+      "queryVisits": 1643,
+      "queryGoalCount": 181,
+      "uniqueQueries": 1131,
+      "goalRows": 58,
       "sampleQueries": [
         "ломбард электросамокатов спб",
         "сдать одежду за деньги в спб",
@@ -44880,6 +44921,11 @@
         },
         {
           "query": "за сколько можно заложить в ломбард часы хуавей",
+          "visits": 1,
+          "goals": 3
+        },
+        {
+          "query": "заложить музыкальный инструмент спб м приморская",
           "visits": 1,
           "goals": 3
         },
@@ -45725,6 +45771,11 @@
         },
         {
           "query": "583 проба и 585 проба золота чем отличается в сущности",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "583 проба на золотом изделии",
           "visits": 1,
           "goals": 0
         },
@@ -47124,6 +47175,11 @@
           "goals": 0
         },
         {
+          "query": "как продать шубу норковую б/у быстро",
+          "visits": 1,
+          "goals": 0
+        },
+        {
           "query": "как продать шубу норковую быстро и дорого",
           "visits": 1,
           "goals": 0
@@ -47230,6 +47286,11 @@
         },
         {
           "query": "какая проба дороже 585 или 583 золота",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "какая проба золота качественнее 583 или 585",
           "visits": 1,
           "goals": 0
         },
@@ -47575,6 +47636,11 @@
         },
         {
           "query": "Куда можно сдать одежду за деньги в спб",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "куда можно сдать одежду и обувь за деньги в спб",
           "visits": 1,
           "goals": 0
         },
@@ -48140,6 +48206,11 @@
         },
         {
           "query": "ломбард телефонов",
+          "visits": 1,
+          "goals": 0
+        },
+        {
+          "query": "ломбард телефонов в спб",
           "visits": 1,
           "goals": 0
         },
@@ -51613,12 +51684,18 @@
         {
           "month": "11.10",
           "date": "2026-10-11",
-          "visits": 11,
-          "goals": 0
+          "visits": 20,
+          "goals": 5
         },
         {
           "month": "12.10",
           "date": "2026-10-12",
+          "visits": 0,
+          "goals": 0
+        },
+        {
+          "month": "13.10",
+          "date": "2026-10-13",
           "visits": 0,
           "goals": 0
         }
@@ -51789,11 +51866,11 @@
         {
           "month": "05.10-11.10",
           "date": "2026-10-05",
-          "visits": 340,
-          "goals": 15
+          "visits": 349,
+          "goals": 20
         },
         {
-          "month": "12.10-12.10",
+          "month": "12.10-13.10",
           "date": "2026-10-12",
           "visits": 0,
           "goals": 0
@@ -51839,8 +51916,8 @@
         {
           "month": "окт",
           "date": "2026-10-01",
-          "visits": 527,
-          "goals": 26
+          "visits": 536,
+          "goals": 31
         }
       ]
     }
