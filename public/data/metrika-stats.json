@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-14T10:16:53.516Z",
+  "updatedAt": "2026-10-15T09:58:54.304Z",
   "date1": "2026-04-01",
-  "date2": "2026-10-14",
-  "periodLabel": "01.04.26 - 14.10.26",
+  "date2": "2026-10-15",
+  "periodLabel": "01.04.26 - 15.10.26",
   "projects": [
     {
       "projectName": "Часы",
@@ -16,7 +16,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-14",
       "visits": 5534,
       "users": 5495,
@@ -2042,7 +2042,8 @@
           "visits": 485,
           "goals": 0
         }
-      ]
+      ],
+      "error": "Метрика API 429: "
     },
     {
       "projectName": "Свич",
@@ -2055,7 +2056,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-14",
       "visits": 766,
       "users": 753,
@@ -4531,7 +4532,8 @@
           "visits": 24,
           "goals": 25
         }
-      ]
+      ],
+      "error": "Метрика API 429: "
     },
     {
       "projectName": "Аквагард",
@@ -4544,7 +4546,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-14",
       "visits": 2908,
       "users": 2485,
@@ -15185,7 +15187,8 @@
           "visits": 523,
           "goals": 30
         }
-      ]
+      ],
+      "error": "Метрика API 429: "
     },
     {
       "projectName": "Промтех",
@@ -15198,7 +15201,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-14",
       "visits": 6444,
       "users": 5952,
@@ -31534,7 +31537,8 @@
           "visits": 1095,
           "goals": 44
         }
-      ]
+      ],
+      "error": "Метрика API 429: "
     },
     {
       "projectName": "Смартстрой",
@@ -31547,7 +31551,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-14",
       "visits": 3840,
       "users": 3465,
@@ -43853,7 +43857,8 @@
           "visits": 936,
           "goals": 15
         }
-      ]
+      ],
+      "error": "Метрика API 429: "
     },
     {
       "projectName": "Балт-паллет",
@@ -43866,7 +43871,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-14",
       "visits": 948,
       "users": 867,
@@ -45857,7 +45862,8 @@
           "visits": 54,
           "goals": 2
         }
-      ]
+      ],
+      "error": "Метрика API 429: "
     },
     {
       "projectName": "Ломбард",
@@ -45870,7 +45876,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-14",
       "visits": 1979,
       "users": 1892,
@@ -53211,7 +53217,8 @@
           "visits": 631,
           "goals": 39
         }
-      ]
+      ],
+      "error": "Метрика API 429: "
     }
   ]
 }
