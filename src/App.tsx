@@ -323,8 +323,8 @@ const taskReportFilterLabels: Record<TaskReportFilter, string> = {
 
 const taskLogicCategoryLabels: Record<TaskLogicCategory, string> = {
   carried: 'Тянется из прошлого отчета',
-  added: 'Добавилось за неделю',
-  done: 'Сделано за неделю',
+  added: 'Добавилось за период',
+  done: 'Сделано за период',
   lateDone: 'Закрыто с опозданием',
   deadlineMoved: 'Перенесен дедлайн',
   stuck: 'Не закрывается 2+ отчета',
@@ -558,7 +558,10 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'task-updates-2026-10-12-week-plan-v1';
+const taskSeedVersion = 'task-updates-2026-10-19-fortnight-plan-v1';
+const reportPeriodOverrides: Record<string, WeekWindow> = {
+  '2026-10-19': { start: '2026-10-05', end: '2026-10-18' },
+};
 const taskDefaultDeadlineVersion = 'default-deadlines-2026-09-03-v1';
 const legacyDemoTaskIds = new Set([
   'task-1',
@@ -2099,11 +2102,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-aquaguard-delivery-page-2026-09-14',
     projectId: 'project-aquaguard',
     title: 'Реализовать страницу про доставку',
-    description: 'На 12.10: остается в работе, переносится в план недели 12.10-18.10.',
-    status: 'active',
+    description: 'По сводке на 19.10 за 05.10-18.10: страница доставки реализована.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-09-14',
     deadline: '2026-10-18',
+    completedAt: '2026-10-19',
     timelineEnabled: false,
     timeline: [],
   },
@@ -2162,7 +2166,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-smartstroy-project-filter-fixes-2026-09-14',
     projectId: 'project-smart',
     title: 'Исправить визуал и функционал фильтра проектов',
-    description: 'На 12.10: часть работ выполнена, задача остается в работе на неделю 12.10-18.10.',
+    description: 'На 19.10: фильтр частично доработан, задача остается в работе.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-09-14',
@@ -3026,7 +3030,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-aquaguard-designers-pages-2026-10-05',
     projectId: 'project-aquaguard',
     title: 'Страницы по проектировщикам',
-    description: 'На 12.10: часть страниц по проектировщикам сделана, задача остается в работе.',
+    description: 'На 19.10: страницы по проектировщикам частично сделаны, задача остается в работе.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-05',
@@ -3054,11 +3058,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-aquaguard-google-products-2026-10-05',
     projectId: 'project-aquaguard',
     title: 'Google товары',
-    description: 'На 12.10: Google товары остаются в работе.',
-    status: 'active',
+    description: 'По сводке на 19.10 за 05.10-18.10: Google товары подключены.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-05',
     deadline: '2026-10-18',
+    completedAt: '2026-10-19',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3066,7 +3071,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-promteh-pallets-section-2026-10-05',
     projectId: 'project-promteh',
     title: 'Раздел поддонов',
-    description: 'На 12.10: раздел поддонов частично сделан, остается в работе.',
+    description: 'На 19.10: раздел поддонов частично сделан, остается в работе.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-05',
@@ -3094,7 +3099,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-promteh-client-fixes-2026-10-05',
     projectId: 'project-promteh',
     title: 'Правки от клиента',
-    description: 'На 12.10: правки от клиента остаются в работе.',
+    description: 'На 19.10: правки от клиента остаются в работе.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-05',
@@ -3106,7 +3111,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-smartstroy-geo-pages-2026-10-05',
     projectId: 'project-smart',
     title: 'Гео запросы и страницы',
-    description: 'На 12.10: часть работ по гео запросам и страницам сделана, задача остается в работе.',
+    description: 'На 19.10: гео запросы и страницы частично сделаны, задача остается в работе.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-05',
@@ -3134,7 +3139,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-watch-tag-logic-2026-10-05',
     projectId: 'project-watch',
     title: 'Логика теговых',
-    description: 'На 12.10: логика теговых страниц остается в работе.',
+    description: 'На 19.10: логика теговых страниц остается в работе.',
     status: 'active',
     ownerIds: ['person-outsource'],
     createdAt: '2026-10-05',
@@ -3146,7 +3151,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-watch-yandex-product-feed-2026-10-05',
     projectId: 'project-watch',
     title: 'Товарный фид Яндекс',
-    description: 'На 12.10: фид подготовлен, но есть блокер по запуску/прохождению.',
+    description: 'На 19.10: товарный фид Яндекс подготовлен, блокер сохраняется. Причина блокера не уточнена.',
     status: 'risk',
     ownerIds: ['person-outsource'],
     createdAt: '2026-10-05',
@@ -3187,7 +3192,7 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-balt-product-feeds-2026-10-05',
     projectId: 'project-balt-pallet',
     title: 'Товарные фиды',
-    description: 'На 12.10: товарные фиды подготовлены, но есть блокер по запуску/прохождению.',
+    description: 'На 19.10: товарные фиды подготовлены, блокер сохраняется. Причина блокера не уточнена.',
     status: 'risk',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-05',
@@ -3455,11 +3460,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-rectop-content-plan-2026-10-12',
     projectId: 'project-rectop',
     title: 'Контент план',
-    description: 'План на неделю 12.10-18.10: подготовить контент-план для rectop.ru.',
-    status: 'active',
+    description: 'По сводке на 19.10: контент-план для rectop.ru подготовлен.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-12',
     deadline: '2026-10-18',
+    completedAt: '2026-10-19',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3467,11 +3473,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-rectop-link-plan-anchors-2026-10-12',
     projectId: 'project-rectop',
     title: 'Ссылочный план и анкор-листы',
-    description: 'План на неделю 12.10-18.10: подготовить ссылочный план и анкор-листы для rectop.ru.',
-    status: 'active',
+    description: 'По сводке на 19.10: ссылочный план и анкор-листы для rectop.ru подготовлены.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-12',
     deadline: '2026-10-18',
+    completedAt: '2026-10-19',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3479,11 +3486,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-aquaguard-link-anchors-2026-10-12',
     projectId: 'project-aquaguard',
     title: 'Ссылочная стратегия и анкор-листы',
-    description: 'План на неделю 12.10-18.10: подготовить ссылочную стратегию и анкор-листы для аквагард.рф.',
-    status: 'active',
+    description: 'По сводке на 19.10: ссылочная стратегия и анкор-листы для аквагард.рф подготовлены.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-12',
     deadline: '2026-10-18',
+    completedAt: '2026-10-19',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3491,11 +3499,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-promteh-link-plan-anchors-2026-10-12',
     projectId: 'project-promteh',
     title: 'Ссылочный план и анкор-листы',
-    description: 'План на неделю 12.10-18.10: подготовить ссылочный план и анкор-листы для promtehmakulatura.ru.',
-    status: 'active',
+    description: 'По сводке на 19.10: ссылочный план и анкор-листы для promtehmakulatura.ru подготовлены.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-12',
     deadline: '2026-10-18',
+    completedAt: '2026-10-19',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3503,11 +3512,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-smartstroy-anchor-lists-2026-10-12',
     projectId: 'project-smart',
     title: 'Анкор-листы',
-    description: 'План на неделю 12.10-18.10: подготовить анкор-листы для smart-spb.pro.',
-    status: 'active',
+    description: 'По сводке на 19.10: анкор-листы для smart-spb.pro подготовлены.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-12',
     deadline: '2026-10-18',
+    completedAt: '2026-10-19',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3515,11 +3525,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-watch-link-plan-anchors-2026-10-12',
     projectId: 'project-watch',
     title: 'Ссылочный план и анкор-листы',
-    description: 'План на неделю 12.10-18.10: подготовить ссылочный план и анкор-листы для watchstoree.ru.',
-    status: 'active',
+    description: 'По сводке на 19.10: ссылочный план и анкор-листы для watchstoree.ru подготовлены.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-12',
     deadline: '2026-10-18',
+    completedAt: '2026-10-19',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3527,35 +3538,281 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-lombard-services-expansion-2026-10-12',
     projectId: 'project-lombard',
     title: 'Расширение услуг',
-    description: 'План на неделю 12.10-18.10: расширить услуги на lombard-banka.ru.',
+    description: 'На 19.10: расширение услуг выполнено частично, задача остается в работе.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-12',
     deadline: '2026-10-18',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-lombard-services-partial-19-10', title: 'Расширение услуг: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+      { id: 'timeline-lombard-services-remaining-19-10', title: 'Завершить расширение услуг', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+    ],
   },
   {
     id: 'plan-balt-usability-2026-10-12',
     projectId: 'project-balt-pallet',
     title: 'Юзабилити',
-    description: 'План на неделю 12.10-18.10: проработать юзабилити на balt-pallet.ru.',
+    description: 'На 19.10: работы по юзабилити выполнены частично, задача остается в работе.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-12',
     deadline: '2026-10-18',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-balt-usability-partial-19-10', title: 'Юзабилити: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+      { id: 'timeline-balt-usability-remaining-19-10', title: 'Завершить работы по юзабилити', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+    ],
   },
   {
     id: 'plan-balt-eeat-pages-2026-10-12',
     projectId: 'project-balt-pallet',
     title: 'E-E-A-T страницы',
-    description: 'План на неделю 12.10-18.10: подготовить E-E-A-T страницы для balt-pallet.ru.',
+    description: 'На 19.10: E-E-A-T страницы выполнены частично, задача остается в работе.',
     status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-12',
     deadline: '2026-10-18',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-balt-eeat-partial-19-10', title: 'E-E-A-T страницы: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+      { id: 'timeline-balt-eeat-remaining-19-10', title: 'Завершить E-E-A-T страницы', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+    ],
+  },
+  {
+    id: 'weekly-rectop-report-2026-10-19',
+    projectId: 'project-rectop',
+    title: 'Недельная запись 19.10: Ректоп',
+    description: 'Сводка за две недели 05.10-18.10. Раздел услуг, план работ, контент-план и ссылочный план с анкор-листами готовы. План на 19.10-25.10 ведется в отдельных задачах.',
+    status: 'done',
+    ownerIds: ['person-aleksey', 'person-outsource'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-19',
+    completedAt: '2026-10-19',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-rectop-services-19-10', title: 'Раздел услуг', ownerId: 'person-outsource', status: 'done', dueDate: '2026-10-12', completedAt: '2026-10-12' },
+      { id: 'timeline-rectop-work-plan-19-10', title: 'План работ', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-12', completedAt: '2026-10-12' },
+      { id: 'timeline-rectop-content-plan-19-10', title: 'Контент план', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+      { id: 'timeline-rectop-link-plan-19-10', title: 'Ссылочный план и анкор-листы', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+    ],
+  },
+  {
+    id: 'weekly-aquaguard-report-2026-10-19',
+    projectId: 'project-aquaguard',
+    title: 'Недельная запись 19.10: Аквагард',
+    description: 'Сводка за две недели 05.10-18.10. Страницы по проектировщикам частично выполнены. Страница доставки, Google товары, ссылочная стратегия и анкор-листы готовы.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-19',
+    completedAt: '2026-10-19',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-aquaguard-designers-done-19-10', title: 'Страницы по проектировщикам: часть сделана', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-12', completedAt: '2026-10-12' },
+      { id: 'timeline-aquaguard-designers-open-19-10', title: 'Страницы по проектировщикам: довести до финала', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+      { id: 'timeline-aquaguard-delivery-19-10', title: 'Реализовать страницу про доставку', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+      { id: 'timeline-aquaguard-google-products-19-10', title: 'Google товары', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+      { id: 'timeline-aquaguard-anchors-19-10', title: 'Ссылочная стратегия и анкор-листы', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+    ],
+  },
+  {
+    id: 'weekly-promteh-report-2026-10-19',
+    projectId: 'project-promteh',
+    title: 'Недельная запись 19.10: Промтех',
+    description: 'Сводка за две недели 05.10-18.10. Раздел поддонов частично выполнен, правки от клиента в работе. Ссылочный план и анкор-листы готовы.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-19',
+    completedAt: '2026-10-19',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-promteh-pallets-done-19-10', title: 'Раздел поддонов: часть сделана', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-12', completedAt: '2026-10-12' },
+      { id: 'timeline-promteh-pallets-open-19-10', title: 'Раздел поддонов: довести до финала', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+      { id: 'timeline-promteh-client-fixes-19-10', title: 'Правки от клиента', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+      { id: 'timeline-promteh-anchors-19-10', title: 'Ссылочный план и анкор-листы', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+    ],
+  },
+  {
+    id: 'weekly-smartstroy-report-2026-10-19',
+    projectId: 'project-smart',
+    title: 'Недельная запись 19.10: Смартстрой',
+    description: 'Сводка за две недели 05.10-18.10. Фильтр, гео запросы и страницы частично выполнены. Анкор-листы готовы.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-19',
+    completedAt: '2026-10-19',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-smartstroy-filter-done-19-10', title: 'Фильтр: часть правок сделана', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-12', completedAt: '2026-10-12' },
+      { id: 'timeline-smartstroy-filter-open-19-10', title: 'Фильтр: довести визуал и функционал до финала', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+      { id: 'timeline-smartstroy-geo-done-19-10', title: 'Гео запросы и страницы: часть сделана', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-12', completedAt: '2026-10-12' },
+      { id: 'timeline-smartstroy-geo-open-19-10', title: 'Гео запросы и страницы: довести до финала', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+      { id: 'timeline-smartstroy-anchors-19-10', title: 'Анкор-листы', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+    ],
+  },
+  {
+    id: 'weekly-watch-report-2026-10-19',
+    projectId: 'project-watch',
+    title: 'Недельная запись 19.10: Часы',
+    description: 'Сводка за две недели 05.10-18.10. Логика теговых в работе. Товарный фид Яндекс подготовлен, блокер сохраняется. Ссылочный план и анкор-листы готовы.',
+    status: 'done',
+    ownerIds: ['person-aleksey', 'person-outsource'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-19',
+    completedAt: '2026-10-19',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-watch-tags-19-10', title: 'Логика теговых', ownerId: 'person-outsource', status: 'active', dueDate: '2026-10-18' },
+      { id: 'timeline-watch-feed-done-19-10', title: 'Товарный фид Яндекс: подготовлен', ownerId: 'person-outsource', status: 'done', dueDate: '2026-10-12', completedAt: '2026-10-12' },
+      { id: 'timeline-watch-feed-blocker-19-10', title: 'Товарный фид Яндекс: блокер', ownerId: 'person-outsource', status: 'risk', dueDate: '2026-10-18' },
+      { id: 'timeline-watch-anchors-19-10', title: 'Ссылочный план и анкор-листы', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+    ],
+  },
+  {
+    id: 'weekly-lombard-report-2026-10-19',
+    projectId: 'project-lombard',
+    title: 'Недельная запись 19.10: Ломбард',
+    description: 'Сводка за две недели 05.10-18.10. Контент-план готов, расширение услуг выполнено частично.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-19',
+    completedAt: '2026-10-19',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-lombard-content-plan-19-10', title: 'Контент план', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-12', completedAt: '2026-10-12' },
+      { id: 'timeline-lombard-services-done-19-10', title: 'Расширение услуг: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+      { id: 'timeline-lombard-services-open-19-10', title: 'Завершить расширение услуг', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+    ],
+  },
+  {
+    id: 'weekly-balt-pallet-report-2026-10-19',
+    projectId: 'project-balt-pallet',
+    title: 'Недельная запись 19.10: Балт Паллет',
+    description: 'Сводка за две недели 05.10-18.10. Товарные фиды подготовлены, блокер сохраняется. Юзабилити и E-E-A-T страницы выполнены частично.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-19',
+    completedAt: '2026-10-19',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-balt-feeds-done-19-10', title: 'Товарные фиды: подготовлены', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-12', completedAt: '2026-10-12' },
+      { id: 'timeline-balt-feeds-blocker-19-10', title: 'Товарные фиды: блокер', ownerId: 'person-aleksey', status: 'risk', dueDate: '2026-10-18' },
+      { id: 'timeline-balt-usability-done-weekly-19-10', title: 'Юзабилити: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+      { id: 'timeline-balt-usability-open-weekly-19-10', title: 'Завершить работы по юзабилити', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+      { id: 'timeline-balt-eeat-done-weekly-19-10', title: 'E-E-A-T страницы: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-18', completedAt: '2026-10-19' },
+      { id: 'timeline-balt-eeat-open-weekly-19-10', title: 'Завершить E-E-A-T страницы', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-18' },
+    ],
+  },
+  {
+    id: 'plan-aquaguard-usability-2026-10-19',
+    projectId: 'project-aquaguard',
+    title: 'Юзабилити',
+    description: 'План на неделю 19.10-25.10: юзабилити аквагард.рф.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-25',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-aquaguard-services-section-2026-10-19',
+    projectId: 'project-aquaguard',
+    title: 'Раздел услуг',
+    description: 'План на неделю 19.10-25.10: раздел услуг аквагард.рф.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-25',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-promteh-usability-2026-10-19',
+    projectId: 'project-promteh',
+    title: 'Юзабилити',
+    description: 'План на неделю 19.10-25.10: юзабилити promtehmakulatura.ru.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-25',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-smartstroy-layout-2026-10-19',
+    projectId: 'project-smart',
+    title: 'Верстка',
+    description: 'План на неделю 19.10-25.10: верстка smart-spb.pro.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-25',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-smartstroy-multi-parameter-tags-2026-10-19',
+    projectId: 'project-smart',
+    title: 'Теговые страницы с 2+ параметрами',
+    description: 'План на неделю 19.10-25.10: теговые страницы с двумя и более параметрами на smart-spb.pro.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-25',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-watch-tag-metatags-2026-10-19',
+    projectId: 'project-watch',
+    title: 'Метатеги теговых страниц',
+    description: 'План на неделю 19.10-25.10: метатеги теговых страниц watchstoree.ru.',
+    status: 'planned',
+    ownerIds: ['person-outsource'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-25',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-watch-breadcrumbs-2026-10-19',
+    projectId: 'project-watch',
+    title: 'Хлебные крошки',
+    description: 'План на неделю 19.10-25.10: хлебные крошки watchstoree.ru.',
+    status: 'planned',
+    ownerIds: ['person-outsource'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-25',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-lombard-usability-2026-10-19',
+    projectId: 'project-lombard',
+    title: 'Юзабилити',
+    description: 'План на неделю 19.10-25.10: юзабилити lombard-banka.ru.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-25',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-balt-content-plan-2026-10-19',
+    projectId: 'project-balt-pallet',
+    title: 'Контент план',
+    description: 'План на неделю 19.10-25.10: контент-план balt-pallet.ru.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-19',
+    deadline: '2026-10-25',
     timelineEnabled: false,
     timeline: [],
   },
@@ -4199,6 +4456,17 @@ function getWeekWindowFromIso(startIso: string): WeekWindow {
     start: startIso,
     end: addDaysToIso(startIso, 6),
   };
+}
+
+function getReportWindowForSendDate(sendDate: string): WeekWindow {
+  return reportPeriodOverrides[sendDate] ?? {
+    start: addDaysToIso(sendDate, -7),
+    end: addDaysToIso(sendDate, -1),
+  };
+}
+
+function isCompletionInReport(value: string | undefined, period: WeekWindow, sendDate: string) {
+  return isIsoInWindow(value, period) || (Boolean(reportPeriodOverrides[sendDate]) && value === sendDate);
 }
 
 function getWeekStartIso(value: string) {
@@ -9180,7 +9448,10 @@ function WeeklyReportView({
       setSelectedArchiveStart(archiveStarts[0] ?? latestReportWeek.start);
     }
   }, [archiveStarts, latestReportWeek.start, selectedArchiveStart]);
-  const selectedReportWeek = useMemo(() => getWeekWindowFromIso(selectedArchiveStart), [selectedArchiveStart]);
+  const selectedReportWeek = useMemo(
+    () => getReportWindowForSendDate(addDaysToIso(selectedArchiveStart, 7)),
+    [selectedArchiveStart],
+  );
   const selectedPlanWeek = useMemo(
     () => getWeekWindowFromIso(addDaysToIso(selectedArchiveStart, 7)),
     [selectedArchiveStart],
@@ -9584,10 +9855,10 @@ function GeneralReportDigest({
             items={digest.activeItems}
           />
           <GeneralReportDigestCard
-            title="Сделано за прошлую неделю"
+            title="Сделано за отчетный период"
             tone="success"
             count={digest.doneItems.length}
-            empty="Завершений за прошлую неделю нет."
+            empty="За отчетный период завершений нет."
             items={digest.doneItems}
           />
           <article className="general-report-card metrics">
@@ -10540,7 +10811,7 @@ function WeeklyReportProjectCard({ report }: { report: WeeklyProjectReport }) {
         )}
       </header>
       <div className="weekly-report-columns">
-        <WeeklyReportList title="Сделано за неделю" items={report.done} empty="Нет отмеченных завершений." />
+        <WeeklyReportList title="Сделано за отчетный период" items={report.done} empty="Нет отмеченных завершений." />
         <WeeklyReportList title="Не выполнено в срок" items={report.late} empty="Просрочек в этом блоке нет." />
         <WeeklyReportList title="План на следующую неделю" items={report.planned} empty="Нет задач на эту неделю." />
       </div>
@@ -10660,7 +10931,15 @@ function buildSeoWeeklyReports(
 
   return projects
     .map((project) => {
-      const projectTasks = tasks.filter((task) => task.projectId === project.id);
+      const projectTasks = tasks.filter(
+        (task) => task.projectId === project.id && (!task.createdAt || task.createdAt <= reportSendDate),
+      );
+      const latestSentReportDate = projectTasks
+        .filter(isWeeklyReportTask)
+        .reduce((latest, task) => task.createdAt > latest ? task.createdAt : latest, '');
+      const combinedReport = reportPeriodOverrides[reportSendDate]
+        ? projectTasks.find((task) => isWeeklyReportTask(task) && task.createdAt === reportSendDate)
+        : undefined;
       const done: WeeklyReportItem[] = [];
       const late: WeeklyReportItem[] = [];
       const planned: WeeklyReportItem[] = [];
@@ -10669,10 +10948,13 @@ function buildSeoWeeklyReports(
 
       projectTasks.forEach((task) => {
         const isSentReportTask = isWeeklyReportTask(task);
+        // The two-week note is cumulative, so count its completed stages once.
+        const includeCompletions = !combinedReport || task.id === combinedReport.id;
         const doneTimelineItems = task.timeline.filter(
           (item) =>
+            includeCompletions &&
             item.status === 'done' &&
-            (isIsoInWindow(item.completedAt, previousWeek) ||
+            (isCompletionInReport(item.completedAt, previousWeek, reportSendDate) ||
               (isSentReportTask && item.completedAt === reportSendDate)),
         );
 
@@ -10681,12 +10963,15 @@ function buildSeoWeeklyReports(
             done.push(makeTimelineReportItem(task, item, project, peopleById, today, 'done'));
           });
         } else if (
+          includeCompletions &&
           task.status === 'done' &&
-          (isIsoInWindow(task.completedAt, previousWeek) ||
+          (isCompletionInReport(task.completedAt, previousWeek, reportSendDate) ||
             (isSentReportTask && task.completedAt === reportSendDate))
         ) {
           done.push(makeTaskReportItem(task, project, peopleById, today, 'done'));
         }
+
+        if (isSentReportTask && (combinedReport || task.createdAt < latestSentReportDate)) return;
 
         const openTimelineItems = task.timeline.filter((item) => item.status !== 'done');
         const lateTimelineItems = openTimelineItems.filter((item) => Boolean(item.dueDate) && item.dueDate < currentWeek.start);
@@ -11270,7 +11555,7 @@ function buildTaskLogicReports(
           });
         }
 
-        if (task.completedAt && isIsoInWindow(task.completedAt, reportWeek)) {
+        if (task.completedAt && isCompletionInReport(task.completedAt, reportWeek, currentSnapshotDate)) {
           const isLate = Boolean(task.deadline) && task.completedAt > task.deadline;
           const item = {
             ...baseItem,
@@ -11424,7 +11709,7 @@ function buildGeneralReportDigest({
   const signals = [
     makeDigestTaskSignal(stuckItems, 'зависла / просрочена', 'Долгих зависаний не видно'),
     activeItems.length ? `В работе сейчас: ${activeItems.length} задач` : 'Активных задач сейчас нет',
-    doneItems.length ? `За прошлую неделю закрыто: ${doneItems.length}` : 'За прошлую неделю закрытий нет',
+    doneItems.length ? `За отчетный период закрыто: ${doneItems.length}` : 'За отчетный период закрытий нет',
     plannedItems.length ? `План на эту неделю: ${plannedItems.length} задач` : 'План на неделю пустой',
     metricRows.length ? `Метрики доступны по ${metricRows.length} проектам` : 'Метрики пока не подключены',
   ];
@@ -11708,8 +11993,8 @@ function buildReportArchiveFolders(
   externalAdditions: ExternalProjectAdditions,
 ): WeeklyReportArchiveFolder[] {
   return starts.map((start) => {
-    const reportWeek = getWeekWindowFromIso(start);
     const planWeek = getWeekWindowFromIso(addDaysToIso(start, 7));
+    const reportWeek = getReportWindowForSendDate(planWeek.start);
     const seoReports = buildSeoWeeklyReports(projects, tasks, peopleById, reportWeek, planWeek);
     const externalReports = buildExternalWeeklyReports(externalSource, externalAdditions, reportWeek, planWeek);
 
@@ -13636,8 +13921,8 @@ function SeoProjectReportsPanel({
   onReloadMetrika: (mode?: MetrikaStatsLoadMode) => void;
 }) {
   const [reportMode, setReportMode] = useStoredState<ReportMode>('task-seo-single-project-report-mode', 'tasks');
-  const reportWeek = useMemo(() => getWeekWindow(-1), []);
   const planWeek = useMemo(() => getWeekWindow(0), []);
+  const reportWeek = useMemo(() => getReportWindowForSendDate(planWeek.start), [planWeek.start]);
   const report = useMemo(
     () => buildSeoWeeklyReports([project], tasks, peopleById, reportWeek, planWeek)[0],
     [peopleById, planWeek, project, reportWeek, tasks],
