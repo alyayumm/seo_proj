@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-21T10:14:25.755Z",
+  "updatedAt": "2026-10-22T10:15:22.451Z",
   "date1": "2026-04-01",
-  "date2": "2026-10-21",
-  "periodLabel": "01.04.26 - 21.10.26",
+  "date2": "2026-10-22",
+  "periodLabel": "01.04.26 - 22.10.26",
   "projects": [
     {
       "projectName": "Часы",
@@ -2082,7 +2082,7 @@
           "goals": 1
         }
       ],
-      "error": "Метрика API 400: {\"errors\":[{\"error_type\":\"query_error\",\"message\":\"Запрос слишком сложный. Пожалуйста, уменьшите интервал дат или семплирование.\"}],\"code\":400,\"message\":\"Запрос слишком сложный. Пожалуйста, уменьшите интервал дат или семплирование.\"}"
+      "error": "Метрика API 503: Service unavailable"
     },
     {
       "projectName": "Свич",
@@ -2095,7 +2095,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-21",
       "visits": 784,
       "users": 771,
@@ -4694,7 +4694,8 @@
           "visits": 42,
           "goals": 27
         }
-      ]
+      ],
+      "error": "Метрика API 503: Service unavailable"
     },
     {
       "projectName": "Аквагард",
@@ -4707,7 +4708,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-21",
       "visits": 3056,
       "users": 2612,
@@ -15901,7 +15902,8 @@
           "visits": 671,
           "goals": 43
         }
-      ]
+      ],
+      "error": "Метрика API 503: Service unavailable"
     },
     {
       "projectName": "Промтех",
@@ -15914,7 +15916,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-21",
       "visits": 7002,
       "users": 6439,
@@ -33923,7 +33925,8 @@
           "visits": 1653,
           "goals": 58
         }
-      ]
+      ],
+      "error": "Метрика API 503: Service unavailable"
     },
     {
       "projectName": "Смартстрой",
@@ -33936,7 +33939,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-21",
       "visits": 4344,
       "users": 3945,
@@ -47800,7 +47803,8 @@
           "visits": 1440,
           "goals": 26
         }
-      ]
+      ],
+      "error": "Метрика API 503: Service unavailable"
     },
     {
       "projectName": "Балт-паллет",
@@ -47813,7 +47817,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-21",
       "visits": 990,
       "users": 906,
@@ -49872,7 +49876,8 @@
           "visits": 96,
           "goals": 3
         }
-      ]
+      ],
+      "error": "Метрика API 503: Service unavailable"
     },
     {
       "projectName": "Ломбард",
@@ -49885,7 +49890,7 @@
       "filter": "ym:s:trafficSource=='organic'",
       "attribution": "lastsign",
       "timezone": "+03:00",
-      "dataStatus": "ok",
+      "dataStatus": "stale",
       "fullCoverageDate": "2026-10-21",
       "visits": 2274,
       "users": 2166,
@@ -58289,7 +58294,8 @@
           "visits": 926,
           "goals": 57
         }
-      ]
+      ],
+      "error": "Метрика API 503: Service unavailable"
     }
   ]
 }
