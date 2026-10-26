@@ -558,9 +558,10 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'task-updates-2026-10-19-fortnight-plan-v1';
+const taskSeedVersion = 'task-updates-2026-10-26-weekly-results-v1';
 const reportPeriodOverrides: Record<string, WeekWindow> = {
   '2026-10-19': { start: '2026-10-05', end: '2026-10-18' },
+  '2026-10-26': { start: '2026-10-19', end: '2026-10-25' },
 };
 const taskDefaultDeadlineVersion = 'default-deadlines-2026-09-03-v1';
 const legacyDemoTaskIds = new Set([
@@ -3712,20 +3713,23 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-aquaguard-usability-2026-10-19',
     projectId: 'project-aquaguard',
     title: 'Юзабилити',
-    description: 'План на неделю 19.10-25.10: юзабилити аквагард.рф.',
-    status: 'planned',
+    description: 'На 26.10: работы по юзабилити аквагард.рф выполнены частично, задача остается в работе.',
+    status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-19',
     deadline: '2026-10-25',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-aquaguard-usability-done-26-10', title: 'Юзабилити: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+      { id: 'timeline-aquaguard-usability-open-26-10', title: 'Завершить работы по юзабилити', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+    ],
   },
   {
     id: 'plan-aquaguard-services-section-2026-10-19',
     projectId: 'project-aquaguard',
     title: 'Раздел услуг',
-    description: 'План на неделю 19.10-25.10: раздел услуг аквагард.рф.',
-    status: 'planned',
+    description: 'На 26.10: раздел услуг аквагард.рф остается в работе.',
+    status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-19',
     deadline: '2026-10-25',
@@ -3736,32 +3740,38 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-promteh-usability-2026-10-19',
     projectId: 'project-promteh',
     title: 'Юзабилити',
-    description: 'План на неделю 19.10-25.10: юзабилити promtehmakulatura.ru.',
-    status: 'planned',
+    description: 'На 26.10: работы по юзабилити promtehmakulatura.ru выполнены частично, задача остается в работе.',
+    status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-19',
     deadline: '2026-10-25',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-promteh-usability-done-26-10', title: 'Юзабилити: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+      { id: 'timeline-promteh-usability-open-26-10', title: 'Завершить работы по юзабилити', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+    ],
   },
   {
     id: 'plan-smartstroy-layout-2026-10-19',
     projectId: 'project-smart',
     title: 'Верстка',
-    description: 'План на неделю 19.10-25.10: верстка smart-spb.pro.',
-    status: 'planned',
+    description: 'На 26.10: верстка smart-spb.pro выполнена частично, задача остается в работе.',
+    status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-19',
     deadline: '2026-10-25',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-smartstroy-layout-done-26-10', title: 'Верстка: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+      { id: 'timeline-smartstroy-layout-open-26-10', title: 'Завершить верстку', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+    ],
   },
   {
     id: 'plan-smartstroy-multi-parameter-tags-2026-10-19',
     projectId: 'project-smart',
     title: 'Теговые страницы с 2+ параметрами',
-    description: 'План на неделю 19.10-25.10: теговые страницы с двумя и более параметрами на smart-spb.pro.',
-    status: 'planned',
+    description: 'На 26.10: теговые страницы с двумя и более параметрами на smart-spb.pro остаются в работе.',
+    status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-19',
     deadline: '2026-10-25',
@@ -3772,11 +3782,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-watch-tag-metatags-2026-10-19',
     projectId: 'project-watch',
     title: 'Метатеги теговых страниц',
-    description: 'План на неделю 19.10-25.10: метатеги теговых страниц watchstoree.ru.',
-    status: 'planned',
+    description: 'По отчету на 26.10 за 19.10-25.10: метатеги теговых страниц watchstoree.ru готовы.',
+    status: 'done',
     ownerIds: ['person-outsource'],
     createdAt: '2026-10-19',
     deadline: '2026-10-25',
+    completedAt: '2026-10-26',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3784,11 +3795,12 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-watch-breadcrumbs-2026-10-19',
     projectId: 'project-watch',
     title: 'Хлебные крошки',
-    description: 'План на неделю 19.10-25.10: хлебные крошки watchstoree.ru.',
-    status: 'planned',
+    description: 'По отчету на 26.10 за 19.10-25.10: хлебные крошки watchstoree.ru готовы.',
+    status: 'done',
     ownerIds: ['person-outsource'],
     createdAt: '2026-10-19',
     deadline: '2026-10-25',
+    completedAt: '2026-10-26',
     timelineEnabled: false,
     timeline: [],
   },
@@ -3796,25 +3808,126 @@ const requiredTaskSeeds: Task[] = [
     id: 'plan-lombard-usability-2026-10-19',
     projectId: 'project-lombard',
     title: 'Юзабилити',
-    description: 'План на неделю 19.10-25.10: юзабилити lombard-banka.ru.',
-    status: 'planned',
+    description: 'На 26.10: работы по юзабилити lombard-banka.ru выполнены частично, задача остается в работе.',
+    status: 'active',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-19',
     deadline: '2026-10-25',
-    timelineEnabled: false,
-    timeline: [],
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-lombard-usability-done-26-10', title: 'Юзабилити: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+      { id: 'timeline-lombard-usability-open-26-10', title: 'Завершить работы по юзабилити', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+    ],
   },
   {
     id: 'plan-balt-content-plan-2026-10-19',
     projectId: 'project-balt-pallet',
     title: 'Контент план',
-    description: 'План на неделю 19.10-25.10: контент-план balt-pallet.ru.',
-    status: 'planned',
+    description: 'По отчету на 26.10 за 19.10-25.10: контент-план balt-pallet.ru подготовлен.',
+    status: 'done',
     ownerIds: ['person-aleksey'],
     createdAt: '2026-10-19',
     deadline: '2026-10-25',
+    completedAt: '2026-10-26',
     timelineEnabled: false,
     timeline: [],
+  },
+  {
+    id: 'weekly-aquaguard-report-2026-10-26',
+    projectId: 'project-aquaguard',
+    title: 'Недельная запись 26.10: Аквагард',
+    description: 'Отчет на 26.10 за неделю 19.10-25.10. Юзабилити выполнено частично, раздел услуг остается в работе.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-26',
+    deadline: '2026-10-26',
+    completedAt: '2026-10-26',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-aquaguard-usability-done-weekly-26-10', title: 'Юзабилити: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+      { id: 'timeline-aquaguard-usability-open-weekly-26-10', title: 'Завершить работы по юзабилити', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+      { id: 'timeline-aquaguard-services-weekly-26-10', title: 'Раздел услуг', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+    ],
+  },
+  {
+    id: 'weekly-promteh-report-2026-10-26',
+    projectId: 'project-promteh',
+    title: 'Недельная запись 26.10: Промтех',
+    description: 'Отчет на 26.10 за неделю 19.10-25.10. Работы по юзабилити выполнены частично, задача остается в работе.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-26',
+    deadline: '2026-10-26',
+    completedAt: '2026-10-26',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-promteh-usability-done-weekly-26-10', title: 'Юзабилити: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+      { id: 'timeline-promteh-usability-open-weekly-26-10', title: 'Завершить работы по юзабилити', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+    ],
+  },
+  {
+    id: 'weekly-smartstroy-report-2026-10-26',
+    projectId: 'project-smart',
+    title: 'Недельная запись 26.10: Смартстрой',
+    description: 'Отчет на 26.10 за неделю 19.10-25.10. Верстка выполнена частично, теговые страницы с двумя и более параметрами остаются в работе.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-26',
+    deadline: '2026-10-26',
+    completedAt: '2026-10-26',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-smartstroy-layout-done-weekly-26-10', title: 'Верстка: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+      { id: 'timeline-smartstroy-layout-open-weekly-26-10', title: 'Завершить верстку', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+      { id: 'timeline-smartstroy-parameter-tags-weekly-26-10', title: 'Теговые страницы с 2+ параметрами', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+    ],
+  },
+  {
+    id: 'weekly-watch-report-2026-10-26',
+    projectId: 'project-watch',
+    title: 'Недельная запись 26.10: Часы',
+    description: 'Отчет на 26.10 за неделю 19.10-25.10. Метатеги теговых страниц и хлебные крошки выполнены.',
+    status: 'done',
+    ownerIds: ['person-outsource'],
+    createdAt: '2026-10-26',
+    deadline: '2026-10-26',
+    completedAt: '2026-10-26',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-watch-tag-metatags-weekly-26-10', title: 'Метатеги теговых страниц', ownerId: 'person-outsource', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+      { id: 'timeline-watch-breadcrumbs-weekly-26-10', title: 'Хлебные крошки', ownerId: 'person-outsource', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+    ],
+  },
+  {
+    id: 'weekly-lombard-report-2026-10-26',
+    projectId: 'project-lombard',
+    title: 'Недельная запись 26.10: Ломбард',
+    description: 'Отчет на 26.10 за неделю 19.10-25.10. Работы по юзабилити выполнены частично, задача остается в работе.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-26',
+    deadline: '2026-10-26',
+    completedAt: '2026-10-26',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-lombard-usability-done-weekly-26-10', title: 'Юзабилити: часть выполнена', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+      { id: 'timeline-lombard-usability-open-weekly-26-10', title: 'Завершить работы по юзабилити', ownerId: 'person-aleksey', status: 'active', dueDate: '2026-10-25' },
+    ],
+  },
+  {
+    id: 'weekly-balt-pallet-report-2026-10-26',
+    projectId: 'project-balt-pallet',
+    title: 'Недельная запись 26.10: Балт Паллет',
+    description: 'Отчет на 26.10 за неделю 19.10-25.10. Контент-план подготовлен.',
+    status: 'done',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-10-26',
+    deadline: '2026-10-26',
+    completedAt: '2026-10-26',
+    timelineEnabled: true,
+    timeline: [
+      { id: 'timeline-balt-content-plan-weekly-26-10', title: 'Контент план', ownerId: 'person-aleksey', status: 'done', dueDate: '2026-10-25', completedAt: '2026-10-26' },
+    ],
   },
   {
     id: 'report-watchstore-2026-08',
@@ -4466,6 +4579,7 @@ function getReportWindowForSendDate(sendDate: string): WeekWindow {
 }
 
 function isCompletionInReport(value: string | undefined, period: WeekWindow, sendDate: string) {
+  if (value && reportPeriodOverrides[value] && value !== sendDate) return false;
   return isIsoInWindow(value, period) || (Boolean(reportPeriodOverrides[sendDate]) && value === sendDate);
 }
 
@@ -10937,7 +11051,7 @@ function buildSeoWeeklyReports(
       const latestSentReportDate = projectTasks
         .filter(isWeeklyReportTask)
         .reduce((latest, task) => task.createdAt > latest ? task.createdAt : latest, '');
-      const combinedReport = reportPeriodOverrides[reportSendDate]
+      const submittedReport = reportPeriodOverrides[reportSendDate]
         ? projectTasks.find((task) => isWeeklyReportTask(task) && task.createdAt === reportSendDate)
         : undefined;
       const done: WeeklyReportItem[] = [];
@@ -10948,8 +11062,8 @@ function buildSeoWeeklyReports(
 
       projectTasks.forEach((task) => {
         const isSentReportTask = isWeeklyReportTask(task);
-        // The two-week note is cumulative, so count its completed stages once.
-        const includeCompletions = !combinedReport || task.id === combinedReport.id;
+        // Count the submitted period note once; earlier notes are historical.
+        const includeCompletions = !submittedReport || task.id === submittedReport.id;
         const doneTimelineItems = task.timeline.filter(
           (item) =>
             includeCompletions &&
@@ -10971,7 +11085,7 @@ function buildSeoWeeklyReports(
           done.push(makeTaskReportItem(task, project, peopleById, today, 'done'));
         }
 
-        if (isSentReportTask && (combinedReport || task.createdAt < latestSentReportDate)) return;
+        if (isSentReportTask && (submittedReport || task.createdAt < latestSentReportDate)) return;
 
         const openTimelineItems = task.timeline.filter((item) => item.status !== 'done');
         const lateTimelineItems = openTimelineItems.filter((item) => Boolean(item.dueDate) && item.dueDate < currentWeek.start);
