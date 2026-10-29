@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-28T11:30:27.416Z",
+  "updatedAt": "2026-10-29T11:41:00.635Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -551,7 +551,7 @@
     },
     {
       "id": "21814",
-      "title": "promtehmakulatura.ru — правки контактов, шаблонов и мобильной версии",
+      "title": "promtehmakulatura.ru - правки контактов, шаблонов и мобильной версии",
       "status": "2",
       "statusLabel": "Ждет выполнения",
       "responsibleId": "642",
@@ -680,15 +680,15 @@
     {
       "id": "21736",
       "title": "аквагард.рф - раздел услуг",
-      "status": "4",
-      "statusLabel": "Ждет контроля",
+      "status": "5",
+      "statusLabel": "Готово",
       "responsibleId": "646",
       "responsibleName": "SEO Игорь",
       "creatorId": "634",
       "creatorName": "SEO Alex",
       "createdDate": "2026-10-20T16:16:40+03:00",
       "deadline": "2026-10-26T18:00:00+03:00",
-      "closedDate": "2026-10-25T13:23:42+03:00",
+      "closedDate": "2026-10-28T16:24:56+03:00",
       "description": "Задача : надо проработать раздел услуг - найти новые кластеры и предложить их клиенту и запросить у них актуальный список услуг которые они оказывают. В рамках этого таска нужен контент план для новых страниц услуг.",
       "groupId": "46",
       "groupName": "SEO"
@@ -1247,7 +1247,7 @@
       "creatorId": "634",
       "creatorName": "SEO Alex",
       "createdDate": "2026-10-06T14:05:36+03:00",
-      "deadline": "2026-10-29T18:00:00+03:00",
+      "deadline": "2026-10-30T18:00:00+03:00",
       "closedDate": "",
       "description": "Задача : нужно создать страницы для покрытия группы кластеров по проектировщикам (запрос от клиента). Семантика : https://docs.google.com/spreadsheets/d/[скрыто]/edit?usp=sharing Контент на мне",
       "groupId": "46",
@@ -4568,6 +4568,58 @@
   ],
   "comments": [],
   "results": [
+    {
+      "id": "7050",
+      "taskId": "21732",
+      "taskTitle": "rectop.ru - юзабилити",
+      "commentId": "0",
+      "createdById": "646",
+      "createdByName": "SEO Игорь",
+      "createdAt": "2026-10-29T02:43:27+03:00",
+      "updatedAt": "2026-10-29T02:43:27+03:00",
+      "status": "0",
+      "text": "Дополнил (https://docs.google.com/document/d/[скрыто]/edit). Добавил предлагаемый срок внедрения, 19 пар прототипов для компьютера и телефона рядом с соответствующими правками и полную ссылку на HTML-макет. Все 24 правки, критерии проверки и прежние снимки сохранены. Прошу принять результат.",
+      "filesCount": 0
+    },
+    {
+      "id": "7048",
+      "taskId": "21746",
+      "taskTitle": "lombard-banka.ru - юзабилити",
+      "commentId": "0",
+      "createdById": "646",
+      "createdByName": "SEO Игорь",
+      "createdAt": "2026-10-29T02:08:09+03:00",
+      "updatedAt": "2026-10-29T02:08:09+03:00",
+      "status": "0",
+      "text": "Дополнил (https://docs.google.com/document/d/[скрыто]/edit). Добавил предлагаемые сроки групп внедрения относительно начала работ, семь мини-прототипов будущих элементов и материалы реализации. Сохранил исходные 13 правок, снимки, критерии проверки и 14 групп шаблонов. Прошу принять результат.",
+      "filesCount": 0
+    },
+    {
+      "id": "7046",
+      "taskId": "21744",
+      "taskTitle": "watchstoree.ru - хлебные крошки",
+      "commentId": "0",
+      "createdById": "646",
+      "createdByName": "SEO Игорь",
+      "createdAt": "2026-10-29T01:42:43+03:00",
+      "updatedAt": "2026-10-29T01:42:43+03:00",
+      "status": "0",
+      "text": "Подготовил (https://docs.google.com/document/d/[скрыто]/edit). В начале собраны основные исправления; содержание ведёт к семи разделам, общему коду и проверке. Сохранил описания текущих и итоговых цепочек, девять изображений, готовый код, критерии проверки и ограничение 42 разрешёнными парами. Прошу принять ТЗ.",
+      "filesCount": 0
+    },
+    {
+      "id": "7044",
+      "taskId": "21748",
+      "taskTitle": "balt-pallet.ru - контент план",
+      "commentId": "0",
+      "createdById": "646",
+      "createdByName": "SEO Игорь",
+      "createdAt": "2026-10-29T01:02:16+03:00",
+      "updatedAt": "2026-10-29T01:02:16+03:00",
+      "status": "0",
+      "text": "Подготовил (https://docs.google.com/spreadsheets/d/[скрыто]/edit#gid=10231748). Для каждой темы указал содержание, сопоставление с существующими статьями и пример материала конкурента. Прежний план сохранён отдельным листом.",
+      "filesCount": 0
+    },
     {
       "id": "7042",
       "taskId": "21734",
@@ -12160,6 +12212,40 @@
       }
     ],
     "deals": [
+      {
+        "id": "7468",
+        "title": "ProffSkills",
+        "entityType": "deal",
+        "assignedById": "564",
+        "assignedByName": "Евстратьева Кристина",
+        "stageId": "C4:NEW",
+        "createdTime": "2026-10-28T17:21:27+03:00",
+        "updatedTime": "2026-10-28T17:21:27+03:00",
+        "closedTime": "",
+        "companyId": "0",
+        "contactIds": [],
+        "customFields": {
+          "ufCrmDealAmoJrcxsmqxxwfbemzy": "Санкт-Петербург",
+          "ufCrmDealAmoMwhefxzsqryuxhjw": 1
+        }
+      },
+      {
+        "id": "7466",
+        "title": "Proffskills",
+        "entityType": "deal",
+        "assignedById": "564",
+        "assignedByName": "Евстратьева Кристина",
+        "stageId": "WON",
+        "createdTime": "2026-10-28T17:21:27+03:00",
+        "updatedTime": "2026-10-28T17:22:16+03:00",
+        "closedTime": "",
+        "companyId": "0",
+        "contactIds": [],
+        "customFields": {
+          "ufCrmDealAmoJrcxsmqxxwfbemzy": "Санкт-Петербург",
+          "ufCrmDealAmoMwhefxzsqryuxhjw": 1
+        }
+      },
       {
         "id": "7462",
         "title": "Красотка",
@@ -21535,44 +21621,6 @@
           "ufCrm_66E04184C82FD": "импорт_спб_автосервисы_не_приоритет",
           "ufCrm_66E17834BD3FE": "https://yandex.ru/maps/org/bosh_dizel_servis/[телефон скрыт]/",
           "ufCrm_66FE502C65784": "372"
-        }
-      },
-      {
-        "id": "6326",
-        "title": "СТО 1 Автосервис",
-        "entityType": "deal",
-        "assignedById": "36",
-        "assignedByName": "Юмаева Алина",
-        "stageId": "UC_C451U1",
-        "createdTime": "2024-10-18T13:47:08+03:00",
-        "updatedTime": "2024-11-13T10:12:03+03:00",
-        "closedTime": "",
-        "companyId": "0",
-        "contactIds": [],
-        "customFields": {
-          "ufCrm_66E04184C82FD": "импорт_спб_автосервисы_не_приоритет",
-          "ufCrm_66E17834BD3FE": "https://yandex.ru/maps/org/sto_1_avtoservis/[телефон скрыт]/",
-          "ufCrm_66FE502C65784": "257"
-        }
-      },
-      {
-        "id": "6324",
-        "title": "Автосервис Volvo",
-        "entityType": "deal",
-        "assignedById": "36",
-        "assignedByName": "Юмаева Алина",
-        "stageId": "UC_C451U1",
-        "createdTime": "2024-10-18T11:43:34+03:00",
-        "updatedTime": "2024-11-13T10:12:03+03:00",
-        "closedTime": "",
-        "companyId": "0",
-        "contactIds": [
-          "786"
-        ],
-        "customFields": {
-          "ufCrm_66E04184C82FD": "импорт_спб_автосервисы_не_приоритет",
-          "ufCrm_66E17834BD3FE": "https://yandex.ru/maps/org/avtoservis_volvo/[телефон скрыт]/",
-          "ufCrm_66FE502C65784": "27"
         }
       }
     ],
