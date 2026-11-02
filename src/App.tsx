@@ -441,6 +441,60 @@ const initialPaymentRows: PaymentRow[] = [
 
 const requiredManagedResourceSeeds: ManagedResource[] = [
   {
+    id: 'resource-report-promteh-2026-11-02',
+    projectId: 'project-promteh',
+    tab: 'report',
+    title: 'Клиентский отчет: Промтех',
+    url: 'https://docs.google.com/document/d/1Rd4vZOyGbMOHTeZLIwZvpNw7zQKrgQ7iw6sWg9chKSg/edit?usp=sharing',
+    dateLabel: '02.11.2026',
+    note: 'Получен 02.11.2026',
+  },
+  {
+    id: 'resource-report-smartstroy-2026-11-02',
+    projectId: 'project-smart',
+    tab: 'report',
+    title: 'Клиентский отчет: Смартстрой',
+    url: 'https://docs.google.com/document/d/1qPOsCcjDkgkmASIM45bZU7F3FWos4bmniJFS-HAKUeI/edit?usp=sharing',
+    dateLabel: '02.11.2026',
+    note: 'Получен 02.11.2026',
+  },
+  {
+    id: 'resource-report-aquaguard-2026-11-02',
+    projectId: 'project-aquaguard',
+    tab: 'report',
+    title: 'Клиентский отчет: Аквагард',
+    url: 'https://docs.google.com/document/d/1Od80zR5C4qs-rANtO9AU74rSKSA9DV5qFknJC2hRs60/edit?usp=sharing',
+    dateLabel: '02.11.2026',
+    note: 'Получен 02.11.2026',
+  },
+  {
+    id: 'resource-report-balt-pallet-2026-11-02',
+    projectId: 'project-balt-pallet',
+    tab: 'report',
+    title: 'Клиентский отчет: Балт-паллет',
+    url: 'https://docs.google.com/document/d/1mi24w7GZCchHgv0SeMiSZnnid_7WE5DSV7_75BO0seI/edit?usp=sharing',
+    dateLabel: '02.11.2026',
+    note: 'Получен 02.11.2026',
+  },
+  {
+    id: 'resource-report-watch-2026-11-02',
+    projectId: 'project-watch',
+    tab: 'report',
+    title: 'Клиентский отчет: Часы',
+    url: 'https://docs.google.com/document/d/1arqfBBlVe_a0rnDpttxGfLoWqGn6OkgwWfi0dhnQ4VA/edit?usp=sharing',
+    dateLabel: '02.11.2026',
+    note: 'Получен 02.11.2026',
+  },
+  {
+    id: 'resource-report-lombard-2026-11-02',
+    projectId: 'project-lombard',
+    tab: 'report',
+    title: 'Клиентский отчет: Ломбард',
+    url: 'https://docs.google.com/document/d/1kXEnsbRweWHEEoAuZRMKFxNY4eeXBPv43DSMVR7o9Pg/edit?usp=sharing',
+    dateLabel: '02.11.2026',
+    note: 'Получен 02.11.2026',
+  },
+  {
     id: 'resource-report-promteh-forecast-2026-08-31',
     projectId: 'project-promteh',
     tab: 'report',
@@ -543,7 +597,7 @@ function buildInitialManagedResources(): ManagedResource[] {
 
 const initialManagedResources = [...buildInitialManagedResources(), ...requiredManagedResourceSeeds];
 const requiredManagedResourceSeedsById = new Map(requiredManagedResourceSeeds.map((resource) => [resource.id, resource]));
-const managedResourceSeedVersion = 'managed-resources-2026-09-28-leads-master-v1';
+const managedResourceSeedVersion = 'managed-resources-2026-11-02-client-reports-v1';
 
 const legacyPersonIdMap: Record<string, string> = {
   'person-vlad': 'person-aleksey',
