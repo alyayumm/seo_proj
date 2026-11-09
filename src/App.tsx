@@ -379,6 +379,7 @@ const initialProjects: Project[] = [
   { id: 'project-watch', name: 'Часы', color: '#8B5CF6' },
   { id: 'project-smart', name: 'Смартстрой', color: '#14B8A6' },
   { id: 'project-seo-general', name: 'Общее', color: '#D8EEF3' },
+  { id: 'project-krasotka-kupchino', name: 'krasotka-kupchino.ru', color: '#E7A6B7' },
   ...REQUIRED_LINK_PROJECTS.filter(
     (project) => !['Ломбард', 'Часы', 'Смартстрой'].includes(project.name),
   ),
@@ -440,6 +441,15 @@ const initialPaymentRows: PaymentRow[] = [
 ];
 
 const requiredManagedResourceSeeds: ManagedResource[] = [
+  {
+    id: 'resource-site-krasotka-kupchino',
+    projectId: 'project-krasotka-kupchino',
+    tab: 'site',
+    title: 'krasotka-kupchino.ru: сайт',
+    url: 'https://krasotka-kupchino.ru',
+    dateLabel: '',
+    note: '',
+  },
   {
     id: 'resource-report-promteh-2026-11-02',
     projectId: 'project-promteh',
@@ -597,7 +607,7 @@ function buildInitialManagedResources(): ManagedResource[] {
 
 const initialManagedResources = [...buildInitialManagedResources(), ...requiredManagedResourceSeeds];
 const requiredManagedResourceSeedsById = new Map(requiredManagedResourceSeeds.map((resource) => [resource.id, resource]));
-const managedResourceSeedVersion = 'managed-resources-2026-11-02-client-reports-v1';
+const managedResourceSeedVersion = 'managed-resources-2026-11-09-krasotka-v1';
 
 const legacyPersonIdMap: Record<string, string> = {
   'person-vlad': 'person-aleksey',
@@ -612,7 +622,7 @@ const legacyProjectIdMap: Record<string, string> = {
 
 const legacyProjectNamesToRemove = new Set(['аш спб', 'аш мск']);
 
-const taskSeedVersion = 'task-updates-2026-10-26-weekly-results-v2';
+const taskSeedVersion = 'task-updates-2026-11-09-week-plan-v1';
 const reportPeriodOverrides: Record<string, WeekWindow> = {
   '2026-10-19': { start: '2026-10-05', end: '2026-10-18' },
   '2026-10-26': { start: '2026-10-19', end: '2026-10-25' },
@@ -627,7 +637,7 @@ const legacyDemoTaskIds = new Set([
   'current-rectop-new-quarter-plan',
 ]);
 
-const requiredTaskSeeds: Task[] = [
+const requiredTaskDefinitions: Task[] = [
   {
     id: 'current-ash-avtopravo-redesign',
     projectId: 'project-ash',
@@ -4085,6 +4095,102 @@ const requiredTaskSeeds: Task[] = [
     timeline: [],
   },
   {
+    id: 'plan-krasotka-quarter-work-plan-2026-11-09',
+    projectId: 'project-krasotka-kupchino',
+    title: 'План работ на 3 месяца',
+    description: 'План на неделю 09.11-15.11: подготовить план работ на 3 месяца для krasotka-kupchino.ru.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-11-09',
+    deadline: '2026-11-15',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-krasotka-service-template-2026-11-09',
+    projectId: 'project-krasotka-kupchino',
+    title: 'Шаблон страницы услуг',
+    description: 'План на неделю 09.11-15.11: подготовить шаблон страницы услуг для krasotka-kupchino.ru.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-11-09',
+    deadline: '2026-11-15',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-krasotka-article-template-2026-11-09',
+    projectId: 'project-krasotka-kupchino',
+    title: 'Шаблон статьи',
+    description: 'План на неделю 09.11-15.11: подготовить шаблон статьи для krasotka-kupchino.ru.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-11-09',
+    deadline: '2026-11-15',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-rectop-usability-2026-11-09',
+    projectId: 'project-rectop',
+    title: 'Юзабилити',
+    description: 'План на неделю 09.11-15.11: юзабилити rectop.ru.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-11-09',
+    deadline: '2026-11-15',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-rectop-service-pages-2026-11-09',
+    projectId: 'project-rectop',
+    title: 'Сервисные страницы',
+    description: 'План на неделю 09.11-15.11: следующий этап работ по сервисным страницам rectop.ru. Ранее выполненные работы сохранены в отчете 26.10.',
+    status: 'planned',
+    ownerIds: ['person-outsource'],
+    createdAt: '2026-11-09',
+    deadline: '2026-11-15',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-aquaguard-google-products-2026-11-09',
+    projectId: 'project-aquaguard',
+    title: 'Google товары',
+    description: 'План на неделю 09.11-15.11: следующий этап работ по Google товарам аквагард.рф. Предыдущее завершение сохранено в отчете 19.10.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-11-09',
+    deadline: '2026-11-15',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-promteh-eeat-pages-2026-11-09',
+    projectId: 'project-promteh',
+    title: 'ЕЕАТ страницы',
+    description: 'План на неделю 09.11-15.11: следующий этап работ по ЕЕАТ страницам promtehmakulatura.ru. Ранее выполненные работы сохранены в отчете 26.10.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-11-09',
+    deadline: '2026-11-15',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
+    id: 'plan-smartstroy-multi-parameter-tags-2026-11-09',
+    projectId: 'project-smart',
+    title: 'Теговые страницы с 2+ параметрами',
+    description: 'План на неделю 09.11-15.11: следующий этап работ по теговым страницам с двумя и более параметрами smart-spb.pro. Ранее выполненные работы сохранены в отчете 26.10.',
+    status: 'planned',
+    ownerIds: ['person-aleksey'],
+    createdAt: '2026-11-09',
+    deadline: '2026-11-15',
+    timelineEnabled: false,
+    timeline: [],
+  },
+  {
     id: 'report-watchstore-2026-08',
     projectId: 'project-watch',
     title: 'Сбор отчета за август: WatchStore',
@@ -4150,6 +4256,49 @@ const requiredTaskSeeds: Task[] = [
     timeline: [],
   },
 ];
+
+const continuedNovemberPlanTaskIds = new Set([
+  'plan-aquaguard-usability-2026-10-19',
+  'plan-aquaguard-services-section-2026-10-19',
+  'plan-promteh-pallets-section-2026-10-05',
+  'plan-promteh-usability-2026-10-19',
+  'plan-smartstroy-layout-2026-10-19',
+  'plan-smartstroy-project-filter-fixes-2026-09-14',
+  'plan-smartstroy-geo-pages-2026-10-05',
+  'plan-lombard-usability-2026-10-19',
+  'plan-balt-product-feeds-2026-10-05',
+  'plan-balt-usability-2026-10-12',
+  'plan-balt-eeat-pages-2026-10-12',
+]);
+
+const requiredTaskSeeds: Task[] = requiredTaskDefinitions.map((task) => {
+  if (!continuedNovemberPlanTaskIds.has(task.id)) return task;
+  const deadline = '2026-11-15';
+  const changes = [
+    { field: 'Дедлайн', before: formatDate(task.deadline), after: formatDate(deadline) },
+    ...task.timeline.filter((item) => item.status !== 'done').map((item) => ({
+      field: `Дедлайн этапа: ${item.title}`,
+      before: formatDate(item.dueDate),
+      after: formatDate(deadline),
+    })),
+  ];
+  return {
+    ...task,
+    description: `${task.description} Включена в план на неделю 09.11-15.11.`,
+    deadline,
+    timeline: task.timeline.map((item) => item.status === 'done' ? item : { ...item, dueDate: deadline }),
+    history: [
+      {
+        id: `weekly-plan-2026-11-09-${task.id}`,
+        changedAt: '2026-11-09T00:00:00+03:00',
+        action: 'План на неделю',
+        summary: 'Продолжение задачи включено в план на 09.11-15.11. Выполненные этапы сохранены.',
+        changes,
+      },
+      ...(task.history ?? []),
+    ],
+  };
+});
 
 const requiredTaskSeedById = new Map(requiredTaskSeeds.map((task) => [task.id, task]));
 
@@ -11240,7 +11389,7 @@ function buildSeoWeeklyReports(
           done.push(makeTaskReportItem(task, project, peopleById, today, 'done'));
         }
 
-        if (isSentReportTask && (submittedReport || task.createdAt < latestSentReportDate)) return;
+        if (isSentReportTask && (submittedReport || task.createdAt < latestSentReportDate || task.createdAt < currentWeek.start)) return;
 
         const openTimelineItems = task.timeline.filter((item) => item.status !== 'done');
         const lateTimelineItems = openTimelineItems.filter((item) => Boolean(item.dueDate) && item.dueDate < currentWeek.start);
