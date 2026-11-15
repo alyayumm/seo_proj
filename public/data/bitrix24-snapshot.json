@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-14T12:24:22.346Z",
+  "updatedAt": "2026-11-15T12:54:45.152Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -39595,5 +39595,7 @@
       }
     ]
   },
-  "errors": []
+  "errors": [
+    "tasks.task.result.list task 22080: fetch failed"
+  ]
 }
