@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-15T12:54:45.152Z",
+  "updatedAt": "2026-11-16T13:54:39.126Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -289,7 +289,7 @@
       "createdDate": "2026-11-13T12:55:50+03:00",
       "deadline": "2026-11-17T18:00:00+03:00",
       "closedDate": "",
-      "description": "Провести аналитику спроса и конкурентов для ВПН сервисов",
+      "description": "Провести аналитику спроса и конкурентов для ВПН сервисов по гуглу и по яндексу клиент: @appavpn нужны: запросы, семантика, позиции",
       "groupId": "46",
       "groupName": "SEO"
     },
@@ -39595,7 +39595,5 @@
       }
     ]
   },
-  "errors": [
-    "tasks.task.result.list task 22080: fetch failed"
-  ]
+  "errors": []
 }
