@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-19T14:37:16.035Z",
+  "updatedAt": "2026-11-20T14:15:48.606Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -280,15 +280,15 @@
     {
       "id": "22126",
       "title": "Аналитика рынка ВПН сервисов",
-      "status": "2",
-      "statusLabel": "Ждет выполнения",
+      "status": "5",
+      "statusLabel": "Готово",
       "responsibleId": "634",
       "responsibleName": "SEO Alex",
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-11-13T12:55:50+03:00",
       "deadline": "2026-11-17T18:00:00+03:00",
-      "closedDate": "",
+      "closedDate": "2026-11-20T15:21:53+03:00",
       "description": "Провести аналитику спроса и конкурентов для ВПН сервисов по гуглу и по яндексу клиент: @appavpn нужны: запросы, семантика, позиции",
       "groupId": "46",
       "groupName": "SEO"
@@ -5598,6 +5598,20 @@
   ],
   "crm": {
     "leads": [
+      {
+        "id": "29814",
+        "title": "Смена Ответственного",
+        "entityType": "lead",
+        "assignedById": "564",
+        "assignedByName": "Евстратьева Кристина",
+        "stageId": "UC_EXW3N0",
+        "createdTime": "2026-11-20T09:14:58+03:00",
+        "updatedTime": "2026-11-20T09:15:00+03:00",
+        "closedTime": "",
+        "companyId": "0",
+        "contactIds": [],
+        "customFields": {}
+      },
       {
         "id": "29812",
         "title": "Смена Ответственного",
@@ -12637,23 +12651,44 @@
         "companyId": "0",
         "contactIds": [],
         "customFields": {}
-      },
-      {
-        "id": "28792",
-        "title": "Googoosh Beauty Salon",
-        "entityType": "lead",
-        "assignedById": "36",
-        "assignedByName": "Юмаева Алина",
-        "stageId": "NEW",
-        "createdTime": "2025-01-22T18:39:56+03:00",
-        "updatedTime": "2025-01-22T18:44:04+03:00",
-        "closedTime": "",
-        "companyId": "0",
-        "contactIds": [],
-        "customFields": {}
       }
     ],
     "deals": [
+      {
+        "id": "7472",
+        "title": "Клиника Александра Першина",
+        "entityType": "deal",
+        "assignedById": "564",
+        "assignedByName": "Евстратьева Кристина",
+        "stageId": "C4:NEW",
+        "createdTime": "2026-11-20T17:09:20+03:00",
+        "updatedTime": "2026-11-20T17:09:20+03:00",
+        "closedTime": "",
+        "companyId": "0",
+        "contactIds": [],
+        "customFields": {
+          "ufCrmDealAmoJrcxsmqxxwfbemzy": "Санкт-Петербург",
+          "ufCrmDealAmoMwhefxzsqryuxhjw": 1
+        }
+      },
+      {
+        "id": "7470",
+        "title": "Клиника Александра Першина",
+        "entityType": "deal",
+        "assignedById": "564",
+        "assignedByName": "Евстратьева Кристина",
+        "stageId": "WON",
+        "createdTime": "2026-11-20T17:09:18+03:00",
+        "updatedTime": "2026-11-20T17:11:37+03:00",
+        "closedTime": "",
+        "companyId": "0",
+        "contactIds": [],
+        "customFields": {
+          "ufCrm_1732632849809": "https://pershin-clinic.ru/services",
+          "ufCrmDealAmoJrcxsmqxxwfbemzy": "Санкт-Петербург",
+          "ufCrmDealAmoMwhefxzsqryuxhjw": 1
+        }
+      },
       {
         "id": "7468",
         "title": "ProffSkills",
@@ -22023,47 +22058,6 @@
           "ufCrm_66E04184C82FD": "импорт_спб_автосервисы_не_приоритет",
           "ufCrm_66E17834BD3FE": "https://yandex.ru/maps/org/sto_nemtsev/[телефон скрыт]/",
           "ufCrm_66FE502C65784": "186"
-        }
-      },
-      {
-        "id": "6330",
-        "title": "Альянс24",
-        "entityType": "deal",
-        "assignedById": "26",
-        "assignedByName": "Котов Руслан",
-        "stageId": "LOSE",
-        "createdTime": "2024-10-18T15:46:36+03:00",
-        "updatedTime": "2024-10-31T15:16:10+03:00",
-        "closedTime": "",
-        "companyId": "0",
-        "contactIds": [
-          "1938"
-        ],
-        "customFields": {
-          "ufCrm_1725463698084": 538,
-          "ufCrm_66E04184C82FD": "импорт_спб_автосервисы_не_приоритет",
-          "ufCrm_66E17834BD3FE": "https://yandex.ru/maps/org/alyans24/[телефон скрыт]/",
-          "ufCrm_66FE502C65784": "60"
-        }
-      },
-      {
-        "id": "6328",
-        "title": "Бош Дизель Сервис",
-        "entityType": "deal",
-        "assignedById": "36",
-        "assignedByName": "Юмаева Алина",
-        "stageId": "UC_C451U1",
-        "createdTime": "2024-10-18T13:55:28+03:00",
-        "updatedTime": "2024-11-13T10:12:03+03:00",
-        "closedTime": "",
-        "companyId": "0",
-        "contactIds": [
-          "1934"
-        ],
-        "customFields": {
-          "ufCrm_66E04184C82FD": "импорт_спб_автосервисы_не_приоритет",
-          "ufCrm_66E17834BD3FE": "https://yandex.ru/maps/org/bosh_dizel_servis/[телефон скрыт]/",
-          "ufCrm_66FE502C65784": "372"
         }
       }
     ],
@@ -39621,5 +39615,7 @@
       }
     ]
   },
-  "errors": []
+  "errors": [
+    "task.commentitem.getlist task 21910: fetch failed"
+  ]
 }
