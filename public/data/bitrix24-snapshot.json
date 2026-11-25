@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-24T16:06:16.458Z",
+  "updatedAt": "2026-11-25T15:54:36.125Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -271,6 +271,22 @@
     }
   ],
   "tasks": [
+    {
+      "id": "22342",
+      "title": "1721arch -аудит сайта",
+      "status": "2",
+      "statusLabel": "Ждет выполнения",
+      "responsibleId": "634",
+      "responsibleName": "SEO Alex",
+      "creatorId": "564",
+      "creatorName": "Евстратьева Кристина",
+      "createdDate": "2026-11-25T11:05:50+03:00",
+      "deadline": "2026-11-30T18:00:00+03:00",
+      "closedDate": "",
+      "description": "Сайт: https://1721arch.ru/?ysclid=mwus63vekw9367650#formtel",
+      "groupId": "46",
+      "groupName": "SEO"
+    },
     {
       "id": "22276",
       "title": "pershin-clinic - анализ ТЗ",
@@ -5018,19 +5034,6 @@
       "updatedAt": "2026-11-02T00:15:14+03:00",
       "status": "1",
       "text": "Подготовил предложения по сервисным страницам: 16 недостающих страниц с примерами конкурентов и сравнение количества страниц у RecTop и 84 конкурентов. (https://docs.google.com/document/d/[скрыто]/edit)",
-      "filesCount": 0
-    },
-    {
-      "id": "7068",
-      "taskId": "21402",
-      "taskTitle": "autoshkola-avtopravo.ru — закупить крауд и статейные ссылки за октябрь 2026 года",
-      "commentId": "0",
-      "createdById": "646",
-      "createdByName": "ID 646",
-      "createdAt": "2026-11-02T00:15:08+03:00",
-      "updatedAt": "2026-11-02T00:15:08+03:00",
-      "status": "1",
-      "text": "Оформил семь заказов по октябрьскому плану: пять статейных размещений и два крауд-заказа по 15 ссылок. Сумма — 8 697 ₽ при бюджете 9 985 ₽, экономия — 1 288 ₽. Номера заказов и фактическая стоимость внесены в исходный ссылочный план. Заказы переданы в исполнение. (https://docs.google.com/document/d/[скрыто]/edit)",
       "filesCount": 0
     },
     {
@@ -12651,6 +12654,24 @@
       }
     ],
     "deals": [
+      {
+        "id": "7474",
+        "title": "17/21 arch",
+        "entityType": "deal",
+        "assignedById": "564",
+        "assignedByName": "Евстратьева Кристина",
+        "stageId": "NEW",
+        "createdTime": "2026-11-25T11:03:06+03:00",
+        "updatedTime": "2026-11-25T11:05:24+03:00",
+        "closedTime": "",
+        "companyId": "0",
+        "contactIds": [],
+        "customFields": {
+          "ufCrm_1732632849809": "https://1721arch.ru/?ysclid=mwus63vekw9367650#formtel",
+          "ufCrmDealAmoJrcxsmqxxwfbemzy": "Москва, Санкт-Петербург",
+          "ufCrmDealAmoMwhefxzsqryuxhjw": 1
+        }
+      },
       {
         "id": "7472",
         "title": "Клиника Александра Першина",
@@ -22034,27 +22055,6 @@
           "ufCrm_66E04184C82FD": "импорт_срестораны_мск",
           "ufCrm_66E17834BD3FE": "https://yandex.ru/maps/org/kitayskiye_novosti/[телефон скрыт]/",
           "ufCrm_66FE502C65784": "1195"
-        }
-      },
-      {
-        "id": "6332",
-        "title": "СТО-Немцев",
-        "entityType": "deal",
-        "assignedById": "36",
-        "assignedByName": "Юмаева Алина",
-        "stageId": "UC_C06Q89",
-        "createdTime": "2024-10-18T16:15:01+03:00",
-        "updatedTime": "2024-11-13T10:12:03+03:00",
-        "closedTime": "",
-        "companyId": "10894",
-        "contactIds": [
-          "1942",
-          "1944"
-        ],
-        "customFields": {
-          "ufCrm_66E04184C82FD": "импорт_спб_автосервисы_не_приоритет",
-          "ufCrm_66E17834BD3FE": "https://yandex.ru/maps/org/sto_nemtsev/[телефон скрыт]/",
-          "ufCrm_66FE502C65784": "186"
         }
       }
     ],
