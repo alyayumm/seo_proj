@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-11-26T15:33:56.164Z",
+  "updatedAt": "2026-11-27T15:27:10.844Z",
   "portalHost": "utf.bitrix24.ru",
   "seoProjectName": "SEO",
   "seoProjectGroupId": "46",
@@ -272,6 +272,22 @@
   ],
   "tasks": [
     {
+      "id": "22376",
+      "title": "Сроки доменов",
+      "status": "2",
+      "statusLabel": "Ждет выполнения",
+      "responsibleId": "634",
+      "responsibleName": "SEO Alex",
+      "creatorId": "564",
+      "creatorName": "Евстратьева Кристина",
+      "createdDate": "2026-11-27T11:08:44+03:00",
+      "deadline": "2026-12-01T18:00:00+03:00",
+      "closedDate": "",
+      "description": "составить список доменов и сроки когда они истекают https://pershin-clinic.ru/ https://аквагард.рф https://smart-spb.pro https://watchstoree.ru https://krasotka-kupchino.ru/ https://balt-pallet.ru https://lombard-banka.ru https://switch-eng.ru",
+      "groupId": "46",
+      "groupName": "SEO"
+    },
+    {
       "id": "22342",
       "title": "1721arch -аудит сайта",
       "status": "2",
@@ -297,7 +313,7 @@
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-11-20T17:21:38+03:00",
-      "deadline": "2026-11-27T18:00:00+03:00",
+      "deadline": "2026-12-02T18:00:00+03:00",
       "closedDate": "",
       "description": "сайт https://pershin-clinic.ru ТЗ для сайта от клиента– https://docs.google.com/document/d/[скрыто]/edit?usp=sharing В ТЗ разделино все по блокам и страницам, некоторые надо создать, некоторые обновить и по возможности внести на главную. Посмотреть реально ли эти правки внести и насколько ок на главной странице держать столько блоков (наши услуги, почему выбирают нас, наши врачи, пространство, наши работы, результаты лечения, видео отзывы и текстовые отзывы, блок FAQ, контакты)",
       "groupId": "46",
@@ -2345,7 +2361,7 @@
       "creatorId": "564",
       "creatorName": "Евстратьева Кристина",
       "createdDate": "2026-09-10T11:56:46+03:00",
-      "deadline": "2026-11-27T18:00:00+03:00",
+      "deadline": "2026-12-02T18:00:00+03:00",
       "closedDate": "",
       "description": "Сделать пункт 2: https://docs.google.com/document/d/[скрыто]/edit?tab=t.emcoqoq3hai5#heading=h.9ocmnxqz6u8e",
       "groupId": "46",
@@ -5528,19 +5544,6 @@
       "updatedAt": "2026-10-09T17:08:36+03:00",
       "status": "1",
       "text": "https://docs.google.com/spreadsheets/d/[скрыто]/edit?usp=sharing",
-      "filesCount": 0
-    },
-    {
-      "id": "6950",
-      "taskId": "21504",
-      "taskTitle": "rectop.ru — составить план SEO-работ на три месяца",
-      "commentId": "0",
-      "createdById": "646",
-      "createdByName": "ID 646",
-      "createdAt": "2026-10-09T16:42:35+03:00",
-      "updatedAt": "2026-10-09T16:42:35+03:00",
-      "status": "1",
-      "text": "Подготовил план работ https://docs.google.com/document/d/[скрыто]/edit",
       "filesCount": 0
     },
     {
